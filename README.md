@@ -3,11 +3,9 @@ Repo for the 3110 final project
 
 Group: Sunny Chavan, Corban Chiu, Connor McCarthy
 
-## Current Ideas
-- Data:
-  - Financial Data Analysis/Viewer
-  - Weather Analysis
-- Game & AI:
-  - Poker
-  - Monopoly/Life
-  - Settlers of Catan
+## Current Plan
+- Monopoly
+  - GUI with all possible options
+  - Local play functionality
+  - Play with a good/competent AI (compentency depending on our implementation)
+- (maybe) chess
