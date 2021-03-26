@@ -1,0 +1,4 @@
+#directory "_build";;
+#load "board.cmo";;
+
+(* define all modules here*)
