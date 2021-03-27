@@ -13,6 +13,6 @@ Group: Sunny Chavan, Corban Chiu, Connor McCarthy
 ## Installation Instructions
 Mac OS: sudo port install pkgconfig
 
-Windows: apt install pkgconfig
+Windows: apt install pkg-config
 
 Graphics Package: opam install graphics
