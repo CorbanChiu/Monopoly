@@ -5,8 +5,10 @@
    or use it for commercial purposes.
  ************************************************************)
 
-(** CS 3110 Spring 2021 Assignment A2 Adventure
+(** CS 3110 Spring 2021 Final Assignment: Monopoly
 
+    @author Sunny Chavan (sc2448)
+    @author Corban Chiu (cpc75)
     @author Connor McCarthy (cjm365) *)
 
 (************************************************************
@@ -31,3 +33,4 @@
    - none
 
  ************************************************************)
+val hours_worked : int

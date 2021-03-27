@@ -1,4 +1,8 @@
+#require "oUnit";;
+#require "bisect_ppx";;
+
 #directory "_build";;
 #load "board.cmo";;
+open Board
 
 (* define all modules here*)

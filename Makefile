@@ -1,8 +1,8 @@
-MODULES=board author author
+MODULES=board author main
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
-TEST=test_board.byte
+TEST=test.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind
 
 default: build
@@ -12,7 +12,9 @@ build:
 	$(OCAMLBUILD) $(OBJECTS)
 
 test:
-	$(OCAMLBUILD) -tag 'debug' $(TEST) && ./$(TEST) -runner sequential
+	BISECT_COVERAGE=YES $(OCAMLBUILD) -plugin-tag 'package(bisect_ppx-ocamlbuild)' -tag 'debug' $(TEST) && ./$(TEST) -runner sequential
+	bisect-ppx-report html
+	rm *.coverage
 
 play:
 	$(OCAMLBUILD) -tag 'debug' $(MAIN) && OCAMLRUNPARAM=b ./$(MAIN)
