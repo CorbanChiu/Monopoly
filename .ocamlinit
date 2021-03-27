@@ -1,5 +1,6 @@
 #directory "_build";;
 #load "board.cmo";;
 #require "graphics";;
+#load "graphics.cma";;
 
 (* define all modules here*)
