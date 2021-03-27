@@ -1,8 +1,9 @@
-MODULES=board author main
+MODULES=board author main gui
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
 TEST=test.byte
+MAIN=main.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind
 
 default: build
@@ -17,7 +18,7 @@ test:
 	rm *.coverage
 
 play:
-	$(OCAMLBUILD) -tag 'debug' $(MAIN) && OCAMLRUNPARAM=b ./$(MAIN)
+	$(OCAMLBUILD) $(MAIN) && ./$(MAIN)
 
 check:
 	@bash check.sh
@@ -30,4 +31,3 @@ zip:
 
 clean:
 	ocamlbuild -clean
-	rm -rf _doc.public _doc.private adventure.zip

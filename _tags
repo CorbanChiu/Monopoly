@@ -5,3 +5,4 @@ true: package(oUnit)
 <sorts.ml>: coverage
 <test_sorts.{byte,native}>: coverage
 true: package(ounit2), package(bisect_ppx)
+true: package(oUnit), package(graphics)

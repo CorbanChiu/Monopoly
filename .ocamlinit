@@ -1,8 +1,10 @@
 #require "oUnit";;
 #require "bisect_ppx";;
+#require "graphics";;
 
 #directory "_build";;
 #load "board.cmo";;
 open Board
+#load "graphics.cma";;
 
 (* define all modules here*)

@@ -23,3 +23,10 @@ Group: Sunny Chavan, Corban Chiu, Connor McCarthy
 ## Internal Use of Code
 - Upon running `make test`, a file `/_coverage/index.html` is created. Opening
 this file will show the disect code coverage of the test file.
+
+## Installation Instructions
+Mac OS: sudo port install pkgconfig
+
+Windows: apt install pkg-config
+
+Graphics Package: opam install graphics

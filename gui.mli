@@ -1,0 +1,1 @@
+type square_gui
