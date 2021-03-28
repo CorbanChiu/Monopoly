@@ -1,5 +1,5 @@
 # for bisect coverage checking, OUnit
 <sorts.ml>: coverage
-<test_sorts.{byte,native}>: coverage
+<test.{byte,native}>: coverage
 true: package(ounit2), package(bisect_ppx)
 true: package(oUnit), package(graphics)
