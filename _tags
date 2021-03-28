@@ -2,4 +2,4 @@
 <sorts.ml>: coverage
 <test.{byte,native}>: coverage
 true: package(ounit2), package(bisect_ppx)
-true: package(oUnit), package(graphics)
+true: package(oUnit), package(graphics), package(yojson)

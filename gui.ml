@@ -1,4 +1,5 @@
 open Graphics
+open Yojson.Basic.Util
 
 type square_gui
 
