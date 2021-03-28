@@ -13,13 +13,12 @@ build:
 	$(OCAMLBUILD) $(OBJECTS)
 
 test:
-	BISECT_COVERAGE=YES $(OCAMLBUILD) -plugin-tag 'package(bisect_ppx-ocamlbuild)' -tag 'debug' $(TEST) && ./$(TEST) -runner sequential
+	BISECT_COVERAGE=YES $(OCAMLBUILD) -tag 'debug' $(TEST) && ./$(TEST) -runner sequential
 	bisect-ppx-report html
 	rm *.coverage
 
 play:
 	$(OCAMLBUILD) $(MAIN) && ./$(MAIN)
-
 
 check:
 	@bash check.sh
