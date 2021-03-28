@@ -1,7 +1,4 @@
-# for ounit testing
-true: package(oUnit)
-
-# for bisect coverage checking
+# for bisect coverage checking, OUnit
 <sorts.ml>: coverage
 <test_sorts.{byte,native}>: coverage
 true: package(ounit2), package(bisect_ppx)
