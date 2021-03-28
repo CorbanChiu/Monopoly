@@ -1,0 +1,12 @@
+{
+  "squares": [
+    {
+      "name": "GO",
+      "cost": -200
+    },
+    {
+      "name": "MEDITERRANEAN AVENUE",
+      "cost": 60
+    }
+  ]
+}

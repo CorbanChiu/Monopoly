@@ -1,11 +1,14 @@
 open Graphics
+open Gui
 
 (* setting everything up *)
+
+(* let ourdraw_rect x = draw_rect x 50 50 75 *)
+
+(* let ft : unit list = List.map ourdraw_rect coord_list *)
+
 let main () =
-  open_graph " 1280x700+100-0";
-  set_window_title "Monopoly";
-  set_color green;
-  draw_circle 640 350 100;
+  draw_board;
   ignore (read_key ())
 
 (* Key_pressed *)
