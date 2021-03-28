@@ -11,7 +11,6 @@ default: build
 
 build:
 	$(OCAMLBUILD) $(OBJECTS)
-	rm *.coverage
 
 test:
 	BISECT_COVERAGE=YES $(OCAMLBUILD) -plugin-tag 'package(bisect_ppx-ocamlbuild)' -tag 'debug' $(TEST) && ./$(TEST) -runner sequential
@@ -20,19 +19,15 @@ test:
 
 play:
 	$(OCAMLBUILD) $(MAIN) && ./$(MAIN)
-	rm *.coverage
 
 
 check:
 	@bash check.sh
-	rm *.coverage
 
 finalcheck:
 	@bash check.sh final
-	rm *.coverage
 
 zip:
-	rm *.coverage
 	zip final.zip *.ml* *.json *.sh _tags .merlin .ocamlformat .ocamlinit LICENSE Makefile
 
 clean:
