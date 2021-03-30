@@ -5,7 +5,7 @@ type board
 type square
 
 (** The abstract type of value representing a color *)
-type propertycolor
+type propertycolor = int * int * int
 
 exception UnknownJSON
 
