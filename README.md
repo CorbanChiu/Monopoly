@@ -37,3 +37,8 @@ Graphics Package: opam install graphics
 ## Special Commands 
 export DISPLAY="$(grep nameserver /etc/resolv.conf | sed 's/nameserver //'):0"
 
+## For Sunny
+1) Launch Xming THROUGH xLaunch
+  - on the third window check "no Access Control"
+
+2) run Special Command above 
