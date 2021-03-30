@@ -176,7 +176,8 @@ let draw_colors color coord =
       match coord with
       | x, y when y = botlefty ->
           set_color (rgb r g b);
-          fill_rect (x + 2)
+          fill_rect
+            (x + 2) (*changed from x+2 to just x*)
             (y + (4 * sq_height / 5))
             (sq_width - 4) (sq_height / 5)
           (* changed -4 to 0*)
@@ -185,8 +186,8 @@ let draw_colors color coord =
           fill_rect
             (x + (4 * sq_height / 5))
             (y + 2)
-            ((sq_width / 5) - 4)
-            (sq_height - 4)
+            ((sq_height / 5) - 4)
+            (sq_width - 4)
       | x, y when y = temp ->
           set_color (rgb r g b);
           fill_rect (x + 2) (y + 2) (sq_width - 4) ((sq_height / 5) - 4)
