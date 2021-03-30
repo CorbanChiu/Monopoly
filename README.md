@@ -27,7 +27,10 @@ this file will show the disect code coverage of the test file.
 ## Installation Instructions
 Mac OS: sudo port install pkgconfig
 
-Windows: apt install pkg-config
+Windows: 
+
+1) apt install pkg-config (dependency for graphics installation)
+2) Install Xming and have it running in background 
 
 Graphics Package: opam install graphics
 
