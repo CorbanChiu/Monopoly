@@ -137,33 +137,57 @@ let rec draw_rects = function
   | [] -> ()
   | h :: t -> ()
 
+let rec draw_and_move str_list (a, b) =
+  match str_list with
+  | [] -> ()
+  | h :: t ->
+      draw_string h;
+      moveto a (b - 10);
+      draw_and_move t (a, b - 10)
+
 let draw_names coord name =
   set_color black;
   match coord with
   | a, b when (a, b) = botleft_coord_of_botright ->
       moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
-      draw_string name
+      draw_and_move
+        (String.split_on_char ' ' name)
+        (a + (sq_height / 10), b + (3 * sq_height / 5))
   | a, b when (a, b) = botleft_coord ->
       moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
-      draw_string name
+      draw_and_move
+        (String.split_on_char ' ' name)
+        (a + (sq_height / 10), b + (3 * sq_height / 5))
   | a, b when (a, b) = botleft_coord_of_topleft ->
       moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
-      draw_string name
+      draw_and_move
+        (String.split_on_char ' ' name)
+        (a + (sq_height / 10), b + (3 * sq_height / 5))
   | a, b when (a, b) = botleft_coord_of_topright ->
       moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
-      draw_string name
+      draw_and_move
+        (String.split_on_char ' ' name)
+        (a + (sq_height / 10), b + (3 * sq_height / 5))
   | a, b when b = botlefty ->
       moveto (a + (sq_width / 10)) (b + (3 * sq_height / 5));
-      draw_string name
+      draw_and_move
+        (String.split_on_char ' ' name)
+        (a + (sq_height / 10), b + (3 * sq_height / 5))
   | a, b when a = botleftx ->
       moveto (a + (sq_height / 10)) (b + (3 * sq_width / 5));
-      draw_string name
+      draw_and_move
+        (String.split_on_char ' ' name)
+        (a + (sq_height / 10), b + (3 * sq_height / 5))
   | a, b when b = temp ->
       moveto (a + (sq_width / 10)) (b + (3 * sq_height / 5));
-      draw_string name
+      draw_and_move
+        (String.split_on_char ' ' name)
+        (a + (sq_height / 10), b + (3 * sq_height / 5))
   | a, b when a = temp1 ->
       moveto (a + (sq_height / 10)) (b + (3 * sq_width / 5));
-      draw_string name
+      draw_and_move
+        (String.split_on_char ' ' name)
+        (a + (sq_height / 10), b + (3 * sq_height / 5))
   | a, b -> ()
 
 (* let tupelize_color (color : propertycolor option) = match color with
