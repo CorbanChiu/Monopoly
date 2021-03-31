@@ -7,10 +7,14 @@ type square
 (** The abstract type of value representing a color *)
 type propertycolor
 
+exception UnknownJSON
+
 val from_json : Yojson.Basic.t -> board
 
 (** [get_square b n] is a square that is in the nth position of b*)
 val get_square : board -> int -> square
+
+val find_square : board -> square -> int
 
 val namelist : board -> string list
 
@@ -25,3 +29,7 @@ val mortgagelist : board -> int option list
     "color grouping" (that which you need to own all properties to
     build) *)
 val propertygroup : board -> square -> square list
+
+val railroadgroup : board -> square list
+
+val utilitygroup : board -> square list

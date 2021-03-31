@@ -4,6 +4,8 @@ type paymentstruct = (int * int) list
 
 type propertycolor = int list
 
+exception UnknownJSON
+
 (* The type of values representing most square (can add houses, rent,
    etc)*)
 type traditional = {
@@ -12,6 +14,7 @@ type traditional = {
   tpaymentstruct : paymentstruct;
   tcolor : propertycolor;
   tmortgageprice : int;
+  buildingcost : int;
 }
 
 (* The type of values representing properties whose rent depends on a
@@ -89,6 +92,7 @@ let to_traditional j =
         j |> member "payment structure" |> to_assoc |> to_paymentstruct;
       tcolor = j |> member "color" |> to_color;
       tmortgageprice = j |> member "mortgage price" |> to_int;
+      buildingcost = j |> member "building cost" |> to_int;
     }
 
 let to_utility j =
@@ -119,18 +123,14 @@ let to_card j =
     }
 
 let to_misc j =
-  j |> member "type" |> to_string |> function
-  | "Free Parking" ->
-      Misc (FreeParking { fpname = j |> member "name" |> to_string })
-  | "Jail" -> Misc (Jail { jname = j |> member "name" |> to_string })
-  | "Go To Jail" ->
-      Misc (GoToJail { gtjname = j |> member "name" |> to_string })
-  | "Go" -> Misc (Go { gname = j |> member "name" |> to_string })
-  | "Income Tax" ->
-      Misc (IncomeTax { itname = j |> member "name" |> to_string })
-  | "Luxury Tax" ->
-      Misc (LuxuryTax { ltname = j |> member "name" |> to_string })
-  | _ -> failwith "Not a defined type"
+  j |> member "name" |> to_string |> function
+  | "Free Parking" -> Misc (FreeParking { fpname = "Free Parking" })
+  | "Jail" -> Misc (Jail { jname = "Jail" })
+  | "Go To Jail" -> Misc (GoToJail { gtjname = "Go To Jail" })
+  | "Go" -> Misc (Go { gname = "Go" })
+  | "Income Tax" -> Misc (IncomeTax { itname = "Income Tax" })
+  | "Luxury Tax" -> Misc (LuxuryTax { ltname = "Luxury Tax" })
+  | _ -> raise UnknownJSON
 
 let to_square j =
   j |> member "type" |> to_string |> function
@@ -139,11 +139,20 @@ let to_square j =
   | "Railroad" -> to_railroad (j |> member "square")
   | "Card" -> to_card (j |> member "square")
   | "Miscellaneous" -> to_misc (j |> member "square")
-  | _ -> failwith "Not a defined type"
+  | _ -> raise UnknownJSON
 
 let from_json j = j |> to_list |> List.map to_square
 
 let get_square b n = List.nth b n
+
+let square_equal sq1 sq2 = sq1 = sq2
+
+let find_square (b : board) sq =
+  let rec index_rec i = function
+    | [] -> failwith "doesn't exist"
+    | h :: t -> if h = sq then i else index_rec (i + 1) t
+  in
+  index_rec 0 b
 
 let get_misc_name = function
   | FreeParking m -> m.fpname
@@ -194,3 +203,11 @@ let test_color b1 b2 =
   | _ -> false
 
 let propertygroup b sq = List.filter (test_color sq) b
+
+let testrr = function Railroad sq -> true | _ -> false
+
+let railroadgroup b = List.filter testrr b
+
+let testutil = function Utility sq -> true | _ -> false
+
+let utilitygroup b = List.filter testutil b
