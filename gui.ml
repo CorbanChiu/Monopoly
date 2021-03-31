@@ -138,6 +138,7 @@ let rec draw_rects = function
   | h :: t -> ()
 
 let draw_names coord name =
+  set_color black;
   match coord with
   | a, b when (a, b) = botleft_coord_of_botright ->
       moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
@@ -169,15 +170,32 @@ let draw_names coord name =
    | Some lst -> (List.nth lst 0, List.nth lst 1, List.nth lst 2) | None
    -> (255, 255, 255) *)
 
-(* let draw_colors color coord = match tupelize_color color with | r, g,
-   b -> ( match coord with | x, y when y = botlefty -> set_color (rgb r
-   g b); fill_rect (x + 2) (y + (4 * sq_height / 5)) (sq_width - 4)
-   ((sq_height / 5) - 4) | x, y when x = botleftx -> set_color (rgb r g
-   b); fill_rect (x + (4 * sq_height / 5)) (y + 2) ((sq_width / 5) - 4)
-   (sq_height - 4) | x, y when y = temp -> set_color (rgb r g b);
-   fill_rect (x + 2) (y + 2) (sq_width - 4) ((sq_height / 5) - 4) | x, y
-   when x = temp1 -> set_color (rgb r g b); fill_rect (x + 2) (y + 2)
-   ((sq_height / 5) - 4) (sq_width - 4) | x, y -> ()) *)
+let draw_colors color coord =
+  match color with
+  | Some (r, g, b) -> (
+      match coord with
+      | x, y when y = botlefty ->
+          set_color (rgb r g b);
+          fill_rect
+            (x + 2) (*changed from x+2 to just x*)
+            (y + (4 * sq_height / 5))
+            (sq_width - 4) (sq_height / 5)
+          (* changed -4 to 0*)
+      | x, y when x = botleftx ->
+          set_color (rgb r g b);
+          fill_rect
+            (x + (4 * sq_height / 5))
+            (y + 2)
+            ((sq_height / 5) - 4)
+            (sq_width - 4)
+      | x, y when y = temp ->
+          set_color (rgb r g b);
+          fill_rect (x + 2) (y + 2) (sq_width - 4) ((sq_height / 5) - 4)
+      | x, y when x = temp1 ->
+          set_color (rgb r g b);
+          fill_rect (x + 2) (y + 2) ((sq_height / 5) - 4) (sq_width - 4)
+      | x, y -> ())
+  | None -> ()
 
 (* | (a, b) when (a, b) = botleft_coord_of_botright -> | (a, b) when (a,
    b) = botleft_coord -> | (a, b) when (a, b) = botleft_coord_of_topleft
@@ -207,10 +225,8 @@ let draw_background =
   set_window_title "Monopoly";
   set_line_width 2;
   draw_rects coords_list;
+  List.iter2 draw_colors color_list coords_list;
   List.iter2 draw_names coords_list name_list
-
-(* List.iter2 draw_colors color_list coords_list *)
-
 (* draw_rect botleftx botlefty side_len side_len; draw_sqlist
    draw_horizontal_rect botlefty horizontal_coord_list; draw_sqlist
    draw_horizontal_rect (botlefty + side_len - sq_height)

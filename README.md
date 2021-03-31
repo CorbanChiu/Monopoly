@@ -42,3 +42,8 @@ export DISPLAY="$(grep nameserver /etc/resolv.conf | sed 's/nameserver //'):0"
   - on the third window check "no Access Control"
 
 2) run Special Command above 
+
+## Ideas 
+
+1) Gui
+  - add a hover feature that prints info to the right of board that displays square info 
