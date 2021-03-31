@@ -4,8 +4,8 @@ type board
 (** The abstract type of value representing any given square*)
 type square
 
-(** The abstract type of value representing a color *)
-type propertycolor
+(** The type of value representing a color (r,g,b) *)
+type propertycolor = int * int * int
 
 exception UnknownJSON
 
@@ -24,6 +24,8 @@ val colorlist : board -> propertycolor option list
 
 (* TODO: is this really necessary to have here? *)
 val mortgagelist : board -> int option list
+
+val mortgage : square -> int option
 
 (** [propertygroup b sq] is the square list of squares part of the same
     "color grouping" (that which you need to own all properties to

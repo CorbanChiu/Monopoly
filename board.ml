@@ -200,6 +200,8 @@ let get_mortage = function
 (* Returns an int option list *)
 let mortgagelist b = List.map get_mortage b
 
+let mortgage = get_mortage
+
 let test_color b1 b2 =
   match (b1, b2) with
   | Traditional b1, Traditional b2 -> b1.tcolor = b2.tcolor

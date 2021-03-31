@@ -1,10 +1,12 @@
+(* ~/.ocamlinit *)
 #require "oUnit";;
 #require "bisect_ppx";;
 #require "graphics";;
 
 #directory "_build";;
 #load "board.cmo";;
-open Board
 #load "graphics.cma";;
-
+#load "player.cmo";;
+#load "gui.cmo"
+#load "cards.cmo";;
 (* define all modules here*)
