@@ -137,10 +137,13 @@ let rec draw_rects = function
   | [] -> ()
   | h :: t -> ()
 
-let top = ref true
+let top = ref false
 
-let decide_top_or_bottom (a, b) =
-  if !top then (a + 2, b + sq_width + 40) else (a + 2, b - 15)
+let decide_top_or_bottom (a, b) str_list_length =
+  if !top then
+    (a + 2, b + sq_height + ((10 * (str_list_length - 1)) + 1))
+    (*sq_height + (18 * str_list_length*)
+  else (a + 2, b - 15)
 
 let first_val_tuple (a, b) = match (a, b) with q, _ -> a
 
@@ -179,7 +182,10 @@ let draw_names coord name =
         (String.split_on_char ' ' name)
         (a + (sq_height / 10), b + (3 * sq_height / 5))
   | a, b when b = botlefty ->
-      let moved_coords = decide_top_or_bottom (a, botlefty) in
+      let moved_coords =
+        decide_top_or_bottom (a, botlefty)
+          (List.length (String.split_on_char ' ' name))
+      in
       moveto
         (first_val_tuple moved_coords)
         (second_val_tuple moved_coords);
@@ -193,7 +199,10 @@ let draw_names coord name =
         (String.split_on_char ' ' name)
         (botleftx - 75, b + sq_width - (sq_width / 3))
   | a, b when b = temp ->
-      let moved_coords = decide_top_or_bottom (a, temp) in
+      let moved_coords =
+        decide_top_or_bottom (a, temp)
+          (List.length (String.split_on_char ' ' name))
+      in
       moveto
         (first_val_tuple moved_coords)
         (second_val_tuple moved_coords);
@@ -207,10 +216,6 @@ let draw_names coord name =
         (String.split_on_char ' ' name)
         (a + (5 * sq_width / 3), b + sq_width - (sq_width / 3))
   | a, b -> ()
-
-(* let tupelize_color (color : propertycolor option) = match color with
-   | Some lst -> (List.nth lst 0, List.nth lst 1, List.nth lst 2) | None
-   -> (255, 255, 255) *)
 
 let draw_colors color coord =
   match color with
@@ -238,6 +243,37 @@ let draw_colors color coord =
           set_color (rgb r g b);
           fill_rect (x + 1) (y + 2) ((sq_height / 5) - 2) (sq_width - 3)
       | x, y -> ())
+  | None -> ()
+
+let draw_price price coord =
+  match price with
+  | Some p -> (
+      match coord with
+      | a, b when (a, b) = botleft_coord_of_botright ->
+          moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
+          draw_string (string_of_int p)
+      | a, b when (a, b) = botleft_coord ->
+          moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
+          draw_string (string_of_int p)
+      | a, b when (a, b) = botleft_coord_of_topleft ->
+          moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
+          draw_string (string_of_int p)
+      | a, b when (a, b) = botleft_coord_of_topright ->
+          moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
+          draw_string (string_of_int p)
+      | a, b when b = botlefty ->
+          moveto (a + (sq_width / 5)) (b + (sq_height / 2));
+          draw_string ("$" ^ string_of_int p)
+      | a, b when a = botleftx ->
+          moveto (a + (sq_height / 3)) (b + (sq_width / 2));
+          draw_string ("$" ^ string_of_int p)
+      | a, b when b = temp ->
+          moveto (a + (sq_width / 5)) (b + (sq_height / 2));
+          draw_string ("$" ^ string_of_int p)
+      | a, b when a = temp1 ->
+          moveto (a + (sq_height / 3)) (b + (sq_width / 2));
+          draw_string ("$" ^ string_of_int p)
+      | a, b -> ())
   | None -> ()
 
 (* | (a, b) when (a, b) = botleft_coord_of_botright -> | (a, b) when (a,
@@ -269,10 +305,11 @@ let draw_background =
   set_line_width 2;
   draw_rects coords_list;
   List.iter2 draw_colors color_list coords_list;
-  List.iter2 draw_names coords_list name_list
+  List.iter2 draw_names coords_list name_list;
+  List.iter2 draw_price price_list coords_list
 
-let move_index player dr =
-  List.nth coords_list (Player.position player + dr)
+(*let move_index player dr = List.nth coords_list (Player.position
+  player + dr)*)
 
 (*let draw_move = failwith "Unimplemented"*)
 
