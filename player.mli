@@ -4,9 +4,9 @@ val position : player -> int
 
 val cash : player -> int
 
-val properties : player -> Board.square list option
+val properties : player -> Board.square list
 
-val cards : player -> Cards.card list option
+val cards : player -> Cards.card list
 
 val jail : player -> bool
 
