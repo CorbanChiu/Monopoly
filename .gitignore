@@ -29,5 +29,5 @@ setup.log
 _opam/
 
 # bisect folder
-_coverage
+_coverage/
 *coverage
