@@ -4,4 +4,8 @@ type card
 
 type cardtype
 
-val topcard : cardpile -> cardtype -> card
+type cardstate
+
+val take_topcard : cardstate -> cardstate
+
+val from_json : Yojson.Basic.t -> cardstate

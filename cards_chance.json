@@ -1,0 +1,66 @@
+[
+  {
+    "name": "Advance to 'Go'.",
+    "description": "Collect $200."
+  },
+  {
+    "name": "Advance to Illinois Ave.",
+    "description": "If you pass Go, collect $200."
+  },
+  {
+    "name": "Advance to St. Charles Place.",
+    "description": "If you pass Go, collect $200."
+  },
+  {
+    "name": "Advance token to the nearest Utility.",
+    "description": "If unowned, you may buy it from the Bank. If owned, throw dice and pay owner a total 10 (ten) times the amount thrown."
+  },
+  {
+    "name": "Advance to the nearest Railroad.",
+    "description": "If unowned, you may buy it from the Bank. If owned, pay owner twice the rent to which they are otherwise entitled. If Railroad is unowned, you may buy it from the Bank."
+  },
+  {
+    "name": "Advance to the nearest Railroad.",
+    "description": "If unowned, you may buy it from the Bank. If owned, pay owner twice the rent to which they are otherwise entitled. If Railroad is unowned, you may buy it from the Bank."
+  },
+  {
+    "name": "Bank pays you dividend of $50.",
+    "description": ""
+  },
+  {
+    "name": "Get out of Jail Free.",
+    "description": "This card may be kept until needed, or traded/sold."
+  },
+  {
+    "name": "Go Back Three (3) Spaces.",
+    "description": ""
+  },
+  {
+    "name": "Go to Jail.",
+    "description": "Go directly to Jail. Do not pass GO, do not collect $200."
+  },
+  {
+    "name": "Make general repairs on all your property:",
+    "description": "For each house pay $25, For each hotel $100."
+  },
+  {
+    "name": "Pay poor tax of $15.",
+    "description": ""
+  },
+  {
+    "name": "Take a trip to Reading Railroad.",
+    "description": "If you pass Go, collect $200."
+  },
+  {
+    "name": "Take a walk on the Boardwalk.",
+    "description": "Advance token to Boardwalk."
+  },
+  {
+    "name": "You have been elected Chairman of the Board.",
+    "description": "Pay each player $50."
+  },
+  {
+    "name": "Your building matures.",
+    "description": "Receive $150."
+  }
+]

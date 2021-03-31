@@ -50,3 +50,7 @@ To make a new branch from VSCode go to branches -> "create new branch from..." -
 
 1) Gui
   - add a hover feature that prints info to the right of board that displays square info
+
+# For Demo
+- This is a lot more difficult than we thought- will likely not get to build an AI
+- Implementing actions of cards, selling certain properties.

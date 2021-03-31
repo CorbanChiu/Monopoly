@@ -4,7 +4,7 @@ open Board
 type coord = int * int
 
 (* replace with the name of the actual json file *)
-let j = Yojson.Basic.from_file "monopoly_board.json"
+let j = Yojson.Basic.from_file "board_monopoly.json"
 
 let window_dim = (1280, 700)
 

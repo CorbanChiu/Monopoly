@@ -1,0 +1,70 @@
+[
+  {
+    "name": "Advance to 'Go'.",
+    "description": "(Collect $200)."
+  },
+  {
+    "name": "Bank error in your favor.",
+    "description": "Collect $200."
+  },
+  {
+    "name": "Doctor's fees.",
+    "description": "Pay $50."
+  },
+  {
+    "name": "From sale of stock you get $50.",
+    "description": ""
+  },
+  {
+    "name": "Get Out of Jail Free.",
+    "description": "This card may be kept until needed or sold/traded."
+  },
+  {
+    "name": "Go to Jail.",
+    "description": "Go directly to jail. Do not pass Go, Do not collect $200."
+  },
+  {
+    "name": "Grand Opera Night.",
+    "description": "Collect $50 from every player for opening night seats."
+  },
+  {
+    "name": "Holiday Fund Matures.",
+    "description": "Receive $100."
+  },
+  {
+    "name": "Income Tax Refund.",
+    "description": "Collect $20."
+  },
+  {
+    "name": "It is your birthday.",
+    "description": "Collect $10 from every player."
+  },
+  {
+    "name": "Life insurance matures.",
+    "description": "Collect $100."
+  },
+  {
+    "name": "Hospital Fees.",
+    "description": "Pay $50."
+  },
+  {
+    "name": "School Fees.",
+    "description": "Pay $50."
+  },
+  {
+    "name": "Receive $25 consultancy fee.",
+    "description": ""
+  },
+  {
+    "name": "You are assessed for street repairs:",
+    "description": "Pay $40 per house and $115 per hotel you own."
+  },
+  {
+    "name": "You have won second prize in a beauty contest.",
+    "description": "Collect $10."
+  },
+  {
+    "name": "You inheret $100.",
+    "description": ""
+  },
+]

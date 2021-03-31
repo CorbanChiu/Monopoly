@@ -24,11 +24,11 @@ let pp_list pp_elt lst =
   in
   "[" ^ pp_elts lst ^ "]"
 
-let test_board = from_json (Yojson.Basic.from_file "test_board.json")
+let test_board = from_json (Yojson.Basic.from_file "board_test.json")
 
 (* ref: https://monopoly.fandom.com/wiki/Monopoly#American_board *)
 let monopoly_board =
-  from_json (Yojson.Basic.from_file "monopoly_board.json")
+  from_json (Yojson.Basic.from_file "board_monopoly.json")
 
 let get_square_test (name : string) (b : board) (n : int) (e : square) :
     test =

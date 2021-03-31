@@ -1,4 +1,4 @@
-MODULES=board author main gui player cards token
+MODULES=board author main gui player cards token pile
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)

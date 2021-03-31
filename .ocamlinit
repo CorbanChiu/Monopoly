@@ -9,4 +9,5 @@
 #load "player.cmo";;
 #load "gui.cmo"
 #load "cards.cmo";;
+#load "pile.cmo";;
 (* define all modules here*)
