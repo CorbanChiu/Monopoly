@@ -10,4 +10,5 @@
 #load "gui.cmo"
 #load "cards.cmo";;
 #load "pile.cmo";;
+#load "state.cmo";;
 (* define all modules here*)

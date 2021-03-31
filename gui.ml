@@ -227,6 +227,7 @@ let draw_background =
   draw_rects coords_list;
   List.iter2 draw_colors color_list coords_list;
   List.iter2 draw_names coords_list name_list
+
 (* draw_rect botleftx botlefty side_len side_len; draw_sqlist
    draw_horizontal_rect botlefty horizontal_coord_list; draw_sqlist
    draw_horizontal_rect (botlefty + side_len - sq_height)
