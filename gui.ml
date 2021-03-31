@@ -137,6 +137,15 @@ let rec draw_rects = function
   | [] -> ()
   | h :: t -> ()
 
+let top = ref true
+
+let decide_top_or_bottom (a, b) =
+  if !top then (a + 2, b + sq_width + 40) else (a + 2, b - 15)
+
+let first_val_tuple (a, b) = match (a, b) with q, _ -> a
+
+let second_val_tuple (a, b) = match (a, b) with _, q -> q
+
 let rec draw_and_move str_list (a, b) =
   match str_list with
   | [] -> ()
@@ -170,20 +179,28 @@ let draw_names coord name =
         (String.split_on_char ' ' name)
         (a + (sq_height / 10), b + (3 * sq_height / 5))
   | a, b when b = botlefty ->
-      moveto (a + (sq_width / 10)) (b + (3 * sq_height / 5));
+      let moved_coords = decide_top_or_bottom (a, botlefty) in
+      moveto
+        (first_val_tuple moved_coords)
+        (second_val_tuple moved_coords);
       draw_and_move
         (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (3 * sq_height / 5))
+        (first_val_tuple moved_coords, second_val_tuple moved_coords);
+      top.contents <- not !top
   | a, b when a = botleftx ->
       moveto (a + (sq_height / 10)) (b + (2 * sq_width / 5));
       draw_and_move
         (String.split_on_char ' ' name)
         (a + (sq_height / 10), b + (2 * sq_height / 5))
   | a, b when b = temp ->
-      moveto (a + (sq_width / 10)) (b + (3 * sq_height / 5));
+      let moved_coords = decide_top_or_bottom (a, temp) in
+      moveto
+        (first_val_tuple moved_coords)
+        (second_val_tuple moved_coords);
       draw_and_move
         (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (3 * sq_height / 5))
+        (first_val_tuple moved_coords, second_val_tuple moved_coords);
+      top.contents <- not !top
   | a, b when a = temp1 ->
       moveto (a + (sq_height / 10)) (b + (2 * sq_width / 5));
       draw_and_move
@@ -257,7 +274,7 @@ let draw_background =
 let move_index player dr =
   List.nth coords_list (Player.position player + dr)
 
-let draw_move = failwith "Unimplemented"
+(*let draw_move = failwith "Unimplemented"*)
 
 (* draw_rect botleftx botlefty side_len side_len; draw_sqlist
    draw_horizontal_rect botlefty horizontal_coord_list; draw_sqlist
