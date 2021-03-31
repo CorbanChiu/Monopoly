@@ -2,7 +2,7 @@ open Yojson.Basic.Util
 
 type paymentstruct = (int * int) list
 
-type propertycolor = int list
+type propertycolor = int * int * int
 
 exception UnknownJSON
 
@@ -80,8 +80,11 @@ let rec to_paymentstruct = function
       (a |> int_of_string, b |> to_int) :: to_paymentstruct t
   | [] -> []
 
-(* TODO: changed color type *)
-let to_color j = j |> to_list |> List.map to_int
+let tuple_of_list lst =
+  let _ = assert (List.length lst = 3) in
+  (List.nth lst 0, List.nth lst 1, List.nth lst 2)
+
+let to_color j = j |> to_list |> List.map to_int |> tuple_of_list
 
 let to_traditional j =
   Traditional
