@@ -14,6 +14,10 @@ let gety = function a, b -> b
 let botleft_coord =
   ((getx window_dim - side_len) / 2, (gety window_dim - side_len) / 2)
 
+let botleftx = getx botleft_coord
+
+let botlefty = gety botleft_coord
+
 let sq_width = 2 * side_len / 24
 
 let sq_height = 3 * side_len / 24
@@ -23,11 +27,11 @@ let sq_height = 3 * side_len / 24
 
 let horizontal_coord_list =
   List.map (( * ) sq_width) [ 0; 1; 2; 3; 4; 5; 6; 7; 8 ]
-  |> List.map (( + ) (getx botleft_coord + sq_height))
+  |> List.map (( + ) (botleftx + sq_height))
 
 let vertical_coord_list =
   List.map (( * ) sq_width) [ 0; 1; 2; 3; 4; 5; 6; 7; 8 ]
-  |> List.map (( + ) (gety botleft_coord + sq_height))
+  |> List.map (( + ) (botlefty + sq_height))
 
 let draw_horizontal_rect x y = draw_rect x y sq_width sq_height
 
@@ -40,17 +44,15 @@ let rec draw_sqlist f y lst =
       f h y;
       draw_sqlist f y t
 
-let draw_board =
+let draw_background =
   open_graph " 1280x700+100-100";
   set_window_title "Monopoly";
-  draw_rect (getx botleft_coord) (gety botleft_coord) side_len side_len;
-  draw_sqlist draw_horizontal_rect (gety botleft_coord)
-    horizontal_coord_list;
+  draw_rect botleftx botlefty side_len side_len;
+  draw_sqlist draw_horizontal_rect botlefty horizontal_coord_list;
   draw_sqlist draw_horizontal_rect
-    (gety botleft_coord + side_len - sq_height)
+    (botlefty + side_len - sq_height)
     horizontal_coord_list;
-  draw_sqlist draw_vertical_rect (getx botleft_coord)
-    vertical_coord_list;
+  draw_sqlist draw_vertical_rect botleftx vertical_coord_list;
   draw_sqlist draw_vertical_rect
-    (getx botleft_coord + side_len - sq_height)
+    (botleftx + side_len - sq_height)
     vertical_coord_list
