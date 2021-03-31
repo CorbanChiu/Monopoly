@@ -188,10 +188,10 @@ let draw_names coord name =
         (first_val_tuple moved_coords, second_val_tuple moved_coords);
       top.contents <- not !top
   | a, b when a = botleftx ->
-      moveto (a + (sq_height / 10)) (b + (2 * sq_width / 5));
+      moveto (botleftx - 30) (b + sq_width - (sq_width / 3));
       draw_and_move
         (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (2 * sq_height / 5))
+        (botleftx - 75, b + sq_width - (sq_width / 3))
   | a, b when b = temp ->
       let moved_coords = decide_top_or_bottom (a, temp) in
       moveto
@@ -202,10 +202,10 @@ let draw_names coord name =
         (first_val_tuple moved_coords, second_val_tuple moved_coords);
       top.contents <- not !top
   | a, b when a = temp1 ->
-      moveto (a + (sq_height / 10)) (b + (2 * sq_width / 5));
+      moveto (a + (5 * sq_width / 3)) (b + sq_width - (sq_width / 3));
       draw_and_move
         (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (2 * sq_height / 5))
+        (a + (5 * sq_width / 3), b + sq_width - (sq_width / 3))
   | a, b -> ()
 
 (* let tupelize_color (color : propertycolor option) = match color with
