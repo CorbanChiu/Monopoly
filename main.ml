@@ -8,7 +8,7 @@ open Gui
 (* let ft : unit list = List.map ourdraw_rect coord_list *)
 
 let main () =
-  draw_board;
+  draw_background;
   ignore (read_key ())
 
 (* Key_pressed *)
