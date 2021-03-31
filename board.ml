@@ -1,57 +1,196 @@
+open Yojson.Basic.Util
+
 type paymentstruct = (int * int) list
 
-(** The type of values representing most square (can add houses, rent,
-    etc)*)
+type propertycolor = int list
+
+(* The type of values representing most square (can add houses, rent,
+   etc)*)
 type traditional = {
-  name : string;
-  pp : int;
-  paymentstruct : paymentstruct;
+  tname : string;
+  tpp : int;
+  tpaymentstruct : paymentstruct;
+  tcolor : propertycolor;
+  tmortgageprice : int;
 }
 
-(** The type of values representing properties whose rent depends on a
-    dice roll*)
+(* The type of values representing properties whose rent depends on a
+   dice roll*)
 type utility = {
-  name : string;
-  pp : int;
+  uname : string;
+  upp : int;
+  upaymentstruct : paymentstruct;
+  umortgageprice : int;
 }
 
-(** The type of values representing properties whose rent depends on
-    ownership of others*)
+(* The type of values representing properties whose rent depends on
+   ownership of others*)
 type railroad = {
-  name : string;
-  pp : int;
+  rname : string;
+  rpp : int;
+  rpaymentstruct : paymentstruct;
+  rmortgageprice : int;
 }
 
-(** The type of values representing squares that give the player a card*)
-type card = { name : string }
+(* The type of values representing squares that give the player a card*)
+type card = {
+  cname : string;
+  ctype : string;
+}
 
-(** The type of values that do not fall into the above categories,
-    namely Free Parking, Jail, Go to Jail, Go, Income Tax, Luxury Tax*)
+type freeparking = { fpname : string }
+
+type jail = { jname : string }
+
+type gotojail = { gtjname : string }
+
+type go = { gname : string }
+
+type incometax = { itname : string }
+
+type luxurytax = { ltname : string }
+
+(* The type of values that do not fall into the above categories, namely
+   Free Parking, Jail, Go to Jail, Go, Income Tax, Luxury Tax*)
 type misc =
-  | FreeParking
-  | Jail
-  | GoToJail
-  | Go
-  | IncomeTax
-  | LuxuryTax
+  | FreeParking of freeparking
+  | Jail of jail
+  | GoToJail of gotojail
+  | Go of go
+  | IncomeTax of incometax
+  | LuxuryTax of luxurytax
 
-(** TODO: add documentation*)
+(**TODO: add documentation*)
 type square =
-  | Traditional
-  | Utility
-  | Railroad
-  | Card
-  | Misc
+  | Traditional of traditional
+  | Utility of utility
+  | Railroad of railroad
+  | Card of card
+  | Misc of misc
 
-(** TODO: add documentation*)
+(* TODO: add documentation*)
 type board = square list
 
-let get_square b n = failwith "unimplemented"
+(* TODO: bad *)
+let rec to_paymentstruct = function
+  | (a, b) :: t ->
+      (a |> int_of_string, b |> to_int) :: to_paymentstruct t
+  | [] -> []
 
-let namelist b = failwith "unimplemented"
+(* TODO: changed color type *)
+let to_color j = j |> to_list |> List.map to_int
 
-let pricelist b = failwith "unimplemented"
+let to_traditional j =
+  Traditional
+    {
+      tname = j |> member "name" |> to_string;
+      tpp = j |> member "purchase price" |> to_int;
+      tpaymentstruct =
+        j |> member "payment structure" |> to_assoc |> to_paymentstruct;
+      tcolor = j |> member "color" |> to_color;
+      tmortgageprice = j |> member "mortgage price" |> to_int;
+    }
 
-let colorlist b = failwith "unimplemented"
+let to_utility j =
+  Utility
+    {
+      uname = j |> member "name" |> to_string;
+      upp = j |> member "purchase price" |> to_int;
+      upaymentstruct =
+        j |> member "payment structure" |> to_assoc |> to_paymentstruct;
+      umortgageprice = j |> member "mortgage price" |> to_int;
+    }
 
-let developlist b = failwith "unimplemented"
+let to_railroad j =
+  Railroad
+    {
+      rname = j |> member "name" |> to_string;
+      rpp = j |> member "purchase price" |> to_int;
+      rpaymentstruct =
+        j |> member "payment structure" |> to_assoc |> to_paymentstruct;
+      rmortgageprice = j |> member "mortgage price" |> to_int;
+    }
+
+let to_card j =
+  Card
+    {
+      cname = j |> member "name" |> to_string;
+      ctype = j |> member "card type" |> to_string;
+    }
+
+let to_misc j =
+  j |> member "type" |> to_string |> function
+  | "Free Parking" ->
+      Misc (FreeParking { fpname = j |> member "name" |> to_string })
+  | "Jail" -> Misc (Jail { jname = j |> member "name" |> to_string })
+  | "Go To Jail" ->
+      Misc (GoToJail { gtjname = j |> member "name" |> to_string })
+  | "Go" -> Misc (Go { gname = j |> member "name" |> to_string })
+  | "Income Tax" ->
+      Misc (IncomeTax { itname = j |> member "name" |> to_string })
+  | "Luxury Tax" ->
+      Misc (LuxuryTax { ltname = j |> member "name" |> to_string })
+  | _ -> failwith "Not a defined type"
+
+let to_square j =
+  j |> member "type" |> to_string |> function
+  | "Traditional" -> to_traditional (j |> member "square")
+  | "Utility" -> to_utility (j |> member "square")
+  | "Railroad" -> to_railroad (j |> member "square")
+  | "Card" -> to_card (j |> member "square")
+  | "Miscellaneous" -> to_misc (j |> member "square")
+  | _ -> failwith "Not a defined type"
+
+let from_json j = j |> to_list |> List.map to_square
+
+let get_square b n = List.nth b n
+
+let get_misc_name = function
+  | FreeParking m -> m.fpname
+  | Jail m -> m.jname
+  | GoToJail m -> m.gtjname
+  | Go m -> m.gname
+  | IncomeTax m -> m.itname
+  | LuxuryTax m -> m.ltname
+
+let get_name = function
+  | Traditional sq -> sq.tname
+  | Utility sq -> sq.uname
+  | Railroad sq -> sq.rname
+  | Card sq -> sq.cname
+  | Misc sq -> get_misc_name sq
+
+(* Returns a string list *)
+let namelist b = List.map get_name b
+
+let get_price = function
+  | Traditional sq -> Some sq.tpp
+  | Utility sq -> Some sq.upp
+  | Railroad sq -> Some sq.rpp
+  | Card sq -> None
+  | Misc sq -> None
+
+(* Returns an int option list for the purchase price *)
+let pricelist b = List.map get_price b
+
+let get_color = function Traditional sq -> Some sq.tcolor | _ -> None
+
+(* Returns a propertycolor option list *)
+let colorlist b = List.map get_color b
+
+let get_mortage = function
+  | Traditional sq -> Some sq.tmortgageprice
+  | Utility sq -> Some sq.umortgageprice
+  | Railroad sq -> Some sq.rmortgageprice
+  | Card sq -> None
+  | Misc sq -> None
+
+(* Returns an int option list *)
+let mortgagelist b = List.map get_mortage b
+
+let test_color b1 b2 =
+  match (b1, b2) with
+  | Traditional b1, Traditional b2 -> b1.tcolor = b2.tcolor
+  | _ -> false
+
+let propertygroup b sq = List.filter (test_color sq) b

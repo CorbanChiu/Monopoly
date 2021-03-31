@@ -1,0 +1,44 @@
+[
+  {
+    "type": "Traditional",
+    "square": {
+      "name": "Boardwalk",
+      "purchase price": 580,
+      "payment structure": {
+        "0": 10,
+        "1": 100,
+        "2": 200,
+        "3": 300,
+        "4": 400,
+        "5": 500
+      },
+      "color": [
+        255,
+        255,
+        255
+      ],
+      "mortgage price": 390
+    }
+  },
+  {
+    "type": "Traditional",
+    "square": {
+      "name": "Park Place",
+      "purchase price": 550,
+      "payment structure": {
+        "0": 9,
+        "1": 90,
+        "2": 190,
+        "3": 290,
+        "4": 390,
+        "5": 490
+      },
+      "color": [
+        255,
+        255,
+        255
+      ],
+      "mortgage price": 370
+    }
+  }
+]
