@@ -5,7 +5,7 @@ type player = {
   cards : Cards.card list option;
   jail : bool;
   token : Token.token option;
-  name : player;
+  name : string option;
   bankrupt : bool;
 }
 
