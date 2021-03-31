@@ -1,8 +1,8 @@
 type player = {
   pos : int;
   cash : int;
-  properties : Board.square list option;
-  cards : Cards.card list option;
+  properties : Board.square list;
+  cards : Cards.card list;
   jail : bool;
   token : Token.token option;
   name : string option;
@@ -33,9 +33,6 @@ let intlist_of_squarelist lst = List.map int_of_square lst
 (* TODO: need to include houses *)
 let net_worth player =
   player.cash
-  +
-  match player.properties with
-  | None -> 0
-  | Some lst -> sum_mortgage_value (intlist_of_squarelist lst)
+  + sum_mortgage_value (intlist_of_squarelist player.properties)
 
 let bankrupt player = net_worth player >= 0
