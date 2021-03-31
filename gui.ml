@@ -201,23 +201,24 @@ let draw_colors color coord =
       | x, y when y = botlefty ->
           set_color (rgb r g b);
           fill_rect
-            (x + 2) (*changed from x+2 to just x*)
+            (x + 1) (*changed from x+2 to just x*)
             (y + (4 * sq_height / 5))
-            (sq_width - 4) (sq_height / 5)
+            (sq_width - 3)
+            ((sq_height / 5) - 1)
           (* changed -4 to 0*)
       | x, y when x = botleftx ->
           set_color (rgb r g b);
           fill_rect
             (x + (4 * sq_height / 5))
             (y + 2)
-            ((sq_height / 5) - 4)
-            (sq_width - 4)
+            ((sq_height / 5) - 2)
+            (sq_width - 3)
       | x, y when y = temp ->
           set_color (rgb r g b);
-          fill_rect (x + 2) (y + 2) (sq_width - 4) ((sq_height / 5) - 4)
+          fill_rect (x + 1) (y + 2) (sq_width - 3) ((sq_height / 5) - 2)
       | x, y when x = temp1 ->
           set_color (rgb r g b);
-          fill_rect (x + 2) (y + 2) ((sq_height / 5) - 4) (sq_width - 4)
+          fill_rect (x + 1) (y + 2) ((sq_height / 5) - 2) (sq_width - 3)
       | x, y -> ())
   | None -> ()
 
