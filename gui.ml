@@ -2,18 +2,36 @@ open Graphics
 
 type coord = int * int
 
+let window_dim = (1280, 700)
+
+(* must be multiple of 24 *)
+let side_len = 600
+
+let getx = function a, b -> a
+
+let gety = function a, b -> b
+
+let botleft_coord =
+  ((getx window_dim - side_len) / 2, (gety window_dim - side_len) / 2)
+
+let sq_width = 2 * side_len / 24
+
+let sq_height = 3 * side_len / 24
+
 (* let c = [ ( "GO", "MEDITERRANEAN AVE", "COMMUNITY CHEST", "BALTIC
    AVE", "INCOME TAX", "READING RAILROAD" ); ] *)
 
 let horizontal_coord_list =
-  [ 815; 765; 715; 665; 615; 565; 515; 465; 415 ]
+  List.map (( * ) sq_width) [ 0; 1; 2; 3; 4; 5; 6; 7; 8 ]
+  |> List.map (( + ) (getx botleft_coord + sq_height))
 
 let vertical_coord_list =
-  [ 125; 175; 225; 275; 325; 375; 425; 475; 525 ]
+  List.map (( * ) sq_width) [ 0; 1; 2; 3; 4; 5; 6; 7; 8 ]
+  |> List.map (( + ) (gety botleft_coord + sq_height))
 
-let draw_horizontal_rect x y = draw_rect x y 50 75
+let draw_horizontal_rect x y = draw_rect x y sq_width sq_height
 
-let draw_vertical_rect x y = draw_rect y x 75 50
+let draw_vertical_rect x y = draw_rect y x sq_height sq_width
 
 let rec draw_sqlist f y lst =
   match lst with
@@ -25,8 +43,14 @@ let rec draw_sqlist f y lst =
 let draw_board =
   open_graph " 1280x700+100-100";
   set_window_title "Monopoly";
-  draw_rect 340 50 600 600;
-  draw_sqlist draw_horizontal_rect 50 horizontal_coord_list;
-  draw_sqlist draw_horizontal_rect 575 horizontal_coord_list;
-  draw_sqlist draw_vertical_rect 340 vertical_coord_list;
-  draw_sqlist draw_vertical_rect 865 vertical_coord_list
+  draw_rect (getx botleft_coord) (gety botleft_coord) side_len side_len;
+  draw_sqlist draw_horizontal_rect (gety botleft_coord)
+    horizontal_coord_list;
+  draw_sqlist draw_horizontal_rect
+    (gety botleft_coord + side_len - sq_height)
+    horizontal_coord_list;
+  draw_sqlist draw_vertical_rect (getx botleft_coord)
+    vertical_coord_list;
+  draw_sqlist draw_vertical_rect
+    (getx botleft_coord + side_len - sq_height)
+    vertical_coord_list

@@ -30,3 +30,7 @@ Mac OS: sudo port install pkgconfig
 Windows: apt install pkg-config
 
 Graphics Package: opam install graphics
+
+## Special Commands 
+export DISPLAY="$(grep nameserver /etc/resolv.conf | sed 's/nameserver //'):0"
+
