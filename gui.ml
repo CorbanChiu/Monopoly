@@ -141,6 +141,7 @@ let rec draw_and_move str_list (a, b) =
   match str_list with
   | [] -> ()
   | h :: t ->
+      moveto a b;
       draw_string h;
       moveto a (b - 10);
       draw_and_move t (a, b - 10)
@@ -174,20 +175,20 @@ let draw_names coord name =
         (String.split_on_char ' ' name)
         (a + (sq_height / 10), b + (3 * sq_height / 5))
   | a, b when a = botleftx ->
-      moveto (a + (sq_height / 10)) (b + (3 * sq_width / 5));
+      moveto (a + (sq_height / 10)) (b + (2 * sq_width / 5));
       draw_and_move
         (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (3 * sq_height / 5))
+        (a + (sq_height / 10), b + (2 * sq_height / 5))
   | a, b when b = temp ->
       moveto (a + (sq_width / 10)) (b + (3 * sq_height / 5));
       draw_and_move
         (String.split_on_char ' ' name)
         (a + (sq_height / 10), b + (3 * sq_height / 5))
   | a, b when a = temp1 ->
-      moveto (a + (sq_height / 10)) (b + (3 * sq_width / 5));
+      moveto (a + (sq_height / 10)) (b + (2 * sq_width / 5));
       draw_and_move
         (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (3 * sq_height / 5))
+        (a + (sq_height / 10), b + (2 * sq_height / 5))
   | a, b -> ()
 
 (* let tupelize_color (color : propertycolor option) = match color with
@@ -201,23 +202,24 @@ let draw_colors color coord =
       | x, y when y = botlefty ->
           set_color (rgb r g b);
           fill_rect
-            (x + 2) (*changed from x+2 to just x*)
+            (x + 1) (*changed from x+2 to just x*)
             (y + (4 * sq_height / 5))
-            (sq_width - 4) (sq_height / 5)
+            (sq_width - 3)
+            ((sq_height / 5) - 1)
           (* changed -4 to 0*)
       | x, y when x = botleftx ->
           set_color (rgb r g b);
           fill_rect
-            (x + (4 * sq_height / 5))
+            (x + (4 * sq_height / 5) - 1)
             (y + 2)
-            ((sq_height / 5) - 4)
-            (sq_width - 4)
+            ((sq_height / 5) - 1)
+            (sq_width - 3)
       | x, y when y = temp ->
           set_color (rgb r g b);
-          fill_rect (x + 2) (y + 2) (sq_width - 4) ((sq_height / 5) - 4)
+          fill_rect (x + 1) (y + 2) (sq_width - 3) ((sq_height / 5) - 1)
       | x, y when x = temp1 ->
           set_color (rgb r g b);
-          fill_rect (x + 2) (y + 2) ((sq_height / 5) - 4) (sq_width - 4)
+          fill_rect (x + 1) (y + 2) ((sq_height / 5) - 1) (sq_width - 3)
       | x, y -> ())
   | None -> ()
 
