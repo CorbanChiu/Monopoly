@@ -228,6 +228,11 @@ let draw_background =
   List.iter2 draw_colors color_list coords_list;
   List.iter2 draw_names coords_list name_list
 
+let move_index player dr =
+  List.nth coords_list (Player.position player + dr)
+
+let draw_move = failwith "Unimplemented"
+
 (* draw_rect botleftx botlefty side_len side_len; draw_sqlist
    draw_horizontal_rect botlefty horizontal_coord_list; draw_sqlist
    draw_horizontal_rect (botlefty + side_len - sq_height)
