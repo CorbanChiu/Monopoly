@@ -10,7 +10,7 @@ type rect = {
   orient : string;
 }
 
-let const_window_size = (1100, 800)
+let const_window_size = (1100, 700)
 
 let const_buffer = snd const_window_size / 20
 
@@ -24,7 +24,7 @@ let const_board_width = const_valid_height
 
 let const_w = const_board_width / 12
 
-let const_h = const_board_height / 9
+let const_h = const_board_height / 8
 
 let const_d = const_h - const_w
 
@@ -32,112 +32,120 @@ let const_l =
   ((const_valid_width - const_board_width) / 2) + const_buffer
 
 let const_r =
-  ((const_valid_width - const_board_width) / 2)
-  + const_board_width + const_buffer
+  ((const_valid_width - const_board_width) / 2) + const_board_width
 
-let const_t = const_valid_height + const_buffer
+let const_t = const_buffer + const_board_height
 
-(* int_of_float ((float_of_int const_t -. float_of_int const_b) /. 11.) *)
+let const_b = const_buffer
 
-(* int_of_float (float_of_int const_w *. 1.5) *)
+let const_color_h = const_h / 5
 
 let const_board_path = "board_monopoly.json"
 
-let name_lst =
-  Board.namelist
-    (Board.from_json (Yojson.Basic.from_file const_board_path))
+let board = Board.from_json (Yojson.Basic.from_file const_board_path)
+
+let name_lst = Board.namelist board
+
+let color_lst = Board.colorlist board
 
 let construct_rect (n : int) =
   match n with
   | bottomright when n = 0 ->
       {
-        lb = (const_r - const_h, const_buffer);
-        lt = (const_r - const_h, const_buffer + const_h);
-        rb = (const_r, const_buffer);
-        rt = (const_r, const_buffer + const_h);
+        lb = (const_l + (9 * const_w) + const_h, const_b);
+        lt = (const_l + (9 * const_w) + const_h, const_b + const_h);
+        rb = (const_l + (9 * const_w) + (2 * const_h), const_b);
+        rt = (const_l + (9 * const_w) + (2 * const_h), const_b + const_h);
         orient = "corner";
       }
   | bottom when n < 10 ->
       {
-        lb =
-          ( const_l + ((10 - (n mod 10)) * const_w) + const_d,
-            const_buffer );
+        lb = (const_l + ((9 - (n mod 10)) * const_w) + const_h, const_b);
         lt =
-          ( const_l + ((10 - (n mod 10)) * const_w) + const_d,
-            const_buffer + const_h );
+          ( const_l + ((9 - (n mod 10)) * const_w) + const_h,
+            const_b + const_h );
         rb =
-          ( const_l + ((10 - (n mod 10)) * const_w) + const_w + const_d,
-            const_buffer );
+          ( const_l + ((9 - (n mod 10)) * const_w) + const_w + const_h,
+            const_b );
         rt =
-          ( const_l + ((10 - (n mod 10)) * const_w) + const_w + const_d,
-            const_buffer + const_h );
+          ( const_l + ((9 - (n mod 10)) * const_w) + const_w + const_h,
+            const_b + const_h );
         orient = "bot";
       }
   | bottomleft when n = 10 ->
       {
-        lb = (const_l, const_buffer);
-        lt = (const_l, const_buffer + const_h);
-        rb = (const_l + const_h, const_buffer);
-        rt = (const_l + const_h, const_buffer + const_h);
+        lb = (const_l, const_b);
+        lt = (const_l, const_b + const_h);
+        rb = (const_l + const_h, const_b);
+        rt = (const_l + const_h, const_b + const_h);
         orient = "corner";
       }
   | left when n < 20 ->
       {
-        lb = (const_l, const_buffer + (n mod 10 * const_w) + const_d);
+        lb = (const_l, const_b + (n mod 10 * const_w) + const_d);
         lt =
-          ( const_l,
-            const_buffer + (n mod 10 * const_w) + const_w + const_d );
+          (const_l, const_b + (n mod 10 * const_w) + const_w + const_d);
         rb =
-          ( const_l + const_h,
-            const_buffer + (n mod 10 * const_w) + const_d );
+          (const_l + const_h, const_b + (n mod 10 * const_w) + const_d);
         rt =
           ( const_l + const_h,
-            const_buffer + (n mod 10 * const_w) + const_w + const_d );
+            const_b + (n mod 10 * const_w) + const_w + const_d );
         orient = "left";
       }
   | topleft when n = 20 ->
       {
-        lb = (const_l, const_t - const_h - const_d);
-        lt = (const_l, const_t - const_d);
-        rb = (const_l + const_h, const_t - const_h - const_d);
-        rt = (const_l + const_h, const_t - const_d);
+        lb = (const_l, const_b + (9 * const_w) + const_h);
+        lt = (const_l, const_b + (9 * const_w) + (2 * const_h));
+        rb = (const_l + const_h, const_b + (9 * const_w) + const_h);
+        rt = (const_l + const_h, const_b + (9 * const_w) + (2 * const_h));
         orient = "corner";
       }
   | top when n < 30 ->
       {
         lb =
           ( const_l + const_d + (n mod 10 * const_w),
-            const_t - const_h - const_d );
+            const_b + (9 * const_w) + const_h );
         lt =
-          (const_l + const_d + (n mod 10 * const_w), const_t - const_d);
+          ( const_l + const_d + (n mod 10 * const_w),
+            const_b + (9 * const_w) + (2 * const_h) );
         rb =
           ( const_l + const_d + (n mod 10 * const_w) + const_w,
-            const_t - const_d );
+            const_b + (9 * const_w) + const_h );
         rt =
           ( const_l + const_d + (n mod 10 * const_w) + const_w,
-            const_t - const_d );
+            const_b + (9 * const_w) + (2 * const_h) );
         orient = "top";
       }
   | topright when n = 30 ->
       {
-        lb = (const_r - const_h, const_t - const_h - const_d);
-        lt = (const_r - const_h, const_t - const_d);
-        rb = (const_r, const_t - const_h - const_d);
-        rt = (const_r, const_t - const_d);
+        lb =
+          ( const_l + (9 * const_w) + const_h,
+            const_b + (9 * const_w) + const_h );
+        lt =
+          ( const_l + (9 * const_w) + const_h,
+            const_b + (9 * const_w) + (2 * const_h) );
+        rb =
+          ( const_l + (9 * const_w) + (2 * const_h),
+            const_b + (9 * const_w) + const_h );
+        rt =
+          ( const_l + (9 * const_w) + (2 * const_h),
+            const_b + (9 * const_w) + (2 * const_h) );
         orient = "corner";
       }
   | right when n < 40 ->
       {
         lb =
-          ( const_r - const_h,
-            const_t - (n mod 10 * const_w) - const_w - (2 * const_d) );
+          ( const_l + (9 * const_w) + const_h,
+            const_b + const_h + ((9 - (n mod 10)) * const_w) );
         lt =
-          ( const_r - const_h,
-            const_t - (n mod 10 * const_w) - (2 * const_d) );
+          ( const_l + (9 * const_w) + const_h,
+            const_b + const_h + ((10 - (n mod 10)) * const_w) );
         rb =
-          ( const_r,
-            const_t - (n mod 10 * const_w) - const_w - (2 * const_d) );
-        rt = (const_r, const_t - (n mod 10 * const_w) - (2 * const_d));
+          ( const_l + (9 * const_w) + (2 * const_h),
+            const_b + const_h + ((9 - (n mod 10)) * const_w) );
+        rt =
+          ( const_l + (9 * const_w) + (2 * const_h),
+            const_b + const_h + ((10 - (n mod 10)) * const_w) );
         orient = "right";
       }
   | _ -> failwith "bad shape"
@@ -146,11 +154,13 @@ let get_x r = fst r.lb
 
 let get_y r = snd r.lb
 
-let abs_val value = if value < 0 then -value else value
+let x = fst
 
-let get_w r = fst r.rb - fst r.lb |> abs_val
+let y = snd
 
-let get_h r = snd r.lt - snd r.lb |> abs_val
+let get_w r = fst r.rb - fst r.lb
+
+let get_h r = snd r.lt - snd r.lb
 
 let coords = List.init 40 construct_rect
 
@@ -178,12 +188,65 @@ let coords = List.init 40 construct_rect
    let print_rt = print_cdlst (List.map get_rt coords) *)
 
 let draw_one_rect rect =
+  set_color (rgb 0 0 0);
   draw_rect (get_x rect) (get_y rect) (get_w rect) (get_h rect)
 
-let draw_all_rects cds = List.iter draw_one_rect cds
+let draw_all_rects = List.iter draw_one_rect
+
+let color_area rect =
+  match rect with
+  | bot when rect.orient = "bot" ->
+      Some
+        {
+          lb = (x rect.lt, y rect.lt - const_color_h);
+          lt = rect.lt;
+          rb = (x rect.rt, y rect.rt - const_color_h);
+          rt = rect.rt;
+          orient = "color";
+        }
+  | left when rect.orient = "left" ->
+      Some
+        {
+          lb = (x rect.rb - const_color_h, y rect.rb);
+          lt = (x rect.rt - const_color_h, y rect.rt);
+          rb = rect.rb;
+          rt = rect.rt;
+          orient = "color";
+        }
+  | top when rect.orient = "top" ->
+      Some
+        {
+          lb = rect.lb;
+          lt = (x rect.lb, y rect.lb + const_color_h);
+          rb = rect.rb;
+          rt = (x rect.rb, y rect.lb + const_color_h);
+          orient = "color";
+        }
+  | right when rect.orient = "right" ->
+      Some
+        {
+          lb = rect.lb;
+          lt = rect.lt;
+          rb = (x rect.lb + const_color_h, y rect.lb);
+          rt = (x rect.lt + const_color_h, y rect.lt);
+          orient = "color";
+        }
+  | _ -> None
+
+let draw_one_color rect c =
+  match c with
+  | Some (r, g, b) -> (
+      set_color (rgb r g b);
+      match color_area rect with
+      | Some r -> fill_rect (get_x r) (get_y r) (get_w r) (get_h r)
+      | None -> ())
+  | None -> ()
+
+let draw_all_colors rlst clst = List.iter2 draw_one_color rlst clst
 
 let draw_background =
-  open_graph " 1440x750+100-100";
+  open_graph " 1100x700+100-100";
   set_window_title "Monopoly";
   set_line_width 2;
-  List.iter draw_one_rect coords
+  draw_all_colors coords color_lst;
+  draw_all_rects coords
