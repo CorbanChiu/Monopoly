@@ -139,6 +139,18 @@ let rec draw_rects = function
   | [] -> ()
   | h :: t -> ()
 
+let top = ref false
+
+let decide_top_or_bottom (a, b) str_list_length =
+  if !top then
+    (a + 2, b + sq_height + ((10 * (str_list_length - 1)) + 1))
+    (*sq_height + (18 * str_list_length*)
+  else (a + 2, b - 15)
+
+let first_val_tuple (a, b) = match (a, b) with q, _ -> a
+
+let second_val_tuple (a, b) = match (a, b) with _, q -> q
+
 let rec draw_and_move str_list (a, b) =
   match str_list with
   | [] -> ()
@@ -172,25 +184,39 @@ let draw_names coord name =
         (String.split_on_char ' ' name)
         (a + (sq_height / 10), b + (3 * sq_height / 5))
   | a, b when b = botlefty ->
-      moveto (a + (sq_width / 10)) (b + (3 * sq_height / 5));
+      let moved_coords =
+        decide_top_or_bottom (a, botlefty)
+          (List.length (String.split_on_char ' ' name))
+      in
+      moveto
+        (first_val_tuple moved_coords)
+        (second_val_tuple moved_coords);
       draw_and_move
         (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (3 * sq_height / 5))
+        (first_val_tuple moved_coords, second_val_tuple moved_coords);
+      top.contents <- not !top
   | a, b when a = botleftx ->
-      moveto (a + (sq_height / 10)) (b + (2 * sq_width / 5));
+      moveto (botleftx - 30) (b + sq_width - (sq_width / 3));
       draw_and_move
         (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (2 * sq_height / 5))
+        (botleftx - 75, b + sq_width - (sq_width / 3))
   | a, b when b = temp ->
-      moveto (a + (sq_width / 10)) (b + (3 * sq_height / 5));
+      let moved_coords =
+        decide_top_or_bottom (a, temp)
+          (List.length (String.split_on_char ' ' name))
+      in
+      moveto
+        (first_val_tuple moved_coords)
+        (second_val_tuple moved_coords);
       draw_and_move
         (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (3 * sq_height / 5))
+        (first_val_tuple moved_coords, second_val_tuple moved_coords);
+      top.contents <- not !top
   | a, b when a = temp1 ->
-      moveto (a + (sq_height / 10)) (b + (2 * sq_width / 5));
+      moveto (a + (5 * sq_width / 3)) (b + sq_width - (sq_width / 3));
       draw_and_move
         (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (2 * sq_height / 5))
+        (a + (5 * sq_width / 3), b + sq_width - (sq_width / 3))
   | a, b -> ()
 
 let draw_colors color coord =
@@ -221,6 +247,37 @@ let draw_colors color coord =
       | x, y -> ())
   | None -> ()
 
+let draw_price price coord =
+  match price with
+  | Some p -> (
+      match coord with
+      | a, b when (a, b) = botleft_coord_of_botright ->
+          moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
+          draw_string (string_of_int p)
+      | a, b when (a, b) = botleft_coord ->
+          moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
+          draw_string (string_of_int p)
+      | a, b when (a, b) = botleft_coord_of_topleft ->
+          moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
+          draw_string (string_of_int p)
+      | a, b when (a, b) = botleft_coord_of_topright ->
+          moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
+          draw_string (string_of_int p)
+      | a, b when b = botlefty ->
+          moveto (a + (sq_width / 5)) (b + (sq_height / 2));
+          draw_string ("$" ^ string_of_int p)
+      | a, b when a = botleftx ->
+          moveto (a + (sq_height / 3)) (b + (sq_width / 2));
+          draw_string ("$" ^ string_of_int p)
+      | a, b when b = temp ->
+          moveto (a + (sq_width / 5)) (b + (sq_height / 2));
+          draw_string ("$" ^ string_of_int p)
+      | a, b when a = temp1 ->
+          moveto (a + (sq_height / 3)) (b + (sq_width / 2));
+          draw_string ("$" ^ string_of_int p)
+      | a, b -> ())
+  | None -> ()
+
 (* | (a, b) when (a, b) = botleft_coord_of_botright -> | (a, b) when (a,
    b) = botleft_coord -> | (a, b) when (a, b) = botleft_coord_of_topleft
    -> | (a, b) when (a, b) = botleft_coord_of_topright -> | (a, b) when
@@ -242,6 +299,20 @@ let draw_token (x, y) =
     (x + (sq_width / 2))
     (y + (2 * sq_height / 5))
     (sq_width / 10)
+
+let draw_background =
+  open_graph " 1280x700+100-100";
+  set_window_title "Monopoly";
+  set_line_width 2;
+  draw_rects coords_list;
+  List.iter2 draw_colors color_list coords_list;
+  List.iter2 draw_names coords_list name_list;
+  List.iter2 draw_price price_list coords_list
+
+(*let move_index player dr = List.nth coords_list (Player.position
+  player + dr)*)
+
+(*let draw_move = failwith "Unimplemented"*)
 
 (* draw_rect botleftx botlefty side_len side_len; draw_sqlist
    draw_horizontal_rect botlefty horizontal_coord_list; draw_sqlist
