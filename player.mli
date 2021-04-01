@@ -1,6 +1,10 @@
 type player
 
+val default : player
+
 val position : player -> int
+
+val move : player -> int -> player
 
 val cash : player -> int
 

@@ -1,5 +1,7 @@
 open Graphics
 open Board
+open Player
+open State
 
 type coord = int * int
 
@@ -191,10 +193,6 @@ let draw_names coord name =
         (a + (sq_height / 10), b + (2 * sq_height / 5))
   | a, b -> ()
 
-(* let tupelize_color (color : propertycolor option) = match color with
-   | Some lst -> (List.nth lst 0, List.nth lst 1, List.nth lst 2) | None
-   -> (255, 255, 255) *)
-
 let draw_colors color coord =
   match color with
   | Some (r, g, b) -> (
@@ -229,35 +227,21 @@ let draw_colors color coord =
    b = botlefty -> | (a, b) when a = botleftx -> | (a, b) when b = temp
    -> | (a, b) when a = temp1 -> *)
 
-let draw_horizontal_rect x y = draw_rect x y sq_width sq_height
+(** [modulo x y] is the mathematical modulo function. *)
+let modulo x y = if x mod y < 0 then (x mod y) + y else x mod y
 
-let draw_vertical_rect x y = draw_rect y x sq_height sq_width
+let new_index player dr = modulo (Player.position player + dr) 40
 
-let coord_array = ref [||]
+let new_coords player dr =
+  List.nth coords_list (modulo (Player.position player + dr) 40)
 
-let append_array arr (a, b) =
-  arr.contents <- Array.append !arr [| (a, b) |]
+(* let move_index ind dr = List.nth coords_list (modulo (ind + dr) 40) *)
 
-let rec draw_sqlist f y lst =
-  match lst with
-  | [] -> ()
-  | h :: t ->
-      f h y;
-      append_array coord_array (h, y);
-      draw_sqlist f y t
-
-let draw_background =
-  open_graph " 1280x700+100-100";
-  set_window_title "Monopoly";
-  set_line_width 2;
-  draw_rects coords_list;
-  List.iter2 draw_colors color_list coords_list;
-  List.iter2 draw_names coords_list name_list
-
-let move_index player dr =
-  List.nth coords_list (Player.position player + dr)
-
-let draw_move = failwith "Unimplemented"
+let draw_token (x, y) =
+  draw_circle
+    (x + (sq_width / 2))
+    (y + (2 * sq_height / 5))
+    (sq_width / 10)
 
 (* draw_rect botleftx botlefty side_len side_len; draw_sqlist
    draw_horizontal_rect botlefty horizontal_coord_list; draw_sqlist
@@ -265,3 +249,29 @@ let draw_move = failwith "Unimplemented"
    horizontal_coord_list; draw_sqlist draw_vertical_rect botleftx
    vertical_coord_list; draw_sqlist draw_vertical_rect (botleftx +
    side_len - sq_height) vertical_coord_list; *)
+
+let key_input char =
+  match read_key () with a when a = char -> true | _ -> false
+
+let draw_background =
+  open_graph " 1280x700+100-100";
+  set_window_title "Monopoly";
+  set_line_width 2;
+  draw_rects coords_list;
+  List.iter2 draw_colors color_list coords_list;
+  List.iter2 draw_names coords_list name_list;
+  draw_token (List.nth coords_list 0)
+
+let rec draw_state (state : game_state) =
+  match key_input 'p' with
+  | true ->
+      clear_graph ();
+      draw_rects coords_list;
+      List.iter2 draw_colors color_list coords_list;
+      List.iter2 draw_names coords_list name_list;
+      let dr = State.roll_dice () in
+      let np = State.next_player state in
+      let nc = new_coords np dr in
+      draw_token nc;
+      draw_state (State.move state [ Player.move np (new_index np dr) ])
+  | false -> ()

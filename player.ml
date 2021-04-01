@@ -9,6 +9,30 @@ type player = {
   bankrupt : bool;
 }
 
+let default =
+  {
+    pos = 0;
+    cash = 0;
+    properties = [];
+    cards = [];
+    jail = false;
+    token = None;
+    name = None;
+    bankrupt = false;
+  }
+
+let move player new_ind =
+  {
+    pos = new_ind;
+    cash = player.cash;
+    properties = player.properties;
+    cards = player.cards;
+    jail = player.jail;
+    token = player.token;
+    name = player.name;
+    bankrupt = player.bankrupt;
+  }
+
 let position player = player.pos
 
 let cash player = player.cash
