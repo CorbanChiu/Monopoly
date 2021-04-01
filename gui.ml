@@ -307,7 +307,8 @@ let draw_background =
   draw_rects coords_list;
   List.iter2 draw_colors color_list coords_list;
   List.iter2 draw_names coords_list name_list;
-  List.iter2 draw_price price_list coords_list
+  List.iter2 draw_price price_list coords_list;
+  draw_token (List.nth coords_list 0)
 
 (*let move_index player dr = List.nth coords_list (Player.position
   player + dr)*)
@@ -324,15 +325,6 @@ let draw_background =
 let key_input char =
   match read_key () with a when a = char -> true | _ -> false
 
-let draw_background =
-  open_graph " 1280x700+100-100";
-  set_window_title "Monopoly";
-  set_line_width 2;
-  draw_rects coords_list;
-  List.iter2 draw_colors color_list coords_list;
-  List.iter2 draw_names coords_list name_list;
-  draw_token (List.nth coords_list 0)
-
 let rec draw_state (state : game_state) =
   match key_input 'p' with
   | true ->
@@ -340,6 +332,7 @@ let rec draw_state (state : game_state) =
       draw_rects coords_list;
       List.iter2 draw_colors color_list coords_list;
       List.iter2 draw_names coords_list name_list;
+      List.iter2 draw_price price_list coords_list;
       let dr = State.roll_dice () in
       let np = State.next_player state in
       let nc = new_coords np dr in
