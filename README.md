@@ -43,7 +43,7 @@ export DISPLAY="$(grep nameserver /etc/resolv.conf | sed 's/nameserver //'):0"
 
 2) run Special Command above
 
-###
+##
 To make a new branch from VSCode go to branches -> "create new branch from..." -> type the name you want -> select the branch you want to reference (if from the main, "origin/master")
 
 ## Ideas
@@ -54,3 +54,6 @@ To make a new branch from VSCode go to branches -> "create new branch from..." -
 # For Demo
 - This is a lot more difficult than we thought- will likely not get to build an AI
 - Implementing actions of cards, selling certain properties.
+
+## Github Commands
+- to delete local branch: git branch -d the_local_branch

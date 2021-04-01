@@ -311,6 +311,7 @@ let draw_background =
 (*let move_index player dr = List.nth coords_list (Player.position
   player + dr)*)
 
+gui_test
 (*let draw_move = failwith "Unimplemented"*)
 
 (* draw_rect botleftx botlefty side_len side_len; draw_sqlist
