@@ -212,7 +212,7 @@ let draw_colors color coord =
           fill_rect
             (x + (4 * sq_height / 5) - 1)
             (y + 2)
-            ((sq_height / 5) - 2)
+            ((sq_height / 5) - 1)
             (sq_width - 3)
       | x, y when y = temp ->
           set_color (rgb r g b);
