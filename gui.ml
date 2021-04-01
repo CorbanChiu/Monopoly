@@ -1,267 +1,189 @@
 open Graphics
-open Board
 
 type coord = int * int
 
-(* replace with the name of the actual json file *)
-let j = Yojson.Basic.from_file "board_monopoly.json"
+type rect = {
+  lb : coord;
+  lt : coord;
+  rb : coord;
+  rt : coord;
+  orient : string;
+}
 
-let window_dim = (1280, 700)
+let const_window_size = (1100, 800)
 
-(* must be multiple of 24 *)
-let side_len = 600
+let const_buffer = snd const_window_size / 20
 
-let name_list = namelist (from_json j)
+let const_valid_height = snd const_window_size - (2 * const_buffer)
 
-let price_list = pricelist (from_json j)
+let const_valid_width = fst const_window_size - (2 * const_buffer)
 
-let color_list = colorlist (from_json j)
+let const_board_height = const_valid_height
 
-let getx = function a, b -> a
+let const_board_width = const_valid_height
 
-let gety = function a, b -> b
+let const_w = const_board_width / 12
 
-let botleft_coord =
-  ((getx window_dim - side_len) / 2, (gety window_dim - side_len) / 2)
+let const_h = const_board_height / 9
 
-let botleftx = getx botleft_coord
+let const_d = const_h - const_w
 
-let botlefty = gety botleft_coord
+let const_l =
+  ((const_valid_width - const_board_width) / 2) + const_buffer
 
-let sq_width = 2 * side_len / 24
+let const_r =
+  ((const_valid_width - const_board_width) / 2)
+  + const_board_width + const_buffer
 
-let sq_height = 3 * side_len / 24
+let const_t = const_valid_height + const_buffer
 
-let botleft_coord_of_botright =
-  (botleftx + side_len - sq_height, botlefty)
+(* int_of_float ((float_of_int const_t -. float_of_int const_b) /. 11.) *)
 
-let botleft_coord_of_topleft =
-  (botleftx, botlefty + side_len - sq_height)
+(* int_of_float (float_of_int const_w *. 1.5) *)
 
-let botleft_coord_of_topright =
-  (botleftx + side_len - sq_height, botlefty + side_len - sq_height)
+let const_board_path = "board_monopoly.json"
 
-(* let c = [ ( "GO", "MEDITERRANEAN AVE", "COMMUNITY CHEST", "BALTIC
-   AVE", "INCOME TAX", "READING RAILROAD" ); ] *)
+let name_lst =
+  Board.namelist
+    (Board.from_json (Yojson.Basic.from_file const_board_path))
 
-let temp = [ 0; 1; 2; 3; 4; 5; 6; 7; 8 ]
+let construct_rect (n : int) =
+  match n with
+  | bottomright when n = 0 ->
+      {
+        lb = (const_r - const_h, const_buffer);
+        lt = (const_r - const_h, const_buffer + const_h);
+        rb = (const_r, const_buffer);
+        rt = (const_r, const_buffer + const_h);
+        orient = "corner";
+      }
+  | bottom when n < 10 ->
+      {
+        lb =
+          ( const_l + ((10 - (n mod 10)) * const_w) + const_d,
+            const_buffer );
+        lt =
+          ( const_l + ((10 - (n mod 10)) * const_w) + const_d,
+            const_buffer + const_h );
+        rb =
+          ( const_l + ((10 - (n mod 10)) * const_w) + const_w + const_d,
+            const_buffer );
+        rt =
+          ( const_l + ((10 - (n mod 10)) * const_w) + const_w + const_d,
+            const_buffer + const_h );
+        orient = "bot";
+      }
+  | bottomleft when n = 10 ->
+      {
+        lb = (const_l, const_buffer);
+        lt = (const_l, const_buffer + const_h);
+        rb = (const_l + const_h, const_buffer);
+        rt = (const_l + const_h, const_buffer + const_h);
+        orient = "corner";
+      }
+  | left when n < 20 ->
+      {
+        lb = (const_l, const_buffer + (n mod 10 * const_w) + const_d);
+        lt =
+          ( const_l,
+            const_buffer + (n mod 10 * const_w) + const_w + const_d );
+        rb =
+          ( const_l + const_h,
+            const_buffer + (n mod 10 * const_w) + const_d );
+        rt =
+          ( const_l + const_h,
+            const_buffer + (n mod 10 * const_w) + const_w + const_d );
+        orient = "left";
+      }
+  | topleft when n = 20 ->
+      {
+        lb = (const_l, const_t - const_h - const_d);
+        lt = (const_l, const_t - const_d);
+        rb = (const_l + const_h, const_t - const_h - const_d);
+        rt = (const_l + const_h, const_t - const_d);
+        orient = "corner";
+      }
+  | top when n < 30 ->
+      {
+        lb =
+          ( const_l + const_d + (n mod 10 * const_w),
+            const_t - const_h - const_d );
+        lt =
+          (const_l + const_d + (n mod 10 * const_w), const_t - const_d);
+        rb =
+          ( const_l + const_d + (n mod 10 * const_w) + const_w,
+            const_t - const_d );
+        rt =
+          ( const_l + const_d + (n mod 10 * const_w) + const_w,
+            const_t - const_d );
+        orient = "top";
+      }
+  | topright when n = 30 ->
+      {
+        lb = (const_r - const_h, const_t - const_h - const_d);
+        lt = (const_r - const_h, const_t - const_d);
+        rb = (const_r, const_t - const_h - const_d);
+        rt = (const_r, const_t - const_d);
+        orient = "corner";
+      }
+  | right when n < 40 ->
+      {
+        lb =
+          ( const_r - const_h,
+            const_t - (n mod 10 * const_w) - const_w - (2 * const_d) );
+        lt =
+          ( const_r - const_h,
+            const_t - (n mod 10 * const_w) - (2 * const_d) );
+        rb =
+          ( const_r,
+            const_t - (n mod 10 * const_w) - const_w - (2 * const_d) );
+        rt = (const_r, const_t - (n mod 10 * const_w) - (2 * const_d));
+        orient = "right";
+      }
+  | _ -> failwith "bad shape"
 
-let bot_coord_xlist =
-  List.map (( * ) sq_width) (List.rev temp)
-  |> List.map (( + ) (botleftx + sq_height))
+let get_x r = fst r.lb
 
-let rec bot_coords = function
-  | [] -> []
-  | h :: t -> (h, botlefty) :: bot_coords t
+let get_y r = snd r.lb
 
-let left_coord_ylist =
-  List.map (( * ) sq_width) temp
-  |> List.map (( + ) (botlefty + sq_height))
+let abs_val value = if value < 0 then -value else value
 
-let rec left_coords = function
-  | [] -> []
-  | h :: t -> (botleftx, h) :: left_coords t
+let get_w r = fst r.rb - fst r.lb |> abs_val
 
-let top_coord_xlist =
-  List.map (( * ) sq_width) temp
-  |> List.map (( + ) (botleftx + sq_height))
+let get_h r = snd r.lt - snd r.lb |> abs_val
 
-let rec top_coords = function
-  | [] -> []
-  | h :: t -> (h, botlefty + side_len - sq_height) :: top_coords t
+let coords = List.init 40 construct_rect
 
-let right_coord_ylist =
-  List.map (( * ) sq_width) (List.rev temp)
-  |> List.map (( + ) (botlefty + sq_height))
+(* For debugging *)
+(* let print_cd (x, y) = match (x, y) with | x, y -> print_string "(";
+   print_int x; print_string ", "; print_int y; print_string ")"
 
-let rec right_coords = function
-  | [] -> []
-  | h :: t -> (botleftx + side_len - sq_height, h) :: right_coords t
+   let rec print_cdlst = function | [] -> () | h :: t -> print_cd h;
+   print_string "; "; print_cdlst t
 
-let botcoords_list =
-  (botleftx + side_len - sq_height, botlefty)
-  :: bot_coords bot_coord_xlist
+   let get_lb cd = cd.lb
 
-let leftcoords_list = botleft_coord :: left_coords left_coord_ylist
+   let get_lt cd = cd.lt
 
-let topcoords_list =
-  (botleftx, botlefty + side_len - sq_height)
-  :: top_coords top_coord_xlist
+   let get_rb cd = cd.rb
 
-let rightcoords_list =
-  (botleftx + side_len - sq_height, botlefty + side_len - sq_height)
-  :: right_coords right_coord_ylist
+   let get_rt cd = cd.rt
 
-let coords_list =
-  botcoords_list @ leftcoords_list @ topcoords_list @ rightcoords_list
+   let print_lb = print_cdlst (List.map get_lb coords)
 
-let print_tuple = function
-  | x, y -> "(" ^ string_of_int x ^ "," ^ string_of_int y ^ ")"
+   let print_lt = print_cdlst (List.map get_lt coords)
 
-let rec print_list = function
-  | [] -> ()
-  | h :: t ->
-      print_string (print_tuple h);
-      print_string ", ";
-      print_list t
+   let print_rb = print_cdlst (List.map get_rb coords)
 
-let temp = gety botleft_coord_of_topleft
+   let print_rt = print_cdlst (List.map get_rt coords) *)
 
-let temp1 = getx botleft_coord_of_topright
+let draw_one_rect rect =
+  draw_rect (get_x rect) (get_y rect) (get_w rect) (get_h rect)
 
-let rec draw_rects = function
-  | (a, b) :: t when (a, b) = botleft_coord_of_botright ->
-      draw_rect a b sq_height sq_height;
-      draw_rects t
-  | (a, b) :: t when (a, b) = botleft_coord ->
-      draw_rect a b sq_height sq_height;
-      draw_rects t
-  | (a, b) :: t when (a, b) = botleft_coord_of_topleft ->
-      draw_rect a b sq_height sq_height;
-      draw_rects t
-  | (a, b) :: t when (a, b) = botleft_coord_of_topright ->
-      draw_rect a b sq_height sq_height;
-      draw_rects t
-  | (a, b) :: t when b = botlefty ->
-      draw_rect a b sq_width sq_height;
-      draw_rects t
-  | (a, b) :: t when a = botleftx ->
-      draw_rect a b sq_height sq_width;
-      draw_rects t
-  | (a, b) :: t when b = temp ->
-      draw_rect a b sq_width sq_height;
-      draw_rects t
-  | (a, b) :: t when a = temp1 ->
-      draw_rect a b sq_height sq_width;
-      draw_rects t
-  | [] -> ()
-  | h :: t -> ()
-
-let rec draw_and_move str_list (a, b) =
-  match str_list with
-  | [] -> ()
-  | h :: t ->
-      moveto a b;
-      draw_string h;
-      moveto a (b - 10);
-      draw_and_move t (a, b - 10)
-
-let draw_names coord name =
-  set_color black;
-  match coord with
-  | a, b when (a, b) = botleft_coord_of_botright ->
-      moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
-      draw_and_move
-        (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (3 * sq_height / 5))
-  | a, b when (a, b) = botleft_coord ->
-      moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
-      draw_and_move
-        (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (3 * sq_height / 5))
-  | a, b when (a, b) = botleft_coord_of_topleft ->
-      moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
-      draw_and_move
-        (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (3 * sq_height / 5))
-  | a, b when (a, b) = botleft_coord_of_topright ->
-      moveto (a + (sq_height / 10)) (b + (3 * sq_height / 5));
-      draw_and_move
-        (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (3 * sq_height / 5))
-  | a, b when b = botlefty ->
-      moveto (a + (sq_width / 10)) (b + (3 * sq_height / 5));
-      draw_and_move
-        (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (3 * sq_height / 5))
-  | a, b when a = botleftx ->
-      moveto (a + (sq_height / 10)) (b + (2 * sq_width / 5));
-      draw_and_move
-        (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (2 * sq_height / 5))
-  | a, b when b = temp ->
-      moveto (a + (sq_width / 10)) (b + (3 * sq_height / 5));
-      draw_and_move
-        (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (3 * sq_height / 5))
-  | a, b when a = temp1 ->
-      moveto (a + (sq_height / 10)) (b + (2 * sq_width / 5));
-      draw_and_move
-        (String.split_on_char ' ' name)
-        (a + (sq_height / 10), b + (2 * sq_height / 5))
-  | a, b -> ()
-
-(* let tupelize_color (color : propertycolor option) = match color with
-   | Some lst -> (List.nth lst 0, List.nth lst 1, List.nth lst 2) | None
-   -> (255, 255, 255) *)
-
-let draw_colors color coord =
-  match color with
-  | Some (r, g, b) -> (
-      match coord with
-      | x, y when y = botlefty ->
-          set_color (rgb r g b);
-          fill_rect
-            (x + 1) (*changed from x+2 to just x*)
-            (y + (4 * sq_height / 5))
-            (sq_width - 3)
-            ((sq_height / 5) - 1)
-          (* changed -4 to 0*)
-      | x, y when x = botleftx ->
-          set_color (rgb r g b);
-          fill_rect
-            (x + (4 * sq_height / 5) - 1)
-            (y + 2)
-            ((sq_height / 5) - 1)
-            (sq_width - 3)
-      | x, y when y = temp ->
-          set_color (rgb r g b);
-          fill_rect (x + 1) (y + 2) (sq_width - 3) ((sq_height / 5) - 2)
-      | x, y when x = temp1 ->
-          set_color (rgb r g b);
-          fill_rect (x + 1) (y + 2) ((sq_height / 5) - 2) (sq_width - 3)
-      | x, y -> ())
-  | None -> ()
-
-(* | (a, b) when (a, b) = botleft_coord_of_botright -> | (a, b) when (a,
-   b) = botleft_coord -> | (a, b) when (a, b) = botleft_coord_of_topleft
-   -> | (a, b) when (a, b) = botleft_coord_of_topright -> | (a, b) when
-   b = botlefty -> | (a, b) when a = botleftx -> | (a, b) when b = temp
-   -> | (a, b) when a = temp1 -> *)
-
-let draw_horizontal_rect x y = draw_rect x y sq_width sq_height
-
-let draw_vertical_rect x y = draw_rect y x sq_height sq_width
-
-let coord_array = ref [||]
-
-let append_array arr (a, b) =
-  arr.contents <- Array.append !arr [| (a, b) |]
-
-let rec draw_sqlist f y lst =
-  match lst with
-  | [] -> ()
-  | h :: t ->
-      f h y;
-      append_array coord_array (h, y);
-      draw_sqlist f y t
+let draw_all_rects cds = List.iter draw_one_rect cds
 
 let draw_background =
-  open_graph " 1280x700+100-100";
+  open_graph " 1440x750+100-100";
   set_window_title "Monopoly";
   set_line_width 2;
-  draw_rects coords_list;
-  List.iter2 draw_colors color_list coords_list;
-  List.iter2 draw_names coords_list name_list
-
-let move_index player dr =
-  List.nth coords_list (Player.position player + dr)
-
-(* let draw_move = failwith "Unimplemented" *)
-
-(* draw_rect botleftx botlefty side_len side_len; draw_sqlist
-   draw_horizontal_rect botlefty horizontal_coord_list; draw_sqlist
-   draw_horizontal_rect (botlefty + side_len - sq_height)
-   horizontal_coord_list; draw_sqlist draw_vertical_rect botleftx
-   vertical_coord_list; draw_sqlist draw_vertical_rect (botleftx +
-   side_len - sq_height) vertical_coord_list; *)
+  List.iter draw_one_rect coords

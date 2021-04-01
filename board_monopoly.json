@@ -402,7 +402,7 @@
   {
     "type": "Railroad",
     "square": {
-      "name": "B. & O. Railroad",
+      "name": "B.&O. Railroad",
       "purchase price": 200,
       "mortgage price": 100,
       "payment structure": {
