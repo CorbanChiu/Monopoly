@@ -212,14 +212,14 @@ let draw_colors color coord =
           fill_rect
             (x + (4 * sq_height / 5) - 1)
             (y + 2)
-            ((sq_height / 5) - 1)
+            ((sq_height / 5) - 2)
             (sq_width - 3)
       | x, y when y = temp ->
           set_color (rgb r g b);
-          fill_rect (x + 1) (y + 2) (sq_width - 3) ((sq_height / 5) - 1)
+          fill_rect (x + 1) (y + 2) (sq_width - 3) ((sq_height / 5) - 2)
       | x, y when x = temp1 ->
           set_color (rgb r g b);
-          fill_rect (x + 1) (y + 2) ((sq_height / 5) - 1) (sq_width - 3)
+          fill_rect (x + 1) (y + 2) ((sq_height / 5) - 2) (sq_width - 3)
       | x, y -> ())
   | None -> ()
 
