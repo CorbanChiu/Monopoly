@@ -57,3 +57,8 @@ To make a new branch from VSCode go to branches -> "create new branch from..." -
 
 ## Github Commands
 - to delete local branch: git branch -d the_local_branch
+
+# Debug
+- Run `make debug` to compile the code for debugging
+- Run `ocamldebug main.byte` to enter the debugger.
+- `r` runs, `b` backsteps, `bt` produces a backtrack, more info found here https://ocaml.org/learn/tutorials/debug.html)

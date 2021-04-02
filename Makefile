@@ -5,6 +5,7 @@ MLIS=$(MODULES:=.mli)
 TEST=test.byte
 MAIN=main.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind -plugin-tag 'package(bisect_ppx-ocamlbuild)'
+DEBUG=$(OCAMLBUILD) -tag debug $(MAIN) && ./$(MAIN)
 
 default: build
 	OCAMLRUNPARAM=b utop
@@ -16,6 +17,8 @@ test:
 	BISECT_COVERAGE=YES $(OCAMLBUILD) -tag 'debug' $(TEST) && ./$(TEST) -runner sequential
 	bisect-ppx-report html
 	rm *.coverage
+debug:
+	$(DEBUG) $(OBJECTS)
 
 play:
 	$(OCAMLBUILD) $(MAIN) && ./$(MAIN)
