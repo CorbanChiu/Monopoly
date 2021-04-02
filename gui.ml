@@ -336,6 +336,8 @@ let rec draw_state (state : game_state) =
       let dr = State.roll_dice () in
       let np = State.next_player state in
       let nc = new_coords np dr in
+      moveto (botleftx - 200) (botlefty + 100);
+      draw_string ("Dice Roll: " ^ string_of_int dr);
       draw_token nc;
       draw_state (State.move state [ Player.move np (new_index np dr) ])
   | false -> ()
