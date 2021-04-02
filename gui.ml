@@ -150,17 +150,17 @@ let construct_rect (n : int) =
       }
   | _ -> failwith "bad shape"
 
-let get_x r = fst r.lb
+let get_rect_x r = fst r.lb
 
-let get_y r = snd r.lb
+let get_rect_y r = snd r.lb
 
-let x = fst
+let get_rect_w r = fst r.rb - fst r.lb
 
-let y = snd
+let get_rect_h r = snd r.lt - snd r.lb
 
-let get_w r = fst r.rb - fst r.lb
+let get_x = fst
 
-let get_h r = snd r.lt - snd r.lb
+let get_y = snd
 
 let coords = List.init 40 construct_rect
 
@@ -189,7 +189,8 @@ let coords = List.init 40 construct_rect
 
 let draw_one_rect rect =
   set_color (rgb 0 0 0);
-  draw_rect (get_x rect) (get_y rect) (get_w rect) (get_h rect)
+  draw_rect (get_rect_x rect) (get_rect_y rect) (get_rect_w rect)
+    (get_rect_h rect)
 
 let draw_all_rects = List.iter draw_one_rect
 
@@ -198,17 +199,17 @@ let color_area rect =
   | bot when rect.orient = "bot" ->
       Some
         {
-          lb = (x rect.lt, y rect.lt - const_color_h);
+          lb = (get_x rect.lt, get_y rect.lt - const_color_h);
           lt = rect.lt;
-          rb = (x rect.rt, y rect.rt - const_color_h);
+          rb = (get_x rect.rt, get_y rect.rt - const_color_h);
           rt = rect.rt;
           orient = "color";
         }
   | left when rect.orient = "left" ->
       Some
         {
-          lb = (x rect.rb - const_color_h, y rect.rb);
-          lt = (x rect.rt - const_color_h, y rect.rt);
+          lb = (get_x rect.rb - const_color_h, get_y rect.rb);
+          lt = (get_x rect.rt - const_color_h, get_y rect.rt);
           rb = rect.rb;
           rt = rect.rt;
           orient = "color";
@@ -217,9 +218,9 @@ let color_area rect =
       Some
         {
           lb = rect.lb;
-          lt = (x rect.lb, y rect.lb + const_color_h);
+          lt = (get_x rect.lb, get_y rect.lb + const_color_h);
           rb = rect.rb;
-          rt = (x rect.rb, y rect.lb + const_color_h);
+          rt = (get_x rect.rb, get_y rect.lb + const_color_h);
           orient = "color";
         }
   | right when rect.orient = "right" ->
@@ -227,8 +228,8 @@ let color_area rect =
         {
           lb = rect.lb;
           lt = rect.lt;
-          rb = (x rect.lb + const_color_h, y rect.lb);
-          rt = (x rect.lt + const_color_h, y rect.lt);
+          rb = (get_x rect.lb + const_color_h, get_y rect.lb);
+          rt = (get_x rect.lt + const_color_h, get_y rect.lt);
           orient = "color";
         }
   | _ -> None
@@ -238,15 +239,59 @@ let draw_one_color rect c =
   | Some (r, g, b) -> (
       set_color (rgb r g b);
       match color_area rect with
-      | Some r -> fill_rect (get_x r) (get_y r) (get_w r) (get_h r)
+      | Some r ->
+          fill_rect (get_rect_x r) (get_rect_y r) (get_rect_w r)
+            (get_rect_h r)
       | None -> ())
   | None -> ()
 
 let draw_all_colors rlst clst = List.iter2 draw_one_color rlst clst
+
+let square_hover_aux m cd =
+  match m with
+  | x, y
+    when x >= get_x cd.lb
+         && x <= get_x cd.rt
+         && y >= get_y cd.lb
+         && y <= get_y cd.rt ->
+      true
+  | x, y -> false
+
+let square_hover m clst =
+  try Some (List.find (square_hover_aux m) clst)
+  with Not_found -> None
+
+let mouse_handler m : unit =
+  match square_hover m coords with
+  | Some r ->
+      set_color black;
+      fill_rect (get_rect_x r) (get_rect_y r) (get_rect_w r)
+        (get_rect_h r)
+  | None -> ()
+
+(* set_color (rgb 255 255 255); draw_circle (fst m) (snd m) 5 let r =
+   square_hover m coords in draw_one_rect r *)
+let unsync () =
+  clear_graph ();
+  draw_all_colors coords color_lst;
+  draw_all_rects coords;
+  let st = wait_next_event [ Poll ] in
+  if st.keypressed then raise Exit;
+  mouse_handler (st.mouse_x, st.mouse_y)
+
+let looping () =
+  try
+    while true do
+      auto_synchronize false;
+      unsync ();
+      synchronize ()
+    done
+  with Exit -> ()
 
 let draw_background =
   open_graph " 1100x700+100-100";
   set_window_title "Monopoly";
   set_line_width 2;
   draw_all_colors coords color_lst;
-  draw_all_rects coords
+  draw_all_rects coords;
+  looping ()
