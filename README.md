@@ -62,3 +62,6 @@ To make a new branch from VSCode go to branches -> "create new branch from..." -
 - Run `make debug` to compile the code for debugging
 - Run `ocamldebug main.byte` to enter the debugger.
 - `r` runs, `b` backsteps, `bt` produces a backtrack, more info found here (https://ocaml.org/learn/tutorials/debug.html)
+
+## Fonts
+Going to be a pain in the butt- let's leave this for excellent of MS3 if necessary.

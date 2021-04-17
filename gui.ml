@@ -1,6 +1,6 @@
 open Graphics
 
-let const_board_path = "board_monopoly.json"
+let const_board_path = Consts.const_board_path
 
 let board = Board.from_json (Yojson.Basic.from_file const_board_path)
 
@@ -25,9 +25,16 @@ type rect = {
   orient : string;
 }
 
+let center_text (x1, y1) (x2, y2) t =
+  let w, h = text_size t in
+  let rx = (x2 - x1 - w) / 2 in
+  let ry = (y2 - y1 - h) / 2 in
+  moveto (rx + x1) (ry + y1);
+  draw_string t
+
 let open_window () =
-  open_graph " 1100x700+100-100";
-  set_window_title "Monopoly"
+  open_graph Consts.const_window_dim;
+  set_window_title Consts.const_window_name
 
 type res_data = {
   window_size : int * int;
@@ -75,7 +82,21 @@ let calc_board_b () =
   ((calc_valid_height () - calc_board_height ()) / 2)
   + calc_window_buffer ()
 
-let calc_color_h () = calc_square_h () / 5
+let calc_color_h () = calc_square_h () / Consts.const_color_height
+
+let calc_sel_l () =
+  calc_board_l () + calc_square_h () + calc_window_buffer ()
+
+let calc_sel_b () =
+  calc_board_b () + calc_square_h () + calc_window_buffer ()
+
+let calc_sel_w () =
+  calc_board_l () + calc_board_width () - calc_square_h ()
+  - calc_window_buffer () - calc_sel_l ()
+
+let calc_sel_h () =
+  calc_board_b () + calc_board_height () - calc_square_h ()
+  - calc_window_buffer () - calc_sel_b ()
 
 let current_res () =
   {
@@ -368,7 +389,7 @@ let mouseloc_handler m msqlst =
   | Some r ->
       draw_name r msqlst msquare_name_lst;
       draw_price r msqlst msquare_price_lst;
-      set_color (rgb 200 200 200);
+      set_color Consts.const_hover_color;
       fill_rect (get_rect_x r) (get_rect_y r) (get_rect_w r)
         (get_rect_h r)
   | None -> ()
@@ -376,8 +397,13 @@ let mouseloc_handler m msqlst =
 let draw_selection_name = function
   | Some msq ->
       (* TODO make this location static *)
-      moveto 400 400;
-      draw_string (Board.get_name board msq)
+      set_color (rgb 0 0 0);
+      center_text
+        ( calc_sel_l (),
+          calc_sel_b () + calc_sel_h () - Consts.const_sel_name_height
+        )
+        (calc_sel_l () + calc_sel_w (), calc_sel_b () + calc_sel_h ())
+        (Board.get_name board msq)
   | None -> ()
 
 (* let mousepress_handler_aux m msqlst : selection = try match List.find
@@ -389,27 +415,62 @@ let draw_selection_name = function
    msqlst with | Some msquare -> draw_selection_name msquare | None ->
    () *)
 
+let is_selected sq =
+  match !sel_state with Some n -> n = sq | None -> false
+
 let selection_handler m msqlst =
   try
     match List.find (square_hover_aux m) msqlst with
     | { index } -> (
         match index with
         | Some n ->
-            sel_state := (Some (Board.get_square board n) : selection)
+            let sq = Board.get_square board n in
+            if is_selected sq then sel_state := None
+            else sel_state := (Some sq : selection)
         | None -> ())
   with Not_found -> ()
 
 let update_sel_state st msqlst =
   if st.button then selection_handler (st.mouse_x, st.mouse_y) msqlst
 
+(* drawn to the right of the board, minimum value of 5 *)
+let draw_selection_box () =
+  try
+    set_color Consts.const_sel_rect_color;
+    draw_rect (calc_sel_l ()) (calc_sel_b ())
+      (max (calc_sel_w ()) 2)
+      (max (calc_sel_h ()) 2)
+  with Invalid_argument _ -> ()
+
+let draw_selection_fill (msqlst : rect list) =
+  match !sel_state with
+  | Some sq ->
+      let i = Board.find_square board sq in
+      let r = List.nth msqlst i in
+      set_color Consts.const_sel_color;
+      fill_rect (get_rect_x r) (get_rect_y r) (get_rect_w r)
+        (get_rect_h r)
+  | None -> ()
+
+let draw_selection msqlst =
+  draw_selection_box ();
+  draw_selection_name !sel_state;
+  draw_selection_fill msqlst
+
+(*********************************************************)
+(**** Code that runs everthing - Add functions above ****)
+(*********************************************************)
+
 let unsync () =
   clear_graph ();
+  set_line_width Consts.const_line_width;
   let msquare_lst = construct_msquares () in
-  let st = wait_next_event [ Poll ] in
+  let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
   if st.keypressed then raise Exit;
   update_sel_state st msquare_lst;
-  draw_selection_name !sel_state;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;
+  (* Things to draw even at startup*)
+  draw_selection msquare_lst;
   draw_all_colors msquare_lst msquare_color_lst;
   draw_all_msquares msquare_lst
 
@@ -423,6 +484,9 @@ let looping () =
 
 let draw_background =
   open_window ();
-  set_line_width 2;
+  let msquare_lst = construct_msquares () in
+  draw_selection msquare_lst;
+  draw_all_colors msquare_lst msquare_color_lst;
+  draw_all_msquares msquare_lst;
   auto_synchronize false;
   looping ()
