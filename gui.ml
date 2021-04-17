@@ -376,7 +376,7 @@ let draw_name r rlst nmlst =
   match index_of_rect r rlst with
   | Some n ->
       (* TODO: figure out how to center this *)
-      moveto 500 400;
+      moveto 100 600;
       draw_string (List.nth nmlst n)
   | None -> ()
 
@@ -386,7 +386,7 @@ let draw_price r rlst plst =
       match List.nth plst n with
       | Some p ->
           (* TODO: figure out how to center this *)
-          moveto 500 350;
+          moveto 100 580;
           draw_string (p |> string_of_int)
       | None -> ())
   | None -> ()
@@ -401,17 +401,34 @@ let mouseloc_handler m msqlst =
         (get_rect_h r)
   | None -> ()
 
-let draw_selection_name = function
+let draw_selection_name () =
+  match !sel_state with
   | Some msq ->
-      (* TODO make this location static *)
       set_color (rgb 0 0 0);
       center_text
         ( calc_sel_l (),
-          calc_sel_b () + calc_sel_h () - Consts.const_sel_name_height
+          calc_sel_b () + calc_sel_h ()
+          - (2 * Consts.const_sel_head_height) )
+        ( calc_sel_l () + calc_sel_w (),
+          calc_sel_b () + calc_sel_h () - Consts.const_sel_head_height
         )
-        (calc_sel_l () + calc_sel_w (), calc_sel_b () + calc_sel_h ())
         (Board.get_name board msq)
   | None -> ()
+
+let draw_selection_color () =
+  begin
+    match !sel_state with
+    | Some msq -> (
+        match
+          List.nth msquare_color_lst (Board.find_square board msq)
+        with
+        | Some (r, g, b) -> set_color (rgb r g b)
+        | None -> set_color (rgb 255 255 255))
+    | None -> set_color (rgb 255 255 255)
+  end;
+  fill_rect (calc_sel_l ())
+    (calc_sel_b () + calc_sel_h () - Consts.const_sel_head_height)
+    (calc_sel_w ()) Consts.const_sel_head_height
 
 let is_selected sq =
   match !sel_state with Some n -> n = sq | None -> false
@@ -431,7 +448,7 @@ let selection_handler m msqlst =
 let update_sel_state st msqlst =
   if st.button then selection_handler (st.mouse_x, st.mouse_y) msqlst
 
-(* drawn to the right of the board, minimum value of 5 *)
+(* drawn in the midle of the board, minimum value of 5 *)
 let draw_selection_box () =
   try
     set_color Consts.const_sel_rect_color;
@@ -452,10 +469,10 @@ let draw_selection_fill (msqlst : rect list) =
 
 let btn_exit_sel () =
   {
-    l = calc_sel_l () + calc_sel_w () - Consts.const_exit_sel_size;
-    b = calc_sel_b () + calc_sel_h () - Consts.const_exit_sel_size;
-    w = Consts.const_exit_sel_size;
-    h = Consts.const_exit_sel_size;
+    l = calc_sel_l () + calc_sel_w () - Consts.const_sel_head_height;
+    b = calc_sel_b () + calc_sel_h () - Consts.const_sel_head_height;
+    w = Consts.const_sel_head_height;
+    h = Consts.const_sel_head_height;
     action = "exit selection";
   }
 
@@ -482,10 +499,11 @@ let button_handler st =
   if st.button then check_hover_button st (btn_exit_sel ())
 
 let draw_selection msqlst =
+  draw_selection_color ();
+  draw_selection_name ();
   draw_btn_exit_sel ();
-  draw_selection_box ();
-  draw_selection_name !sel_state;
-  draw_selection_fill msqlst
+  draw_selection_fill msqlst;
+  draw_selection_box ()
 
 (*********************************************************)
 (**** Code that runs everthing - Add functions above ****)
@@ -500,8 +518,8 @@ let unsync () =
   button_handler st;
   update_sel_state st msquare_lst;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;
-  (* Things to draw even at startup*)
   draw_selection msquare_lst;
+  (* Things to draw even at startup*)
   draw_all_colors msquare_lst msquare_color_lst;
   draw_all_msquares msquare_lst
 
@@ -516,7 +534,6 @@ let looping () =
 let draw_background =
   open_window ();
   let msquare_lst = construct_msquares () in
-  draw_selection msquare_lst;
   draw_all_colors msquare_lst msquare_color_lst;
   draw_all_msquares msquare_lst;
   auto_synchronize false;
