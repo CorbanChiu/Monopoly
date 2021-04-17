@@ -10,9 +10,12 @@ let msquare_price_lst = Board.pricelist board
 
 let msquare_color_lst = Board.colorlist board
 
+type selection = Board.square option
+
 type coord = int * int
 
 type rect = {
+  index : int option;
   lb : coord;
   lt : coord;
   rb : coord;
@@ -93,6 +96,7 @@ let construct_rect res (n : int) =
   match n with
   | bottomright when n = 0 ->
       {
+        index = Some n;
         lb =
           (res.board_l + (9 * res.square_w) + res.square_h, res.board_b);
         lt =
@@ -108,6 +112,7 @@ let construct_rect res (n : int) =
       }
   | bottom when n < 10 ->
       {
+        index = Some n;
         lb =
           ( res.board_l
             + ((9 - (n mod 10)) * res.square_w)
@@ -132,6 +137,7 @@ let construct_rect res (n : int) =
       }
   | bottomleft when n = 10 ->
       {
+        index = Some n;
         lb = (res.board_l, res.board_b);
         lt = (res.board_l, res.board_b + res.square_h);
         rb = (res.board_l + res.square_h, res.board_b);
@@ -140,6 +146,7 @@ let construct_rect res (n : int) =
       }
   | left when n < 20 ->
       {
+        index = Some n;
         lb =
           ( res.board_l,
             res.board_b + (n mod 10 * res.square_w) + res.square_diff );
@@ -160,6 +167,7 @@ let construct_rect res (n : int) =
       }
   | topleft when n = 20 ->
       {
+        index = Some n;
         lb =
           (res.board_l, res.board_b + (9 * res.square_w) + res.square_h);
         lt =
@@ -175,6 +183,7 @@ let construct_rect res (n : int) =
       }
   | top when n < 30 ->
       {
+        index = Some n;
         lb =
           ( res.board_l + res.square_diff + (n mod 10 * res.square_w),
             res.board_b + (9 * res.square_w) + res.square_h );
@@ -195,6 +204,7 @@ let construct_rect res (n : int) =
       }
   | topright when n = 30 ->
       {
+        index = Some n;
         lb =
           ( res.board_l + (9 * res.square_w) + res.square_h,
             res.board_b + (9 * res.square_w) + res.square_h );
@@ -211,6 +221,7 @@ let construct_rect res (n : int) =
       }
   | right when n < 40 ->
       {
+        index = Some n;
         lb =
           ( res.board_l + (9 * res.square_w) + res.square_h,
             res.board_b + res.square_h
@@ -258,6 +269,7 @@ let color_area rect res =
   | bot when rect.orient = "bot" ->
       Some
         {
+          index = None;
           lb = (get_x rect.lt, get_y rect.lt - res.color_h);
           lt = rect.lt;
           rb = (get_x rect.rt, get_y rect.rt - res.color_h);
@@ -267,6 +279,7 @@ let color_area rect res =
   | left when rect.orient = "left" ->
       Some
         {
+          index = None;
           lb = (get_x rect.rb - res.color_h, get_y rect.rb);
           lt = (get_x rect.rt - res.color_h, get_y rect.rt);
           rb = rect.rb;
@@ -276,6 +289,7 @@ let color_area rect res =
   | top when rect.orient = "top" ->
       Some
         {
+          index = None;
           lb = rect.lb;
           lt = (get_x rect.lb, get_y rect.lb + res.color_h);
           rb = rect.rb;
@@ -285,6 +299,7 @@ let color_area rect res =
   | right when rect.orient = "right" ->
       Some
         {
+          index = None;
           lb = rect.lb;
           lt = rect.lt;
           rb = (get_x rect.lb + res.color_h, get_y rect.lb);
@@ -346,7 +361,7 @@ let draw_price r rlst plst =
       | None -> ())
   | None -> ()
 
-let mouse_handler m msqlst =
+let mouseloc_handler m msqlst =
   match square_hover m msqlst with
   | Some r ->
       draw_name r msqlst msquare_name_lst;
@@ -356,12 +371,33 @@ let mouse_handler m msqlst =
         (get_rect_h r)
   | None -> ()
 
+let draw_selection_name msquare =
+  (* TODO make this location static *)
+  moveto 400 400;
+  draw_string (Board.get_name board msquare)
+
+let mousepress_handler_aux m msqlst : selection =
+  try
+    match List.find (square_hover_aux m) msqlst with
+    | { index } -> (
+        match index with
+        | Some n -> Some (Board.get_square board n)
+        | None -> None)
+  with Not_found -> None
+
+let mousepress_handler m msqlst =
+  match mousepress_handler_aux m msqlst with
+  | Some msquare -> draw_selection_name msquare
+  | None -> ()
+
 let unsync () =
   clear_graph ();
   let msquare_lst = construct_msquares () in
   let st = wait_next_event [ Poll ] in
   if st.keypressed then raise Exit;
-  mouse_handler (st.mouse_x, st.mouse_y) msquare_lst;
+  if st.button then
+    mousepress_handler (st.mouse_x, st.mouse_y) msquare_lst;
+  mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;
   draw_all_colors msquare_lst msquare_color_lst;
   draw_all_msquares msquare_lst
 

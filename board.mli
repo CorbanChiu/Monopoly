@@ -35,3 +35,5 @@ val propertygroup : board -> square -> square list
 val railroadgroup : board -> square list
 
 val utilitygroup : board -> square list
+
+val get_name : board -> square -> string

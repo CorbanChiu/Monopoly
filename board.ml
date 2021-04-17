@@ -216,3 +216,18 @@ let railroadgroup b = List.filter testrr b
 let testutil = function Utility sq -> true | _ -> false
 
 let utilitygroup b = List.filter testutil b
+
+let get_name b sq =
+  List.find (( = ) sq) b |> function
+  | Traditional { tname } -> tname
+  | Utility { uname } -> uname
+  | Railroad { rname } -> rname
+  | Card { cname } -> cname
+  | Misc m -> (
+      match m with
+      | FreeParking { fpname } -> fpname
+      | Jail { jname } -> jname
+      | GoToJail { gtjname } -> gtjname
+      | Go { gname } -> gname
+      | IncomeTax { itname } -> itname
+      | LuxuryTax { ltname } -> ltname)
