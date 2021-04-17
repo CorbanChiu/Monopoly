@@ -1,8 +1,7 @@
 open Graphics
 
-let const_board_path = Consts.const_board_path
-
-let board = Board.from_json (Yojson.Basic.from_file const_board_path)
+let board =
+  Board.from_json (Yojson.Basic.from_file Consts.const_board_path)
 
 let msquare_name_lst = Board.namelist board
 
@@ -15,6 +14,14 @@ type selection = Board.square option
 let sel_state = ref (None : selection)
 
 type coord = int * int
+
+type button = {
+  l : int;
+  b : int;
+  w : int;
+  h : int;
+  action : string;
+}
 
 type rect = {
   index : int option;
@@ -406,15 +413,6 @@ let draw_selection_name = function
         (Board.get_name board msq)
   | None -> ()
 
-(* let mousepress_handler_aux m msqlst : selection = try match List.find
-   (square_hover_aux m) msqlst with | { index } -> ( match index with |
-   Some n -> Some (Board.get_square board n) | None -> None) with
-   Not_found -> None
-
-   let mousepress_handler m msqlst = match mousepress_handler_aux m
-   msqlst with | Some msquare -> draw_selection_name msquare | None ->
-   () *)
-
 let is_selected sq =
   match !sel_state with Some n -> n = sq | None -> false
 
@@ -452,7 +450,39 @@ let draw_selection_fill (msqlst : rect list) =
         (get_rect_h r)
   | None -> ()
 
+let btn_exit_sel () =
+  {
+    l = calc_sel_l () + calc_sel_w () - Consts.const_exit_sel_size;
+    b = calc_sel_b () + calc_sel_h () - Consts.const_exit_sel_size;
+    w = Consts.const_exit_sel_size;
+    h = Consts.const_exit_sel_size;
+    action = "exit selection";
+  }
+
+let draw_btn_exit_sel () =
+  match !sel_state with
+  | None -> ()
+  | Some _ -> (
+      set_color Consts.const_exit_sel_color;
+      match btn_exit_sel () with
+      | { l; b; w; h } ->
+          fill_rect l b w h;
+          set_color (rgb 255 255 255);
+          center_text (l, b) (l + w, b + h) "X")
+
+let check_hover_button m btn =
+  if
+    m.mouse_x >= btn.l
+    && m.mouse_x <= btn.l + btn.w
+    && m.mouse_y >= btn.b
+    && m.mouse_y <= btn.b + btn.h
+  then sel_state := None
+
+let button_handler st =
+  if st.button then check_hover_button st (btn_exit_sel ())
+
 let draw_selection msqlst =
+  draw_btn_exit_sel ();
   draw_selection_box ();
   draw_selection_name !sel_state;
   draw_selection_fill msqlst
@@ -467,6 +497,7 @@ let unsync () =
   let msquare_lst = construct_msquares () in
   let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
   if st.keypressed then raise Exit;
+  button_handler st;
   update_sel_state st msquare_lst;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;
   (* Things to draw even at startup*)
