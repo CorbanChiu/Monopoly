@@ -389,7 +389,7 @@ let draw_selection_name = function
    msqlst with | Some msquare -> draw_selection_name msquare | None ->
    () *)
 
-let selection_handler_aux m msqlst =
+let selection_handler m msqlst =
   try
     match List.find (square_hover_aux m) msqlst with
     | { index } -> (
@@ -398,8 +398,6 @@ let selection_handler_aux m msqlst =
             sel_state := (Some (Board.get_square board n) : selection)
         | None -> ())
   with Not_found -> ()
-
-let selection_handler m msqlst = selection_handler_aux m msqlst
 
 let update_sel_state st msqlst =
   if st.button then selection_handler (st.mouse_x, st.mouse_y) msqlst
