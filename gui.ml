@@ -12,6 +12,8 @@ let msquare_color_lst = Board.colorlist board
 
 type selection = Board.square option
 
+let sel_state = ref (None : selection)
+
 type coord = int * int
 
 type rect = {
@@ -371,32 +373,44 @@ let mouseloc_handler m msqlst =
         (get_rect_h r)
   | None -> ()
 
-let draw_selection_name msquare =
-  (* TODO make this location static *)
-  moveto 400 400;
-  draw_string (Board.get_name board msquare)
+let draw_selection_name = function
+  | Some msq ->
+      (* TODO make this location static *)
+      moveto 400 400;
+      draw_string (Board.get_name board msq)
+  | None -> ()
 
-let mousepress_handler_aux m msqlst : selection =
+(* let mousepress_handler_aux m msqlst : selection = try match List.find
+   (square_hover_aux m) msqlst with | { index } -> ( match index with |
+   Some n -> Some (Board.get_square board n) | None -> None) with
+   Not_found -> None
+
+   let mousepress_handler m msqlst = match mousepress_handler_aux m
+   msqlst with | Some msquare -> draw_selection_name msquare | None ->
+   () *)
+
+let selection_handler_aux m msqlst =
   try
     match List.find (square_hover_aux m) msqlst with
     | { index } -> (
         match index with
-        | Some n -> Some (Board.get_square board n)
-        | None -> None)
-  with Not_found -> None
+        | Some n ->
+            sel_state := (Some (Board.get_square board n) : selection)
+        | None -> ())
+  with Not_found -> ()
 
-let mousepress_handler m msqlst =
-  match mousepress_handler_aux m msqlst with
-  | Some msquare -> draw_selection_name msquare
-  | None -> ()
+let selection_handler m msqlst = selection_handler_aux m msqlst
+
+let update_sel_state st msqlst =
+  if st.button then selection_handler (st.mouse_x, st.mouse_y) msqlst
 
 let unsync () =
   clear_graph ();
   let msquare_lst = construct_msquares () in
   let st = wait_next_event [ Poll ] in
   if st.keypressed then raise Exit;
-  if st.button then
-    mousepress_handler (st.mouse_x, st.mouse_y) msquare_lst;
+  update_sel_state st msquare_lst;
+  draw_selection_name !sel_state;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;
   draw_all_colors msquare_lst msquare_color_lst;
   draw_all_msquares msquare_lst
@@ -412,8 +426,5 @@ let looping () =
 let draw_background =
   open_window ();
   set_line_width 2;
-  let msquare_lst = construct_msquares () in
-  draw_all_colors msquare_lst msquare_color_lst;
-  draw_all_msquares msquare_lst;
   auto_synchronize false;
   looping ()
