@@ -52,6 +52,28 @@ let net_worth player =
 
 let bankrupt player = net_worth player >= 0
 
+(* Helper *)
+let remove_from_list lst member =
+  let rec helper lst member acc =
+    match lst with
+    | [] -> acc
+    | a :: t ->
+        if a = member then helper t member acc
+        else helper t member (a :: acc)
+  in
+  helper lst member []
+
+let increment_cash player added_cash =
+  { player with cash = player.cash + added_cash }
+
+let decrement_cash player subtracted_cash =
+  { player with cash = player.cash - subtracted_cash }
+
+let add_card player card = { player with cards = card :: player.cards }
+
+let remove_card player card =
+  { player with cards = remove_from_list player.cards card }
+
 let add_property player property =
   {
     pos = player.pos;
@@ -63,3 +85,23 @@ let add_property player property =
     name = player.name;
     bankrupt = player.bankrupt;
   }
+
+let remove_property player property =
+  {
+    pos = player.pos;
+    cash = player.cash;
+    properties = remove_from_list player.properties property;
+    cards = player.cards;
+    jail = player.jail;
+    token = player.token;
+    name = player.name;
+    bankrupt = player.bankrupt;
+  }
+
+let send_to_jail player = { player with jail = true }
+
+let let_out_of_jail player = { player with jail = false }
+
+let change_to_bankrupt player = { player with bankrupt = true }
+
+let change_to_not_bankrupt player = { player with bankrupt = false }
