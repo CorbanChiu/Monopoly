@@ -4,7 +4,7 @@ open Random
 type property = Board.property
 
 type game_state = {
-  property_lst : property list;
+  property_lst : (int * property) list;
   player_lst : (int * Player.player) list;
   next : int;
 }
@@ -27,10 +27,15 @@ let rec next_player gs nxt =
     next_player gs (nxt + 1)
   else next_ind
 
+let rec add_index p_lst ind =
+  match p_lst with
+  | [] -> []
+  | h :: t -> (ind, h) :: add_index t (ind + 1)
+
 (* [init] is the initial game state *)
 let init =
   {
-    property_lst = Board.init_prop_lst init_board;
+    property_lst = add_index (Board.init_prop_lst init_board) 0;
     player_lst = init_player_lst num_players;
     next = 0;
   }
@@ -40,6 +45,15 @@ let updated_player_lst ind p_lst np =
 
 (* [move gs] returns a new game state gs after a player has moved *)
 let move gs =
+  {
+    property_lst = gs.property_lst;
+    player_lst = gs.player_lst;
+    next = gs.next;
+  }
+
+let possible_action gs ind = List.nth gs.property_lst ind
+
+let end_turn gs =
   {
     property_lst = gs.property_lst;
     player_lst = gs.player_lst;

@@ -243,6 +243,26 @@ type property = {
   mortgaged : bool option;
 }
 
+type action = {
+  buy_ok : bool;
+  auction_ok : bool;
+  rent_ok : bool;
+  mortgage_ok : bool;
+}
+
+(* let get_action prop = match prop.sqr with | Traditional _ -> if
+   prop.owner = Some "Bank" then {buy_ok = true; rent_ok = false;
+   mortgage_ok = false} true else if prop.owner = None then failwith ""
+   else rent_ok | Utility _ -> | Railroad _ -> *)
+
+let get_sqr prop = prop.sqr
+
+let get_owner prop = prop.owner
+
+let get_dev_lvl prop = prop.dev_lvl
+
+let get_mortgaged prop = prop.mortgaged
+
 let init_property sq =
   match sq with
   | Traditional _ ->
@@ -268,5 +288,5 @@ let init_property sq =
       }
   | _ -> { sqr = sq; owner = None; dev_lvl = None; mortgaged = None }
 
-let rec init_prop_lst b =
+let rec init_prop_lst (b : board) =
   match b with [] -> [] | h :: t -> init_property h :: init_prop_lst t
