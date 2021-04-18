@@ -4,6 +4,8 @@ type board
 (** The abstract type of value representing any given square*)
 type square
 
+type property
+
 (** The type of value representing a color (r,g,b) *)
 type propertycolor = int * int * int
 
@@ -37,3 +39,5 @@ val railroadgroup : board -> square list
 val utilitygroup : board -> square list
 
 val get_name : board -> square -> string
+
+val init_prop_lst : board -> property list

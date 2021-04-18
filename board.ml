@@ -233,3 +233,60 @@ let get_name b sq =
       | Go { gname } -> gname
       | IncomeTax { itname } -> itname
       | LuxuryTax { ltname } -> ltname)
+
+type property = {
+  sqr : square;
+  (* None indicates unbuyability while Bank indicates not owned by any
+     player yet *)
+  owner : string option;
+  dev_lvl : int option;
+  mortgaged : bool option;
+}
+
+type action = {
+  buy_ok : bool;
+  auction_ok : bool;
+  rent_ok : bool;
+  mortgage_ok : bool;
+}
+
+(* let get_action prop = match prop.sqr with | Traditional _ -> if
+   prop.owner = Some "Bank" then {buy_ok = true; rent_ok = false;
+   mortgage_ok = false} true else if prop.owner = None then failwith ""
+   else rent_ok | Utility _ -> | Railroad _ -> *)
+
+let get_sqr prop = prop.sqr
+
+let get_owner prop = prop.owner
+
+let get_dev_lvl prop = prop.dev_lvl
+
+let get_mortgaged prop = prop.mortgaged
+
+let init_property sq =
+  match sq with
+  | Traditional _ ->
+      {
+        sqr = sq;
+        owner = Some "Bank";
+        dev_lvl = Some 0;
+        mortgaged = Some false;
+      }
+  | Utility _ ->
+      {
+        sqr = sq;
+        owner = Some "Bank";
+        dev_lvl = None;
+        mortgaged = Some false;
+      }
+  | Railroad _ ->
+      {
+        sqr = sq;
+        owner = Some "Bank";
+        dev_lvl = None;
+        mortgaged = Some false;
+      }
+  | _ -> { sqr = sq; owner = None; dev_lvl = None; mortgaged = None }
+
+let rec init_prop_lst (b : board) =
+  match b with [] -> [] | h :: t -> init_property h :: init_prop_lst t
