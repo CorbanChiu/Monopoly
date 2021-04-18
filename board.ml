@@ -265,14 +265,6 @@ let get_dev_lvl prop = prop.dev_lvl
 
 let get_mortgaged prop = prop.mortgaged
 
-let update_property_new_owner prop owner_name =
-  {
-    sqr = prop.sqr;
-    owner = Some owner_name;
-    dev_lvl = prop.dev_lvl;
-    mortgaged = prop.mortgaged;
-  }
-
 let init_property sq =
   match sq with
   | Traditional _ ->
@@ -300,3 +292,13 @@ let init_property sq =
 
 let rec init_prop_lst (b : board) =
   match b with [] -> [] | h :: t -> init_property h :: init_prop_lst t
+
+let update_property_new_owner prop owner_name =
+  {
+    sqr = prop.sqr;
+    owner = Some owner_name;
+    dev_lvl = prop.dev_lvl;
+    mortgaged = prop.mortgaged;
+  }
+
+let get_property_square (prop : property) = prop.sqr
