@@ -91,19 +91,23 @@ let calc_board_b () =
 
 let calc_color_h () = calc_square_h () / Consts.const_color_height
 
-let calc_sel_l () =
-  calc_board_l () + calc_square_h () + calc_window_buffer ()
-
-let calc_sel_b () =
-  calc_board_b () + calc_square_h () + calc_window_buffer ()
-
 let calc_sel_w () =
-  calc_board_l () + calc_board_width () - calc_square_h ()
-  - calc_window_buffer () - calc_sel_l ()
+  Consts.const_sel_size *. float_of_int (calc_board_width ())
+  |> int_of_float
+(* calc_board_l () + calc_board_width () - calc_square_h () -
+   calc_window_buffer () - calc_sel_l () *)
 
 let calc_sel_h () =
-  calc_board_b () + calc_board_height () - calc_square_h ()
-  - calc_window_buffer () - calc_sel_b ()
+  Consts.const_sel_size *. float_of_int (calc_board_height ())
+  |> int_of_float
+
+(* calc_board_b () + calc_board_height () - calc_square_h () -
+   calc_window_buffer () - calc_sel_b () *)
+let calc_sel_l () =
+  ((calc_board_width () - calc_sel_h ()) / 2) + calc_board_l ()
+
+let calc_sel_b () =
+  ((calc_board_height () - calc_sel_w ()) / 2) + calc_board_b ()
 
 let current_res () =
   {
@@ -457,6 +461,14 @@ let draw_selection_box () =
       (max (calc_sel_h ()) 2)
   with Invalid_argument _ -> ()
 
+let draw_selection_bgd () =
+  try
+    set_color (rgb 255 255 255);
+    fill_rect (calc_sel_l ()) (calc_sel_b ())
+      (max (calc_sel_w ()) 2)
+      (max (calc_sel_h ()) 2)
+  with Invalid_argument _ -> ()
+
 let draw_selection_fill (msqlst : rect list) =
   match !sel_state with
   | Some sq ->
@@ -477,15 +489,12 @@ let btn_exit_sel () =
   }
 
 let draw_btn_exit_sel () =
-  match !sel_state with
-  | None -> ()
-  | Some _ -> (
-      set_color Consts.const_exit_sel_color;
-      match btn_exit_sel () with
-      | { l; b; w; h } ->
-          fill_rect l b w h;
-          set_color (rgb 255 255 255);
-          center_text (l, b) (l + w, b + h) "X")
+  set_color Consts.const_exit_sel_color;
+  match btn_exit_sel () with
+  | { l; b; w; h } ->
+      fill_rect l b w h;
+      set_color (rgb 255 255 255);
+      center_text (l, b) (l + w, b + h) "X"
 
 let check_hover_button m btn =
   if
@@ -499,11 +508,15 @@ let button_handler st =
   if st.button then check_hover_button st (btn_exit_sel ())
 
 let draw_selection msqlst =
-  draw_selection_color ();
-  draw_selection_name ();
-  draw_btn_exit_sel ();
-  draw_selection_fill msqlst;
-  draw_selection_box ()
+  match !sel_state with
+  | None -> ()
+  | Some _ ->
+      draw_selection_fill msqlst;
+      draw_selection_bgd ();
+      draw_selection_color ();
+      draw_btn_exit_sel ();
+      draw_selection_box ();
+      draw_selection_name ()
 
 (*********************************************************)
 (**** Code that runs everthing - Add functions above ****)
@@ -544,10 +557,9 @@ let unsync () =
   button_handler st;
   update_sel_state st msquare_lst;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;
-  draw_selection msquare_lst;
-  (* Things to draw even at startup*)
   draw_all_colors msquare_lst msquare_color_lst;
-  draw_all_msquares msquare_lst
+  draw_all_msquares msquare_lst;
+  draw_selection msquare_lst
 
 let looping () =
   try
