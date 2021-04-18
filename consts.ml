@@ -17,3 +17,5 @@ let const_sel_rect_color = Graphics.rgb 0 0 0
 let const_line_width = 0
 
 let const_exit_sel_color = Graphics.rgb 255 100 100
+
+let const_sel_size = 0.65

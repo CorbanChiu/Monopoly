@@ -111,7 +111,7 @@ let board_tests =
         "Chance";
         "Indiana Avenue";
         "Illinois Avenue";
-        "B. & O. Railroad";
+        "B.&O. Railroad";
         "Atlantic Avenue";
         "Ventnor Avenue";
         "Water Works";
