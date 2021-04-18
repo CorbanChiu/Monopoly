@@ -4,7 +4,7 @@ type game_state
 
 val roll_dice : unit -> int
 
-val next_player : game_state -> Player.player
+val next_player : game_state -> int -> int
 
 val move : game_state -> game_state
 

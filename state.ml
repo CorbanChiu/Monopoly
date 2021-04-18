@@ -63,3 +63,55 @@ let end_turn gs =
 let roll_dice () =
   self_init ();
   add (nativeint (of_int 5)) (nativeint (of_int 5)) |> to_int |> ( + ) 2
+
+(* takes in the "next" value and a player_list from a gamestate and
+   returns the index of the player associated with the "next" value*)
+let rec get_player_index player_number player_list =
+  match player_list with
+  | (n, pl) :: t ->
+      if n = player_number then Player.position pl
+      else get_player_index player_number t
+  | [] -> failwith "should not get here"
+
+(* takes in the "next" value and a player_list from a gamestate and
+   returns the name the player associated with the "next" value*)
+let rec get_player_name player_number player_list =
+  match player_list with
+  | (n, pl) :: t ->
+      if n = player_number then Player.name pl
+      else get_player_name player_number t
+  | [] -> failwith "should not get here"
+
+(* gets property from property list given the index of the property *)
+let rec get_property index_value property_list =
+  match property_list with
+  | (i, prop) :: t ->
+      if index_value = i then prop else get_property index_value t
+  | [] -> failwith "should not get here "
+
+(* returns a new property list with the old property edited to have a
+   new owner *)
+let new_propertylist_update_owner
+    index_value
+    owner_name
+    old_property
+    property_list =
+  let new_property =
+    Board.update_property_new_owner old_property owner_name
+  in
+
+  List.remove_assoc index_value property_list
+  |> List.cons (index_value, new_property)
+
+let remove_option_owner_name owner_option =
+  match owner_option with
+  | None -> failwith "should not get here"
+  | Some owner -> owner
+
+(* let buy gs = let player_index = get_player_index gs.next
+   gs.player_lst in let player_name = remove_option_owner_name
+   (get_player_name gs.next gs.player_lst) in let old_property =
+   get_property player_index gs.property_lst in let new_property_list =
+   new_propertylist_update_owner player_index player_name old_property
+   gs.property_lst in "need to update player list -- need to do same
+   thing as you did with property list" *)

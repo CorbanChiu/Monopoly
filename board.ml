@@ -243,6 +243,8 @@ type property = {
   mortgaged : bool option;
 }
 
+(* {sqr = prop.sqr; owner = ; dev_lvl = prop.dev_lvl} *)
+
 type action = {
   buy_ok : bool;
   auction_ok : bool;
@@ -262,6 +264,14 @@ let get_owner prop = prop.owner
 let get_dev_lvl prop = prop.dev_lvl
 
 let get_mortgaged prop = prop.mortgaged
+
+let update_property_new_owner prop owner_name =
+  {
+    sqr = prop.sqr;
+    owner = Some owner_name;
+    dev_lvl = prop.dev_lvl;
+    mortgaged = prop.mortgaged;
+  }
 
 let init_property sq =
   match sq with
