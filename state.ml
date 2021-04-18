@@ -5,24 +5,25 @@ type property = Board.property
 
 type game_state = {
   property_lst : property list;
-  player_lst : Player.player list;
+  player_lst : (int * Player.player) list;
   next : int;
 }
 
 let num_players = 4
 
-let init_board = Gui.board
+let init_board =
+  Board.from_json (Yojson.Basic.from_file Consts.const_board_path)
 
 let rec init_player_lst np =
   match np with
   | 0 -> []
-  | a -> Player.init_player :: init_player_lst (a - 1)
+  | a -> (a, Player.init_player) :: init_player_lst (a - 1)
 
 (* [next_player gs nxt] returns the index of the next player who is not
    in jail. *)
 let rec next_player gs nxt =
   let next_ind = (nxt + 1) mod num_players in
-  if Player.jail (List.nth gs.player_lst next_ind) then
+  if Player.jail (List.assoc next_ind gs.player_lst) then
     next_player gs (nxt + 1)
   else next_ind
 
