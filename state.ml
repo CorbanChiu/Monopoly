@@ -35,6 +35,9 @@ let init =
     next = 0;
   }
 
+let updated_player_lst ind p_lst np =
+  List.remove_assoc ind p_lst |> List.cons np
+
 (* [move gs] returns a new game state gs after a player has moved *)
 let move gs =
   {
@@ -42,9 +45,6 @@ let move gs =
     player_lst = gs.player_lst;
     next = next_player gs gs.next;
   }
-
-let next_player game_state =
-  List.nth game_state.player_lst game_state.next
 
 let roll_dice () =
   self_init ();
