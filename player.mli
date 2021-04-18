@@ -1,5 +1,7 @@
 type player
 
+val init_player : player
+
 val position : player -> int
 
 val cash : player -> int
@@ -17,3 +19,5 @@ val name : player -> string option
 val net_worth : player -> int
 
 val bankrupt : player -> bool
+
+val move : player -> int -> player

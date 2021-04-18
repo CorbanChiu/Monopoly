@@ -9,6 +9,31 @@ type player = {
   bankrupt : bool;
 }
 
+let init_player =
+  {
+    pos = 0;
+    cash = 0;
+    properties = [];
+    cards = [];
+    jail = false;
+    token = None;
+    name = None;
+    bankrupt = false;
+  }
+
+(* [move p dr] returns a new player type p after moving dr spaces. *)
+let move p dr =
+  {
+    pos = p.pos + dr;
+    cash = p.cash;
+    properties = p.properties;
+    cards = p.cards;
+    jail = p.jail;
+    token = p.token;
+    name = p.name;
+    bankrupt = p.bankrupt;
+  }
+
 let position player = player.pos
 
 let cash player = player.cash

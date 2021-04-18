@@ -231,3 +231,40 @@ let get_name b sq =
       | Go { gname } -> gname
       | IncomeTax { itname } -> itname
       | LuxuryTax { ltname } -> ltname)
+
+type property = {
+  sqr : square;
+  (* None indicates unbuyability while Bank indicates not owned by any
+     player yet *)
+  owner : string option;
+  dev_lvl : int option;
+  mortgaged : bool option;
+}
+
+let init_property sq =
+  match sq with
+  | Traditional _ ->
+      {
+        sqr = sq;
+        owner = Some "Bank";
+        dev_lvl = Some 0;
+        mortgaged = Some false;
+      }
+  | Utility _ ->
+      {
+        sqr = sq;
+        owner = Some "Bank";
+        dev_lvl = None;
+        mortgaged = Some false;
+      }
+  | Railroad _ ->
+      {
+        sqr = sq;
+        owner = Some "Bank";
+        dev_lvl = None;
+        mortgaged = Some false;
+      }
+  | _ -> { sqr = sq; owner = None; dev_lvl = None; mortgaged = None }
+
+let rec init_prop_lst b =
+  match b with [] -> [] | h :: t -> init_property h :: init_prop_lst t

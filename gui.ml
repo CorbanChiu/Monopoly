@@ -390,11 +390,48 @@ let mousepress_handler m msqlst =
   | Some msquare -> draw_selection_name msquare
   | None -> ()
 
+let key_input char =
+  match read_key () with a when a = char -> true | _ -> false
+
+let modulo x y = if x mod y < 0 then (x mod y) + y else x mod y
+
+(* let move_index ind dr = List.nth coords_list (modulo (ind + dr) 40) *)
+
+let draw_token r =
+  draw_circle
+    (get_rect_x r + (get_rect_w r / 2))
+    (get_rect_y r + (2 * get_rect_h r / 5))
+    (get_rect_w r / 10)
+
+(* TODO: Temporary implementation of draw_state *)
+let rec draw_state (state : State.game_state) =
+  match key_input 'p' with
+  | true ->
+      let msquare_lst = construct_msquares () in
+
+      let dr = State.roll_dice () in
+      let np = State.next_player state in
+      let new_index player dr =
+        List.nth msquare_lst (modulo (Player.position player + dr) 40)
+      in
+      (* let nc = (get_rect_x (new_index np dr), get_rect_y (new_index
+         np dr)) in *)
+      moveto (calc_board_l () - 200) (calc_board_b () + 100);
+      draw_string ("Dice Roll: " ^ string_of_int dr);
+      draw_token (new_index np dr);
+      draw_state
+        (State.move state
+           [ Player.move np (modulo (Player.position np + dr) 40) ])
+  | false -> ()
+
 let unsync () =
   clear_graph ();
   let msquare_lst = construct_msquares () in
+  draw_all_colors msquare_lst msquare_color_lst;
+  draw_all_msquares msquare_lst;
   let st = wait_next_event [ Poll ] in
-  if st.keypressed then raise Exit;
+  if st.key = 'e' then raise Exit;
+  if st.key = 'p' then draw_state State.init;
   if st.button then
     mousepress_handler (st.mouse_x, st.mouse_y) msquare_lst;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;
