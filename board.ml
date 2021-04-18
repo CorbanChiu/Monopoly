@@ -39,6 +39,7 @@ type railroad = {
 type card = {
   cname : string;
   ctype : string;
+  cnum : int;
 }
 
 type freeparking = { fpname : string }
@@ -123,6 +124,7 @@ let to_card j =
     {
       cname = j |> member "name" |> to_string;
       ctype = j |> member "card type" |> to_string;
+      cnum = j |> member "order" |> to_int;
     }
 
 let to_misc j =
