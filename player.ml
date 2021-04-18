@@ -75,27 +75,12 @@ let remove_card player card =
   { player with cards = remove_from_list player.cards card }
 
 let add_property player property =
-  {
-    pos = player.pos;
-    cash = player.cash;
-    properties = property :: player.properties;
-    cards = player.cards;
-    jail = player.jail;
-    token = player.token;
-    name = player.name;
-    bankrupt = player.bankrupt;
-  }
+  { player with properties = property :: player.properties }
 
 let remove_property player property =
   {
-    pos = player.pos;
-    cash = player.cash;
+    player with
     properties = remove_from_list player.properties property;
-    cards = player.cards;
-    jail = player.jail;
-    token = player.token;
-    name = player.name;
-    bankrupt = player.bankrupt;
   }
 
 let send_to_jail player = { player with jail = true }
