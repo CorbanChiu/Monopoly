@@ -51,3 +51,15 @@ let net_worth player =
   + sum_mortgage_value (intlist_of_squarelist player.properties)
 
 let bankrupt player = net_worth player >= 0
+
+let add_property player property =
+  {
+    pos = player.pos;
+    cash = player.cash;
+    properties = property :: player.properties;
+    cards = player.cards;
+    jail = player.jail;
+    token = player.token;
+    name = player.name;
+    bankrupt = player.bankrupt;
+  }

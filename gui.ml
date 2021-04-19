@@ -553,13 +553,13 @@ let unsync () =
   set_line_width Consts.const_line_width;
   let msquare_lst = construct_msquares () in
   let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
-  if st.keypressed then raise Exit;
+  (* if st.keypressed then raise Exit; *)
   button_handler st;
   update_sel_state st msquare_lst;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;
+  draw_selection msquare_lst;
   draw_all_colors msquare_lst msquare_color_lst;
-  draw_all_msquares msquare_lst;
-  draw_selection msquare_lst
+  draw_all_msquares msquare_lst
 
 let looping () =
   try
@@ -569,7 +569,7 @@ let looping () =
     done
   with Exit -> ()
 
-let draw_background =
+let run =
   open_window ();
   let msquare_lst = construct_msquares () in
   draw_all_colors msquare_lst msquare_color_lst;

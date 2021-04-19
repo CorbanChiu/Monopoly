@@ -56,3 +56,7 @@ val get_name : board -> square -> string
 val init_prop_lst : board -> property list
 
 val update_property_new_owner : property -> string -> property
+
+val get_property_square : property -> square
+
+val get_price : square -> int option

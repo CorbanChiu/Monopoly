@@ -21,3 +21,5 @@ val net_worth : player -> int
 val bankrupt : player -> bool
 
 val move : player -> int -> player
+
+val add_property : player -> Board.square -> player

@@ -93,27 +93,68 @@ let rec get_property index_value property_list =
 
 (* returns a new property list with the old property edited to have a
    new owner *)
-let new_propertylist_update_owner
-    index_value
-    owner_name
-    old_property
-    property_list =
-  let new_property =
-    Board.update_property_new_owner old_property owner_name
-  in
-
+let new_propertylist index_value new_property property_list =
   List.remove_assoc index_value property_list
   |> List.cons (index_value, new_property)
 
-let remove_option_owner_name owner_option =
-  match owner_option with
+(* removes option *)
+let remove_option a_option =
+  match a_option with
   | None -> failwith "should not get here"
-  | Some owner -> owner
+  | Some a -> a
 
-(* let buy gs = let player_index = get_player_index gs.next
-   gs.player_lst in let player_name = remove_option_owner_name
-   (get_player_name gs.next gs.player_lst) in let old_property =
-   get_property player_index gs.property_lst in let new_property_list =
-   new_propertylist_update_owner player_index player_name old_property
-   gs.property_lst in "need to update player list -- need to do same
-   thing as you did with property list" *)
+(* extract player from list given the player_number (key value in
+   player_list) *)
+let rec get_player player_number player_list =
+  match player_list with
+  | (n, pl) :: t ->
+      if n = player_number then pl else get_player player_number t
+  | [] -> failwith "should not get here"
+
+(* returns a bool based on if a player can afford a given property or
+   not*)
+let can_player_buy player property =
+  let player_cash = Player.cash player in
+  let square = Board.get_property_square property in
+  let price = remove_option (Board.get_price square) in
+  player_cash - price >= 0
+
+(* returns a new player list with the player whose key value matches the
+   player_number is removed and the new player is added*)
+let new_playerlist player_number new_player player_list =
+  List.remove_assoc player_number player_list
+  |> List.cons (player_number, new_player)
+
+(* An exception that can be raised by buy if player cannot afford
+   property*)
+exception Could_not_Afford
+
+let buy gs =
+  let player_index = get_player_index gs.next gs.player_lst in
+  let player_name =
+    remove_option (get_player_name gs.next gs.player_lst)
+  in
+  let old_property = get_property player_index gs.property_lst in
+  let old_player = get_player gs.next gs.player_lst in
+
+  if not (can_player_buy old_player old_property) then
+    raise Could_not_Afford
+  else
+    (* Passed buy_check *)
+    let new_property =
+      Board.update_property_new_owner old_property player_name
+    in
+    let new_property_list =
+      new_propertylist player_index new_property gs.property_lst
+    in
+
+    let new_square = Board.get_property_square new_property in
+    let new_player = Player.add_property old_player new_square in
+    let new_player_list =
+      new_playerlist gs.next new_player gs.player_lst
+    in
+    {
+      property_lst = new_property_list;
+      player_lst = new_player_list;
+      next = gs.next;
+    }
