@@ -320,12 +320,12 @@ let get_property_square (prop : property) = prop.sqr
 
 let get_property_owner (prop : property) = prop.owner
 
-let is_traditional_color (trad : traditional) clr =
+let check_traditional_color (trad : traditional) clr =
   match trad.tcolor with color -> if color = clr then true else false
 
 let is_traditional_color sqr clr =
   match sqr with
-  | Traditional a -> is_traditional_color a clr
+  | Traditional a -> check_traditional_color a clr
   | _ -> false
 
 let count_traditonal_color sq_list clr =
@@ -373,5 +373,5 @@ let get_rent_price prop sqr_list =
   | Traditional sq -> traditional_rent_price prop sqr_list sq.tcolor
   | Utility sq -> failwith "unimplemented"
   | Railroad sq -> failwith "unimplemented"
-  | Card sq -> failwith "unimplemented"
-  | Misc sq -> failwith "unimplemented"
+  | Card sq -> failwith "do not need to pay rent"
+  | Misc sq -> failwith "do not need to pay rent"
