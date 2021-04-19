@@ -22,17 +22,7 @@ let init_player =
   }
 
 (* [move p dr] returns a new player type p after moving dr spaces. *)
-let move p dr =
-  {
-    pos = p.pos + dr;
-    cash = p.cash;
-    properties = p.properties;
-    cards = p.cards;
-    jail = p.jail;
-    token = p.token;
-    name = p.name;
-    bankrupt = p.bankrupt;
-  }
+let move p dr = { p with pos = dr }
 
 let position player = player.pos
 

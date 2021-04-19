@@ -9,6 +9,8 @@ type game_state = {
   next : int;
 }
 
+type action = Board.action
+
 let num_players = 4
 
 let init_board =

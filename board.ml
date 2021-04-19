@@ -243,19 +243,34 @@ type property = {
   mortgaged : bool option;
 }
 
-(* {sqr = prop.sqr; owner = ; dev_lvl = prop.dev_lvl} *)
+type action =
+  | Buy_ok
+  | Auction_ok
+  | Payrent_ok
+  | Mortgage_ok
+  | Card_ok
+  | Freeparking_ok
+  | None
+  | Gotojail_ok
+  | Go_ok
+  | Incometax_ok
+  | Luxurytax_ok
 
-type action = {
-  buy_ok : bool;
-  auction_ok : bool;
-  rent_ok : bool;
-  mortgage_ok : bool;
-}
-
-(* let get_action prop = match prop.sqr with | Traditional _ -> if
-   prop.owner = Some "Bank" then {buy_ok = true; rent_ok = false;
-   mortgage_ok = false} true else if prop.owner = None then failwith ""
-   else rent_ok | Utility _ -> | Railroad _ -> *)
+let get_action prop player =
+  match prop.sqr with
+  | Traditional _ | Utility _ | Railroad _ ->
+      if prop.owner = Some "Bank" then Buy_ok
+      else if prop.owner = Some player then Mortgage_ok
+      else Payrent_ok
+  | Card _ -> Card_ok
+  | Misc m -> (
+      match m with
+      | FreeParking _ -> Freeparking_ok
+      | Jail _ -> None
+      | GoToJail _ -> Gotojail_ok
+      | Go _ -> Go_ok
+      | IncomeTax _ -> Incometax_ok
+      | LuxuryTax _ -> Luxurytax_ok)
 
 let get_sqr prop = prop.sqr
 
