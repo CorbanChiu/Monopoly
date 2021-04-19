@@ -158,3 +158,10 @@ let buy gs =
       player_lst = new_player_list;
       next = gs.next;
     }
+
+(* let pay_rent gs = let tenant_index = get_player_index gs.next
+   gs.player_lst in let tenant = get_player gs.next gs.player_lst in let
+   prop = get_property tenant_index gs.property_lst in let owner_name =
+   Board.get_property_owner prop in let prop_square =
+   Board.get_property_square prop in let owner = Player.owner_from_list
+   gs.player_lst owner_name *)
