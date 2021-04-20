@@ -187,6 +187,13 @@ let get_price = function
 (* Returns an int option list for the purchase price *)
 let pricelist b = List.map get_price b
 
+let get_paymentstruct = function
+  | Traditional sq -> Some sq.tpaymentstruct
+  | Utility sq -> Some sq.upaymentstruct
+  | Railroad sq -> Some sq.rpaymentstruct
+  | Card sq -> None
+  | Misc sq -> None
+
 let get_color = function Traditional sq -> Some sq.tcolor | _ -> None
 
 (* Returns a propertycolor option list *)
@@ -305,15 +312,69 @@ let init_property sq =
       }
   | _ -> { sqr = sq; owner = None; dev_lvl = None; mortgaged = None }
 
-let rec init_prop_lst (b : board) =
-  match b with [] -> [] | h :: t -> init_property h :: init_prop_lst t
+let rec init_prop_lst (b : board) a =
+  match b with
+  | [] -> []
+  | h :: t -> (a, init_property h) :: init_prop_lst t (a + 1)
 
 let update_property_new_owner prop owner_name =
-  {
-    sqr = prop.sqr;
-    owner = Some owner_name;
-    dev_lvl = prop.dev_lvl;
-    mortgaged = prop.mortgaged;
-  }
+  { prop with owner = owner_name }
 
 let get_property_square (prop : property) = prop.sqr
+
+(* let same_color color sqr = match sqr with | Traditional _ -> color =
+   sqr.tcolor | _ -> false *)
+
+let rec num_same_color color sqr_lst =
+  match color with
+  | r, g, b -> (
+      match sqr_lst with
+      | [] -> 0
+      | h :: t -> (
+          match get_color h with
+          | Some (r1, g1, b1) when (r1, g1, b1) = (r, g, b) ->
+              1 + num_same_color color t
+          | _ -> num_same_color color t))
+
+let rec num_railroads sqr_lst =
+  match sqr_lst with
+  | [] -> 0
+  | h :: t -> (
+      match h with
+      | Railroad _ -> 1 + num_railroads t
+      | _ -> num_railroads t)
+
+let rec num_utilities sqr_lst =
+  match sqr_lst with
+  | [] -> 0
+  | h :: t -> (
+      match h with
+      | Utility _ -> 1 + num_utilities t
+      | _ -> num_utilities t)
+
+(* [same_group sq lst] returns the number of squares in square list lst
+   that have the same type as square sq or the rent multiplier if the
+   square has type traditional. *)
+let same_group sqr sqr_lst =
+  match sqr with
+  | Railroad _ -> num_railroads sqr_lst
+  | Utility _ -> num_utilities sqr_lst
+  | _ -> 1
+
+let get_rent sqr ind mult dr =
+  match sqr with
+  | Traditional
+      {
+        tname;
+        tpp;
+        tpaymentstruct;
+        tcolor;
+        tmortgageprice;
+        buildingcost;
+      } ->
+      List.assoc ind tpaymentstruct * mult
+  | Utility { uname; upp; upaymentstruct; umortgageprice } ->
+      List.assoc ind upaymentstruct * dr
+  | Railroad { rname; rpp; rpaymentstruct; rmortgageprice } ->
+      List.assoc ind rpaymentstruct
+  | _ -> failwith "Cannot get rent from this square"

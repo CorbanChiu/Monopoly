@@ -53,10 +53,12 @@ val utilitygroup : board -> square list
 
 val get_name : board -> square -> string
 
-val init_prop_lst : board -> property list
+val init_prop_lst : board -> int -> (int * property) list
 
-val update_property_new_owner : property -> string -> property
+val update_property_new_owner : property -> string option -> property
 
 val get_property_square : property -> square
 
 val get_price : square -> int option
+
+val same_group : square -> square list -> int
