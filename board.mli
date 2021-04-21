@@ -68,3 +68,5 @@ val num_color_group : propertycolor option -> board -> int
 val get_owner : property -> string option
 
 val property_to_mortgaged : property -> property
+
+val property_to_unmortgaged : property -> property

@@ -291,6 +291,8 @@ let get_mortgaged prop = prop.mortgaged
 
 let property_to_mortgaged prop = { prop with mortgaged = Some true }
 
+let property_to_unmortgaged prop = { prop with mortgaged = Some false }
+
 let init_property sq =
   match sq with
   | Traditional _ ->

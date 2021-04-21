@@ -197,13 +197,37 @@ let mortgage gs (prop : property) =
       update_player_lst gs.next updated_player gs.player_lst
     in
     (* edited player *)
-    let update_property = Board.property_to_mortgaged prop in
+    let updated_property = Board.property_to_mortgaged prop in
     let new_property_list =
       update_property_list_given_property gs.property_lst prop
-        update_property
+        updated_property
     in
     {
       property_lst = new_property_list;
       player_lst = new_playerlist;
       next = gs.next;
     }
+
+let unmortgage gs (prop : property) =
+  let player = get_player gs.next gs.player_lst in
+  let mortgage_price_before_mult =
+    prop |> Board.get_property_square |> Board.mortgage |> remove_option
+  in
+  let mortgage_price =
+    int_of_float
+      (Float.mul (float_of_int mortgage_price_before_mult) 1.1)
+  in
+  let updated_player = Player.decrement_cash player mortgage_price in
+  let new_playerlist =
+    update_player_lst gs.next updated_player gs.player_lst
+  in
+  let updated_property = Board.property_to_unmortgaged prop in
+  let new_property_list =
+    update_property_list_given_property gs.property_lst prop
+      updated_property
+  in
+  {
+    property_lst = new_property_list;
+    player_lst = new_playerlist;
+    next = gs.next;
+  }
