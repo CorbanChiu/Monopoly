@@ -548,7 +548,7 @@ let draw_token r =
    (State.move state [ Player.move np (modulo (Player.position np + dr)
    40) ]) | false -> () *)
 
-let unsync () =
+let update () =
   clear_graph ();
   set_line_width Consts.const_line_width;
   let msquare_lst = construct_msquares () in
@@ -561,18 +561,18 @@ let unsync () =
   draw_all_colors msquare_lst msquare_color_lst;
   draw_all_msquares msquare_lst
 
-let looping () =
+let driver () =
   try
     while true do
-      unsync ();
+      update ();
       synchronize ()
     done
   with Exit -> ()
 
-let run =
+let init =
   open_window ();
   let msquare_lst = construct_msquares () in
   draw_all_colors msquare_lst msquare_color_lst;
   draw_all_msquares msquare_lst;
   auto_synchronize false;
-  looping ()
+  driver ()
