@@ -165,3 +165,41 @@ let pay_rent gs dr =
     player_lst = update_owner_ply_list;
     next = gs.next;
   }
+
+let update_property_list_given_property
+    prop_list
+    (old_prop : property)
+    (new_prop : property) =
+  let rec helper prop_list acc =
+    match prop_list with
+    | (a, p) :: t ->
+        if p = old_prop then helper t ((a, new_prop) :: acc)
+        else helper t ((a, old_prop) :: acc)
+    | [] -> acc
+  in
+  helper prop_list []
+
+let mortgage gs (prop : property) =
+  (* TO DO: check if property can actually be mortgaged (if dev_lvl of
+     property is anything but 0 cannot be mortgaged)*)
+  let player = get_player gs.next gs.player_lst in
+  let mortgage_price =
+    prop |> Board.get_property_square |> Board.mortgage
+  in
+  let updated_player =
+    Player.increment_cash player (remove_option mortgage_price)
+  in
+  let new_playerlist =
+    update_player_lst gs.next updated_player gs.player_lst
+  in
+  (* edited player *)
+  let update_property = Board.property_to_mortgaged prop in
+  let new_property_list =
+    update_property_list_given_property gs.property_lst prop
+      update_property
+  in
+  {
+    property_lst = new_property_list;
+    player_lst = new_playerlist;
+    next = gs.next;
+  }
