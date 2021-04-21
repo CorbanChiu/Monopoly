@@ -44,3 +44,5 @@ val change_to_not_bankrupt : player -> player
 
 val get_player_from_player_list_given_name :
   ('a * player) list -> string option -> player
+
+val get_player_number : ('a * player) list -> player -> 'a
