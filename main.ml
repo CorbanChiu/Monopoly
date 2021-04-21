@@ -1,3 +1,3 @@
-let main () = Gui.run
+let main () = Gui.init
 
 let () = main ()
