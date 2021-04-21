@@ -285,6 +285,8 @@ let get_owner prop = prop.owner
 
 let get_dev_lvl prop = prop.dev_lvl
 
+let dev_lvl prop = get_dev_lvl prop
+
 let get_mortgaged prop = prop.mortgaged
 
 let property_to_mortgaged prop = { prop with mortgaged = Some true }

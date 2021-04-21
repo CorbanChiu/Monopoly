@@ -180,27 +180,30 @@ let update_property_list_given_property
   in
   helper prop_list []
 
+exception Cannot_be_Mortgaged
+
 let mortgage gs (prop : property) =
-  (* TO DO: check if property can actually be mortgaged (if dev_lvl of
-     property is anything but 0 cannot be mortgaged)*)
-  let player = get_player gs.next gs.player_lst in
-  let mortgage_price =
-    prop |> Board.get_property_square |> Board.mortgage
-  in
-  let updated_player =
-    Player.increment_cash player (remove_option mortgage_price)
-  in
-  let new_playerlist =
-    update_player_lst gs.next updated_player gs.player_lst
-  in
-  (* edited player *)
-  let update_property = Board.property_to_mortgaged prop in
-  let new_property_list =
-    update_property_list_given_property gs.property_lst prop
-      update_property
-  in
-  {
-    property_lst = new_property_list;
-    player_lst = new_playerlist;
-    next = gs.next;
-  }
+  let prop_dev_level = Board.dev_lvl prop in
+  if prop_dev_level != Some 0 then raise Cannot_be_Mortgaged
+  else
+    let player = get_player gs.next gs.player_lst in
+    let mortgage_price =
+      prop |> Board.get_property_square |> Board.mortgage
+    in
+    let updated_player =
+      Player.increment_cash player (remove_option mortgage_price)
+    in
+    let new_playerlist =
+      update_player_lst gs.next updated_player gs.player_lst
+    in
+    (* edited player *)
+    let update_property = Board.property_to_mortgaged prop in
+    let new_property_list =
+      update_property_list_given_property gs.property_lst prop
+        update_property
+    in
+    {
+      property_lst = new_property_list;
+      player_lst = new_playerlist;
+      next = gs.next;
+    }

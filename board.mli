@@ -42,6 +42,8 @@ val mortgagelist : board -> int option list
 
 val mortgage : square -> int option
 
+val dev_lvl : property -> int option
+
 (** [propertygroup b sq] is the square list of squares part of the same
     "color grouping" (that which you need to own all properties to
     build) *)
