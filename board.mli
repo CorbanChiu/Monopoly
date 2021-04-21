@@ -9,6 +9,19 @@ type property
 (** The type of value representing a color (r,g,b) *)
 type propertycolor = int * int * int
 
+type action =
+  | Buy_ok
+  | Auction_ok
+  | Payrent_ok
+  | Mortgage_ok
+  | Card_ok
+  | Freeparking_ok
+  | None
+  | Gotojail_ok
+  | Go_ok
+  | Incometax_ok
+  | Luxurytax_ok
+
 exception UnknownJSON
 
 val from_json : Yojson.Basic.t -> board
@@ -43,3 +56,9 @@ val get_name : board -> square -> string
 val init_prop_lst : board -> property list
 
 val update_property_new_owner : property -> string -> property
+
+val get_property_square : property -> square
+
+val get_property_owner : property -> string option
+
+val get_price : square -> int option

@@ -22,17 +22,7 @@ let init_player =
   }
 
 (* [move p dr] returns a new player type p after moving dr spaces. *)
-let move p dr =
-  {
-    pos = p.pos + dr;
-    cash = p.cash;
-    properties = p.properties;
-    cards = p.cards;
-    jail = p.jail;
-    token = p.token;
-    name = p.name;
-    bankrupt = p.bankrupt;
-  }
+let move p dr = { p with pos = dr }
 
 let position player = player.pos
 
@@ -61,3 +51,49 @@ let net_worth player =
   + sum_mortgage_value (intlist_of_squarelist player.properties)
 
 let bankrupt player = net_worth player >= 0
+
+(* Helper *)
+let remove_from_list lst member =
+  let rec helper lst member acc =
+    match lst with
+    | [] -> acc
+    | a :: t ->
+        if a = member then helper t member acc
+        else helper t member (a :: acc)
+  in
+  helper lst member []
+
+let increment_cash player added_cash =
+  { player with cash = player.cash + added_cash }
+
+let decrement_cash player subtracted_cash =
+  { player with cash = player.cash - subtracted_cash }
+
+let add_card player card = { player with cards = card :: player.cards }
+
+let remove_card player card =
+  { player with cards = remove_from_list player.cards card }
+
+let add_property player property =
+  { player with properties = property :: player.properties }
+
+let remove_property player property =
+  {
+    player with
+    properties = remove_from_list player.properties property;
+  }
+
+let send_to_jail player = { player with jail = true }
+
+let let_out_of_jail player = { player with jail = false }
+
+let change_to_bankrupt player = { player with bankrupt = true }
+
+let change_to_not_bankrupt player = { player with bankrupt = false }
+
+let rec get_player_from_player_list_given_name player_lst owner_option =
+  match player_lst with
+  | [] -> failwith "should not get here"
+  | (a, pl) :: t ->
+      if pl.name = owner_option then pl
+      else get_player_from_player_list_given_name t owner_option
