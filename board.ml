@@ -322,19 +322,12 @@ let update_property_new_owner prop owner_name =
 
 let get_property_square (prop : property) = prop.sqr
 
-(* let same_color color sqr = match sqr with | Traditional _ -> color =
-   sqr.tcolor | _ -> false *)
-
-let rec num_same_color color sqr_lst =
-  match color with
-  | r, g, b -> (
-      match sqr_lst with
-      | [] -> 0
-      | h :: t -> (
-          match get_color h with
-          | Some (r1, g1, b1) when (r1, g1, b1) = (r, g, b) ->
-              1 + num_same_color color t
-          | _ -> num_same_color color t))
+let rec num_same_color sq sqr_lst =
+  match sqr_lst with
+  | [] -> 0
+  | h :: t ->
+      if test_color sq h then 1 + num_same_color sq t
+      else num_same_color sq t
 
 let rec num_railroads sqr_lst =
   match sqr_lst with
@@ -352,29 +345,43 @@ let rec num_utilities sqr_lst =
       | Utility _ -> 1 + num_utilities t
       | _ -> num_utilities t)
 
-(* [same_group sq lst] returns the number of squares in square list lst
-   that have the same type as square sq or the rent multiplier if the
-   square has type traditional. *)
-let same_group sqr sqr_lst =
-  match sqr with
-  | Railroad _ -> num_railroads sqr_lst
-  | Utility _ -> num_utilities sqr_lst
-  | _ -> 1
+let num_color_group color (b : board) =
+  let color_list = colorlist b in
+  if color = List.nth color_list 1 || color = List.nth color_list 39
+  then 2
+  else 3
 
-let get_rent sqr ind mult dr =
-  match sqr with
-  | Traditional
-      {
-        tname;
-        tpp;
-        tpaymentstruct;
-        tcolor;
-        tmortgageprice;
-        buildingcost;
-      } ->
-      List.assoc ind tpaymentstruct * mult
-  | Utility { uname; upp; upaymentstruct; umortgageprice } ->
-      List.assoc ind upaymentstruct * dr
-  | Railroad { rname; rpp; rpaymentstruct; rmortgageprice } ->
-      List.assoc ind rpaymentstruct
+let remove_option opt =
+  match opt with Some a -> a | None -> failwith "No reason to call"
+
+let trent_multiplier prop sqr_lst b =
+  if
+    num_same_color prop.sqr sqr_lst
+    = num_color_group (get_color prop.sqr) b
+  then 2
+  else 1
+
+let flat_rent prop =
+  List.assoc
+    (remove_option prop.dev_lvl)
+    (remove_option (get_paymentstruct prop.sqr))
+
+let trent_price prop sqr_lst b =
+  if prop.dev_lvl = Some 0 then
+    trent_multiplier prop sqr_lst b * flat_rent prop
+  else flat_rent prop
+
+let rrent_price prop sqr_lst =
+  List.assoc (num_railroads sqr_lst)
+    (remove_option (get_paymentstruct prop.sqr))
+
+let urent_price prop sqr_lst =
+  List.assoc (num_utilities sqr_lst)
+    (remove_option (get_paymentstruct prop.sqr))
+
+let get_rent prop sqr_lst b dr =
+  match prop.sqr with
+  | Traditional sq -> trent_price prop sqr_lst b
+  | Utility sq -> urent_price prop sqr_lst * dr
+  | Railroad sq -> rrent_price prop sqr_lst
   | _ -> failwith "Cannot get rent from this square"

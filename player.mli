@@ -41,3 +41,6 @@ val let_out_of_jail : player -> player
 val change_to_bankrupt : player -> player
 
 val change_to_not_bankrupt : player -> player
+
+val get_player_from_player_list_given_name :
+  ('a * player) list -> string option -> player

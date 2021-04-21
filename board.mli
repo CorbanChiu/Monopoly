@@ -59,6 +59,8 @@ val update_property_new_owner : property -> string option -> property
 
 val get_property_square : property -> square
 
+val get_property_owner : property -> string option
+
 val get_price : square -> int option
 
 val same_group : square -> square list -> int

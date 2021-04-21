@@ -66,8 +66,8 @@ let end_turn gs =
   }
 
 let player_turn gs =
-  let player = List.assoc gs.next gs.player_lst in
-  let dr = roll_dice () in
+  (* let player = List.assoc gs.next gs.player_lst in let dr = roll_dice
+     () in *)
   move gs gs.player_lst |> end_turn
 
 (* extract player from list given the player_number (key value in
@@ -140,3 +140,10 @@ let buy gs =
       player_lst = new_player_lst;
       next = gs.next;
     }
+
+(* let pay_rent gs = let tenant_index = get_player_index gs.next
+   gs.player_lst in let tenant = get_player gs.next gs.player_lst in let
+   prop = get_property tenant_index gs.property_lst in let owner_name =
+   Board.get_property_owner prop in let prop_square =
+   Board.get_property_square prop in let owner = Player.owner_from_list
+   gs.player_lst owner_name *)
