@@ -287,6 +287,8 @@ let get_dev_lvl prop = prop.dev_lvl
 
 let get_mortgaged prop = prop.mortgaged
 
+let property_to_mortgaged prop = { prop with mortgaged = Some true }
+
 let init_property sq =
   match sq with
   | Traditional _ ->

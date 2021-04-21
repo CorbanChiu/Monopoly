@@ -64,3 +64,5 @@ val get_price : square -> int option
 val num_color_group : propertycolor option -> board -> int
 
 val get_owner : property -> string option
+
+val property_to_mortgaged : property -> property
