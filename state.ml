@@ -136,21 +136,20 @@ let buy gs =
       next = gs.next;
     }
 
-(* let pay_rent gs = *)
-
-let pay_rent gs =
+let pay_rent gs dr =
   let tenant_index = get_player_pos gs.next gs.player_lst in
   let tenant = get_player gs.next gs.player_lst in
   let prop = get_property tenant_index gs.property_lst in
   let owner_name = Board.get_owner prop in
-  (* let prop_square = Board.get_property_square prop in *)
   let owner =
     Player.get_player_from_player_list_given_name gs.player_lst
       owner_name
   in
   let owner_number = Player.get_player_number gs.player_lst owner in
 
-  let rent_price = 2 in
+  let rent_price =
+    Board.get_rent prop (Player.properties owner) init_board dr
+  in
   (*TO DO*)
   let updated_tenant = Player.decrement_cash tenant rent_price in
   let updated_owner = Player.increment_cash owner rent_price in

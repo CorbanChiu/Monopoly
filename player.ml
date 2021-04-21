@@ -93,8 +93,8 @@ let change_to_not_bankrupt player = { player with bankrupt = false }
 
 let rec get_player_from_player_list_given_name player_lst owner_option =
   match player_lst with
-  | [] -> failwith "player could not be found"
-  | (a, pl) :: t ->
+  | [] -> failwith "Player could not be found"
+  | (ind, pl) :: t ->
       if pl.name = owner_option then pl
       else get_player_from_player_list_given_name t owner_option
 
