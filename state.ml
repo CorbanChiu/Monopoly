@@ -43,11 +43,6 @@ let roll_dice () =
 (* [move gs lst] returns a new game state gs *)
 let move gs dr = gs
 
-let test property player =
-  Board.same_group
-    (Board.get_property_square property)
-    (Player.properties player)
-
 let possible_action gs ind = List.nth gs.property_lst ind
 
 (* [next_player gs nxt] returns the index of the next player who is not
@@ -141,11 +136,13 @@ let buy gs =
       next = gs.next;
     }
 
+(* let pay_rent gs = *)
+
 let pay_rent gs =
-  let tenant_index = get_player_index gs.next gs.player_lst in
+  let tenant_index = get_player_pos gs.next gs.player_lst in
   let tenant = get_player gs.next gs.player_lst in
   let prop = get_property tenant_index gs.property_lst in
-  let owner_name = Board.get_property_owner prop in
+  let owner_name = Board.get_owner prop in
   (* let prop_square = Board.get_property_square prop in *)
   let owner =
     Player.get_player_from_player_list_given_name gs.player_lst
@@ -158,10 +155,10 @@ let pay_rent gs =
   let updated_tenant = Player.decrement_cash tenant rent_price in
   let updated_owner = Player.increment_cash owner rent_price in
   let update_tenant_ply_list =
-    new_playerlist gs.next updated_tenant gs.player_lst
+    update_player_lst gs.next updated_tenant gs.player_lst
   in
   let update_owner_ply_list =
-    new_playerlist owner_number updated_owner update_tenant_ply_list
+    update_player_lst owner_number updated_owner update_tenant_ply_list
   in
 
   {
