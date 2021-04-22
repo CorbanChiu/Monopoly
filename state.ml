@@ -232,6 +232,3 @@ let unmortgage gs (prop : property) =
     player_lst = new_playerlist;
     next = gs.next;
   }
-
-let buy_house = failwith ""
-(* steps 1) *)
