@@ -2,6 +2,8 @@ open Yojson.Basic.Util
 
 type paymentstruct = (int * int) list
 
+type paymentstructure = paymentstruct option
+
 type propertycolor = int * int * int
 
 exception UnknownJSON
@@ -192,7 +194,7 @@ let get_color = function Traditional sq -> Some sq.tcolor | _ -> None
 (* Returns a propertycolor option list *)
 let colorlist b = List.map get_color b
 
-let get_mortage = function
+let get_mortgage = function
   | Traditional sq -> Some sq.tmortgageprice
   | Utility sq -> Some sq.umortgageprice
   | Railroad sq -> Some sq.rmortgageprice
@@ -200,9 +202,7 @@ let get_mortage = function
   | Misc sq -> None
 
 (* Returns an int option list *)
-let mortgagelist b = List.map get_mortage b
-
-let mortgage = get_mortage
+let mortgagelist b = List.map get_mortgage b
 
 let test_color b1 b2 =
   match (b1, b2) with
@@ -375,3 +375,19 @@ let get_rent_price prop sqr_list =
   | Railroad sq -> failwith "unimplemented"
   | Card sq -> failwith "do not need to pay rent"
   | Misc sq -> failwith "do not need to pay rent"
+
+let get_payments b sq =
+  List.find (( = ) sq) b |> function
+  | Traditional { tpaymentstruct } -> Some tpaymentstruct
+  | Utility { upaymentstruct } -> Some upaymentstruct
+  | Railroad { rpaymentstruct } -> Some rpaymentstruct
+  | Card _ -> None
+  | Misc _ -> None
+
+let get_buildprice b sq =
+  List.find (( = ) sq) b |> function
+  | Traditional { buildingcost } -> Some buildingcost
+  | Utility { upaymentstruct } -> None
+  | Railroad { rpaymentstruct } -> None
+  | Card _ -> None
+  | Misc _ -> None

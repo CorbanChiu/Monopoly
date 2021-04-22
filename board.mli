@@ -9,6 +9,8 @@ type property
 (** The type of value representing a color (r,g,b) *)
 type propertycolor = int * int * int
 
+type paymentstructure = (int * int) list option
+
 type action =
   | Buy_ok
   | Auction_ok
@@ -40,7 +42,7 @@ val colorlist : board -> propertycolor option list
 (* TODO: is this really necessary to have here? *)
 val mortgagelist : board -> int option list
 
-val mortgage : square -> int option
+val get_mortgage : square -> int option
 
 (** [propertygroup b sq] is the square list of squares part of the same
     "color grouping" (that which you need to own all properties to
@@ -62,3 +64,7 @@ val get_property_square : property -> square
 val get_property_owner : property -> string option
 
 val get_price : square -> int option
+
+val get_payments : board -> square -> paymentstructure
+
+val get_buildprice : board -> square -> int option

@@ -41,7 +41,7 @@ let name player = player.name
 let sum_mortgage_value prop = List.fold_left ( + ) 0 prop
 
 let int_of_square sq =
-  match Board.mortgage sq with None -> 0 | Some x -> x
+  match Board.get_mortgage sq with None -> 0 | Some x -> x
 
 let intlist_of_squarelist lst = List.map int_of_square lst
 
