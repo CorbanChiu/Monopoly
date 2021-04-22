@@ -157,6 +157,8 @@ let pay_rent gs dr =
     }
   else failwith "Mortgage or bankrupt"
 
+(* TODO: for a traditional property, check that any other properties in
+   the color group are not developed *)
 let mortgage gs property =
   let player = current_player gs in
   let mortgage_value =
@@ -210,7 +212,10 @@ let develop_property gs property =
   let owner =
     Player.get_player_from_name gs.player_lst (Board.get_owner property)
   in
-  (* TODO: (1) add a check for even development across the color group. *)
+  (* TODO: (1) check for even development across the color group (2)
+     check that the other properties in the color group are not
+     mortgaged (similar to what needs to be added to mortgage - check
+     google spreadsheet for more info) *)
   if
     Board.complete_propertygroup property
       (propertylst_to_sqrlst (Player.get_property_lst owner))
