@@ -55,16 +55,22 @@ val utilitygroup : board -> square list
 
 val get_name : board -> square -> string
 
-val init_prop_lst : board -> property list
+val init_prop_lst : board -> int -> (int * property) list
 
-val update_property_new_owner : property -> string -> property
+val update_property_new_owner : property -> string option -> property
 
 val get_property_square : property -> square
-
-val get_property_owner : property -> string option
 
 val get_price : square -> int option
 
 val get_payments : board -> square -> paymentstructure
 
 val get_buildprice : board -> square -> int option
+
+val num_color_group : propertycolor option -> board -> int
+
+val get_owner : property -> string option
+
+val get_rent : property -> square list -> board -> int -> int
+
+val property_to_mortgaged : property -> property

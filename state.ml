@@ -21,6 +21,30 @@ let rec init_player_lst np =
   | 0 -> []
   | a -> (a, Player.init_player) :: init_player_lst (a - 1)
 
+(* [init] is the initial game state *)
+let init =
+  {
+    property_lst = Board.init_prop_lst init_board 0;
+    player_lst = init_player_lst num_players;
+    next = 0;
+  }
+
+(* [updated_playerlst ind np lst] returns a player list lst where the
+   index ind contains the updated player np. *)
+let update_player_lst player_ind new_player player_lst =
+  List.remove_assoc player_ind player_lst
+  |> List.cons (player_ind, new_player)
+
+(* [roll_dice] returns a random integer between 2 and 12 (inclusive). *)
+let roll_dice () =
+  self_init ();
+  add (nativeint (of_int 5)) (nativeint (of_int 5)) |> to_int |> ( + ) 2
+
+(* [move gs lst] returns a new game state gs *)
+let move gs dr = gs
+
+let possible_action gs ind = List.nth gs.property_lst ind
+
 (* [next_player gs nxt] returns the index of the next player who is not
    in jail. *)
 let rec next_player gs nxt =
@@ -29,32 +53,6 @@ let rec next_player gs nxt =
     next_player gs (nxt + 1)
   else next_ind
 
-let rec add_index p_lst ind =
-  match p_lst with
-  | [] -> []
-  | h :: t -> (ind, h) :: add_index t (ind + 1)
-
-(* [init] is the initial game state *)
-let init =
-  {
-    property_lst = add_index (Board.init_prop_lst init_board) 0;
-    player_lst = init_player_lst num_players;
-    next = 0;
-  }
-
-let updated_player_lst ind p_lst np =
-  List.remove_assoc ind p_lst |> List.cons np
-
-(* [move gs] returns a new game state gs after a player has moved *)
-let move gs =
-  {
-    property_lst = gs.property_lst;
-    player_lst = gs.player_lst;
-    next = gs.next;
-  }
-
-let possible_action gs ind = List.nth gs.property_lst ind
-
 let end_turn gs =
   {
     property_lst = gs.property_lst;
@@ -62,54 +60,41 @@ let end_turn gs =
     next = next_player gs gs.next;
   }
 
-let roll_dice () =
-  self_init ();
-  add (nativeint (of_int 5)) (nativeint (of_int 5)) |> to_int |> ( + ) 2
+let player_turn gs =
+  (* let player = List.assoc gs.next gs.player_lst in let dr = roll_dice
+     () in *)
+  move gs gs.player_lst |> end_turn
 
-(* takes in the "next" value and a player_list from a gamestate and
-   returns the index of the player associated with the "next" value*)
-let rec get_player_index player_number player_list =
-  match player_list with
-  | (n, pl) :: t ->
-      if n = player_number then Player.position pl
-      else get_player_index player_number t
-  | [] -> failwith "should not get here"
+(* extract player from list given the player_number (key value in
+   player_list) *)
+let get_player player_ind player_lst = List.assoc player_ind player_lst
 
-(* takes in the "next" value and a player_list from a gamestate and
-   returns the name the player associated with the "next" value*)
-let rec get_player_name player_number player_list =
-  match player_list with
-  | (n, pl) :: t ->
-      if n = player_number then Player.name pl
-      else get_player_name player_number t
-  | [] -> failwith "should not get here"
+(* [get_player_pos ind lst] returns the position of the player who has
+   index ind in the player list lst. *)
+let get_player_pos player_ind player_lst =
+  get_player player_ind player_lst |> Player.position
 
-(* gets property from property list given the index of the property *)
-let rec get_property index_value property_list =
-  match property_list with
-  | (i, prop) :: t ->
-      if index_value = i then prop else get_property index_value t
-  | [] -> failwith "should not get here "
+(* [get_player_name ind lst] returns the name of the player who has
+   index ind in the player list lst. *)
+let get_player_name player_ind player_lst =
+  get_player player_ind player_lst |> Player.name
 
-(* returns a new property list with the old property edited to have a
-   new owner *)
-let new_propertylist index_value new_property property_list =
-  List.remove_assoc index_value property_list
-  |> List.cons (index_value, new_property)
+(* [get_property ind lst] returns the property at index ind in the
+   property list lst *)
+let get_property property_ind property_lst =
+  List.assoc property_ind property_lst
+
+(* [updated_propertylst ind np lst] returns a property list lst where
+   the index ind contains the updated property np. *)
+let update_property_lst property_ind new_property property_lst =
+  List.remove_assoc property_ind property_lst
+  |> List.cons (property_ind, new_property)
 
 (* removes option *)
 let remove_option a_option =
   match a_option with
   | None -> failwith "should not get here"
   | Some a -> a
-
-(* extract player from list given the player_number (key value in
-   player_list) *)
-let rec get_player player_number player_list =
-  match player_list with
-  | (n, pl) :: t ->
-      if n = player_number then pl else get_player player_number t
-  | [] -> failwith "should not get here"
 
 (* returns a bool based on if a player can afford a given property or
    not*)
@@ -119,21 +104,13 @@ let can_player_buy player property =
   let price = remove_option (Board.get_price square) in
   player_cash - price >= 0
 
-(* returns a new player list with the player whose key value matches the
-   player_number is removed and the new player is added*)
-let new_playerlist player_number new_player player_list =
-  List.remove_assoc player_number player_list
-  |> List.cons (player_number, new_player)
-
 (* An exception that can be raised by buy if player cannot afford
    property*)
 exception Could_not_Afford
 
 let buy gs =
-  let player_index = get_player_index gs.next gs.player_lst in
-  let player_name =
-    remove_option (get_player_name gs.next gs.player_lst)
-  in
+  let player_index = get_player_pos gs.next gs.player_lst in
+  let player_name = get_player_name gs.next gs.player_lst in
   let old_property = get_property player_index gs.property_lst in
   let old_player = get_player gs.next gs.player_lst in
 
@@ -144,24 +121,85 @@ let buy gs =
     let new_property =
       Board.update_property_new_owner old_property player_name
     in
-    let new_property_list =
-      new_propertylist player_index new_property gs.property_lst
+    let new_property_lst =
+      update_property_lst player_index new_property gs.property_lst
     in
 
     let new_square = Board.get_property_square new_property in
     let new_player = Player.add_property old_player new_square in
-    let new_player_list =
-      new_playerlist gs.next new_player gs.player_lst
+    let new_player_lst =
+      update_player_lst gs.next new_player gs.player_lst
     in
     {
-      property_lst = new_property_list;
-      player_lst = new_player_list;
+      property_lst = new_property_lst;
+      player_lst = new_player_lst;
       next = gs.next;
     }
 
-(* let pay_rent gs = let tenant_index = get_player_index gs.next
-   gs.player_lst in let tenant = get_player gs.next gs.player_lst in let
-   prop = get_property tenant_index gs.property_lst in let owner_name =
-   Board.get_property_owner prop in let prop_square =
-   Board.get_property_square prop in let owner = Player.owner_from_list
-   gs.player_lst owner_name *)
+let pay_rent gs dr =
+  let tenant_index = get_player_pos gs.next gs.player_lst in
+  let tenant = get_player gs.next gs.player_lst in
+  let prop = get_property tenant_index gs.property_lst in
+  let owner_name = Board.get_owner prop in
+  let owner =
+    Player.get_player_from_player_list_given_name gs.player_lst
+      owner_name
+  in
+  let owner_number = Player.get_player_number gs.player_lst owner in
+
+  let rent_price =
+    Board.get_rent prop (Player.properties owner) init_board dr
+  in
+  (*TO DO*)
+  let updated_tenant = Player.decrement_cash tenant rent_price in
+  let updated_owner = Player.increment_cash owner rent_price in
+  let update_tenant_ply_list =
+    update_player_lst gs.next updated_tenant gs.player_lst
+  in
+  let update_owner_ply_list =
+    update_player_lst owner_number updated_owner update_tenant_ply_list
+  in
+
+  {
+    property_lst = gs.property_lst;
+    player_lst = update_owner_ply_list;
+    next = gs.next;
+  }
+
+let update_property_list_given_property
+    prop_list
+    (old_prop : property)
+    (new_prop : property) =
+  let rec helper prop_list acc =
+    match prop_list with
+    | (a, p) :: t ->
+        if p = old_prop then helper t ((a, new_prop) :: acc)
+        else helper t ((a, old_prop) :: acc)
+    | [] -> acc
+  in
+  helper prop_list []
+
+let mortgage gs (prop : property) =
+  (* TO DO: check if property can actually be mortgaged (if dev_lvl of
+     property is anything but 0 cannot be mortgaged)*)
+  let player = get_player gs.next gs.player_lst in
+  let mortgage_price =
+    prop |> Board.get_property_square |> Board.mortgage
+  in
+  let updated_player =
+    Player.increment_cash player (remove_option mortgage_price)
+  in
+  let new_playerlist =
+    update_player_lst gs.next updated_player gs.player_lst
+  in
+  (* edited player *)
+  let update_property = Board.property_to_mortgaged prop in
+  let new_property_list =
+    update_property_list_given_property gs.property_lst prop
+      update_property
+  in
+  {
+    property_lst = new_property_list;
+    player_lst = new_playerlist;
+    next = gs.next;
+  }
