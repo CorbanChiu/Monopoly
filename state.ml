@@ -191,3 +191,17 @@ let unmortgage gs property =
         gs.player_lst;
     next = gs.next;
   }
+
+let buy_house = failwith ""
+
+(* steps 1) make sure property color group owned by same player - go
+   through gs.playerlist and look through all squares to make sure
+   player owns all squares of the color (get color from the property
+   type passed in as argument) 2) make sure prop color group equally
+   developed - check is dev_lvl of the properties of the same color has
+   a dev_lvl difference of at most 1 3) player enough cash - look
+   through property type, get square and check building cost 4) check
+   property not fully developed - check if dev_lvl is less than 5 5)
+   check that bank has enough houses and hotels - if not enough houses
+   cannot build (no more houses to build) 6) if building a hotel then
+   get rid of the four houses *)
