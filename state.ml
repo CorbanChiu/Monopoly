@@ -184,7 +184,8 @@ exception Cannot_be_Mortgaged
 
 let mortgage gs (prop : property) =
   let prop_dev_level = Board.dev_lvl prop in
-  if prop_dev_level != Some 0 then raise Cannot_be_Mortgaged
+  if prop_dev_level != Some 0 || prop_dev_level = None then
+    raise Cannot_be_Mortgaged
   else
     let player = get_player gs.next gs.player_lst in
     let mortgage_price =
@@ -231,3 +232,6 @@ let unmortgage gs (prop : property) =
     player_lst = new_playerlist;
     next = gs.next;
   }
+
+let buy_house = failwith ""
+(* steps 1) *)
