@@ -184,7 +184,7 @@ let mortgage gs (prop : property) =
      property is anything but 0 cannot be mortgaged)*)
   let player = get_player gs.next gs.player_lst in
   let mortgage_price =
-    prop |> Board.get_property_square |> Board.mortgage
+    prop |> Board.get_property_square |> Board.get_mortgage
   in
   let updated_player =
     Player.increment_cash player (remove_option mortgage_price)
