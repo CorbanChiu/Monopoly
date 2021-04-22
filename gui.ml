@@ -94,6 +94,7 @@ let calc_color_h () = calc_square_h () / Consts.const_color_height
 let calc_sel_w () =
   Consts.const_sel_size *. float_of_int (calc_board_width ())
   |> int_of_float
+
 (* calc_board_l () + calc_board_width () - calc_square_h () -
    calc_window_buffer () - calc_sel_l () *)
 
@@ -416,7 +417,7 @@ let draw_selection_name () =
         ( calc_sel_l () + calc_sel_w (),
           calc_sel_b () + calc_sel_h () - Consts.const_sel_head_height
         )
-        (Board.get_name board msq)
+        (Board.get_name_from_board board msq)
   | None -> ()
 
 let draw_selection_color () =

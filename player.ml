@@ -29,7 +29,7 @@ let decrement_cash player c = { player with cash = player.cash - c }
 
 let get_property_lst player = player.property_lst
 
-let add_property player p =
+let add_property p player =
   { player with property_lst = p :: player.property_lst }
 
 let remove_property player p =
@@ -85,13 +85,7 @@ let move p dr = { p with pos = dr }
 
 let rec get_player_from_name player_lst owner_option =
   match player_lst with
-  | [] -> failwith "Player could not be found"
+  | [] -> failwith "player could not be found"
   | (_, pl) :: t ->
       if pl.name = owner_option then pl
       else get_player_from_name t owner_option
-
-let rec get_player_number player_lst player =
-  match player_lst with
-  | (ind, pl) :: t ->
-      if pl = player then ind else get_player_number t player
-  | [] -> failwith "player could not be found"

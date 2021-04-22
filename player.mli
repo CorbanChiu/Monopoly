@@ -12,7 +12,7 @@ val get_position : player -> int
 
 val update_position : player -> int -> player
 
-val cash : player -> int
+val get_cash : player -> int
 
 val increment_cash : player -> int -> player
 
@@ -20,7 +20,7 @@ val decrement_cash : player -> int -> player
 
 val get_property_lst : player -> Board.property list
 
-val add_property : player -> Board.property -> player
+val add_property : Board.property -> player -> player
 
 val remove_property : player -> Board.property -> player
 
@@ -41,11 +41,9 @@ val update_bankrupt_state : player -> bool -> player
 val get_player_from_name :
   (int * player) list -> string option -> player
 
-val get_player_number : ('a * player) list -> player -> 'a
+(* val net_worth : player -> int *)
 
-val net_worth : player -> int
-
-val bankrupt : player -> bool
+(* val bankrupt : player -> bool *)
 
 val move : player -> int -> player
 

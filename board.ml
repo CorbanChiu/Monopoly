@@ -167,7 +167,7 @@ let get_misc_name = function
   | IncomeTax m -> m.itname
   | LuxuryTax m -> m.ltname
 
-let get_name = function
+let get_name_from_square = function
   | Traditional sq -> sq.tname
   | Utility sq -> sq.uname
   | Railroad sq -> sq.rname
@@ -175,7 +175,7 @@ let get_name = function
   | Misc sq -> get_misc_name sq
 
 (* Returns a string list *)
-let namelist b = List.map get_name b
+let namelist b = List.map get_name_from_square b
 
 let get_price = function
   | Traditional sq -> Some sq.tpp
@@ -199,7 +199,7 @@ let get_color = function Traditional sq -> Some sq.tcolor | _ -> None
 (* Returns a propertycolor option list *)
 let colorlist b = List.map get_color b
 
-let get_mortage = function
+let get_mortgage = function
   | Traditional sq -> Some sq.tmortgageprice
   | Utility sq -> Some sq.umortgageprice
   | Railroad sq -> Some sq.rmortgageprice
@@ -207,9 +207,7 @@ let get_mortage = function
   | Misc sq -> None
 
 (* Returns an int option list *)
-let mortgagelist b = List.map get_mortage b
-
-let mortgage = get_mortage
+let mortgagelist b = List.map get_mortgage b
 
 let test_color b1 b2 =
   match (b1, b2) with
@@ -226,7 +224,7 @@ let testutil = function Utility sq -> true | _ -> false
 
 let utilitygroup b = List.filter testutil b
 
-let get_name b sq =
+let get_name_from_board b sq =
   List.find (( = ) sq) b |> function
   | Traditional { tname } -> tname
   | Utility { uname } -> uname
@@ -241,15 +239,111 @@ let get_name b sq =
       | IncomeTax { itname } -> itname
       | LuxuryTax { ltname } -> ltname)
 
+(**************************************************)
+(* End of square definition and related functions *)
+(**************************************************)
+
+let remove_option opt =
+  match opt with Some a -> a | None -> failwith "no reason to call"
+
 type property = {
   sqr : square;
   (* None indicates unbuyability while Bank indicates not owned by any
      player yet *)
   owner : string option;
   dev_lvl : int option;
-  mortgaged : bool option;
+  mortgage_state : bool option;
 }
 
+let get_sqr property = property.sqr
+
+let update_sqr property s = { property with sqr = s }
+
+let get_owner property = property.owner
+
+let update_owner property o = { property with owner = o }
+
+let get_dev_lvl property = property.dev_lvl
+
+let update_dev_lvl property i = { property with dev_lvl = i }
+
+let get_mortgage_state property = property.mortgage_state
+
+let update_mortgage_state property b =
+  { property with mortgage_state = b }
+
+let propertylst_to_sqrlst property_lst = List.map get_sqr property_lst
+
+let init_property sq =
+  match sq with
+  | Traditional _ ->
+      {
+        sqr = sq;
+        owner = Some "Bank";
+        dev_lvl = Some 0;
+        mortgage_state = Some false;
+      }
+  | Utility _ | Railroad _ ->
+      {
+        sqr = sq;
+        owner = Some "Bank";
+        dev_lvl = None;
+        mortgage_state = Some false;
+      }
+  | _ ->
+      { sqr = sq; owner = None; dev_lvl = None; mortgage_state = None }
+
+let rec init_prop_lst (b : board) a =
+  match b with
+  | [] -> []
+  | h :: t -> (a, init_property h) :: init_prop_lst t (a + 1)
+
+let num_color_group color (b : board) =
+  let color_list = colorlist b in
+  if color = List.nth color_list 1 || color = List.nth color_list 39
+  then 2
+  else 3
+
+let trent_multiplier property sqr_lst b =
+  if
+    List.length (propertygroup sqr_lst property.sqr)
+    = num_color_group (get_color property.sqr) b
+  then 2
+  else 1
+
+let flat_rent property =
+  List.assoc
+    (remove_option property.dev_lvl)
+    (remove_option (get_paymentstruct property.sqr))
+
+let trent_price property sqr_lst b =
+  if property.dev_lvl = Some 0 then
+    trent_multiplier property sqr_lst b * flat_rent property
+  else flat_rent property
+
+let rrent_price property sqr_lst =
+  List.assoc
+    (List.length (railroadgroup sqr_lst))
+    (remove_option (get_paymentstruct property.sqr))
+
+let urent_price property sqr_lst =
+  List.assoc
+    (List.length (utilitygroup sqr_lst))
+    (remove_option (get_paymentstruct property.sqr))
+
+let get_rent property sqr_lst b dr =
+  match property.sqr with
+  | Traditional sq -> trent_price property sqr_lst b
+  | Utility sq -> urent_price property sqr_lst * dr
+  | Railroad sq -> rrent_price property sqr_lst
+  | _ -> failwith "Cannot get rent from this square"
+
+(****************************************************)
+(* End of property definition and related functions *)
+(****************************************************)
+
+(* TODO: add action for buying house or should actions only be dependent
+   on square? *)
 type action =
   | Buy_ok
   | Auction_ok
@@ -278,116 +372,3 @@ let get_action prop player =
       | Go _ -> Go_ok
       | IncomeTax _ -> Incometax_ok
       | LuxuryTax _ -> Luxurytax_ok)
-
-let get_sqr prop = prop.sqr
-
-let get_owner prop = prop.owner
-
-let get_dev_lvl prop = prop.dev_lvl
-
-let dev_lvl prop = get_dev_lvl prop
-
-let get_mortgaged prop = prop.mortgaged
-
-let property_to_mortgaged prop = { prop with mortgaged = Some true }
-
-let property_to_unmortgaged prop = { prop with mortgaged = Some false }
-
-let init_property sq =
-  match sq with
-  | Traditional _ ->
-      {
-        sqr = sq;
-        owner = Some "Bank";
-        dev_lvl = Some 0;
-        mortgaged = Some false;
-      }
-  | Utility _ ->
-      {
-        sqr = sq;
-        owner = Some "Bank";
-        dev_lvl = None;
-        mortgaged = Some false;
-      }
-  | Railroad _ ->
-      {
-        sqr = sq;
-        owner = Some "Bank";
-        dev_lvl = None;
-        mortgaged = Some false;
-      }
-  | _ -> { sqr = sq; owner = None; dev_lvl = None; mortgaged = None }
-
-let rec init_prop_lst (b : board) a =
-  match b with
-  | [] -> []
-  | h :: t -> (a, init_property h) :: init_prop_lst t (a + 1)
-
-let update_property_new_owner prop owner_name =
-  { prop with owner = owner_name }
-
-let get_property_square (prop : property) = prop.sqr
-
-let rec num_same_color sq sqr_lst =
-  match sqr_lst with
-  | [] -> 0
-  | h :: t ->
-      if test_color sq h then 1 + num_same_color sq t
-      else num_same_color sq t
-
-let rec num_railroads sqr_lst =
-  match sqr_lst with
-  | [] -> 0
-  | h :: t -> (
-      match h with
-      | Railroad _ -> 1 + num_railroads t
-      | _ -> num_railroads t)
-
-let rec num_utilities sqr_lst =
-  match sqr_lst with
-  | [] -> 0
-  | h :: t -> (
-      match h with
-      | Utility _ -> 1 + num_utilities t
-      | _ -> num_utilities t)
-
-let num_color_group color (b : board) =
-  let color_list = colorlist b in
-  if color = List.nth color_list 1 || color = List.nth color_list 39
-  then 2
-  else 3
-
-let remove_option opt =
-  match opt with Some a -> a | None -> failwith "No reason to call"
-
-let trent_multiplier prop sqr_lst b =
-  if
-    num_same_color prop.sqr sqr_lst
-    = num_color_group (get_color prop.sqr) b
-  then 2
-  else 1
-
-let flat_rent prop =
-  List.assoc
-    (remove_option prop.dev_lvl)
-    (remove_option (get_paymentstruct prop.sqr))
-
-let trent_price prop sqr_lst b =
-  if prop.dev_lvl = Some 0 then
-    trent_multiplier prop sqr_lst b * flat_rent prop
-  else flat_rent prop
-
-let rrent_price prop sqr_lst =
-  List.assoc (num_railroads sqr_lst)
-    (remove_option (get_paymentstruct prop.sqr))
-
-let urent_price prop sqr_lst =
-  List.assoc (num_utilities sqr_lst)
-    (remove_option (get_paymentstruct prop.sqr))
-
-let get_rent prop sqr_lst b dr =
-  match prop.sqr with
-  | Traditional sq -> trent_price prop sqr_lst b
-  | Utility sq -> urent_price prop sqr_lst * dr
-  | Railroad sq -> rrent_price prop sqr_lst
-  | _ -> failwith "Cannot get rent from this square"
