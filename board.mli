@@ -68,13 +68,13 @@ val get_mortgage_state : property -> bool option
 
 val update_mortgage_state : property -> bool option -> property
 
-val propertylst_to_sqrlst : property list -> square list
-
 val remove_option : 'a option -> 'a
 
 val init_prop_lst : board -> int -> (int * property) list
 
 (* val num_color_group : propertycolor option -> board -> int *)
+
+val complete_propertygroup : property -> square list -> board -> bool
 
 val get_rent : property -> square list -> board -> int -> int
 

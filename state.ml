@@ -88,15 +88,6 @@ let player_turn gs =
 (* removes option *)
 let remove_option = Board.remove_option
 
-let get_property_price property =
-  Board.get_sqr property |> Board.get_price |> remove_option
-
-(* returns whether a player can afford to buy a property *)
-let can_buy_property player property =
-  Player.get_cash player - get_property_price property >= 0
-
-let can_pay_rent player rent = Player.get_cash player - rent >= 0
-
 (* An exception that can be raised by buy if player cannot afford
    property*)
 exception CouldntAfford
@@ -106,6 +97,14 @@ let current_player gs = get_player gs.next gs.player_lst
 let current_property gs =
   get_property (Player.get_position (current_player gs)) gs.property_lst
 
+let get_property_price property =
+  Board.get_sqr property |> Board.get_price |> remove_option
+
+(* returns whether a player can afford to buy a property *)
+let can_buy_property player property =
+  Player.get_cash player - get_property_price property >= 0
+
+(** [buy_property gs] returns ... *)
 let buy_property gs =
   let player = current_player gs in
   let property = current_property gs in
@@ -128,6 +127,11 @@ let buy_property gs =
       "TODO: auction -> auction can also happen if player chooses not \
        to buy"
 
+let propertylst_to_sqrlst property_lst =
+  List.map Board.get_sqr property_lst
+
+let can_pay_rent player rent = Player.get_cash player - rent >= 0
+
 let pay_rent gs dr =
   let player = current_player gs in
   let property = current_property gs in
@@ -136,7 +140,7 @@ let pay_rent gs dr =
   in
   let rent =
     Board.get_rent property
-      (Board.propertylst_to_sqrlst (Player.get_property_lst owner))
+      (propertylst_to_sqrlst (Player.get_property_lst owner))
       init_board dr
   in
   if can_pay_rent player rent then
@@ -192,7 +196,40 @@ let unmortgage gs property =
     next = gs.next;
   }
 
-let buy_house = failwith ""
+let num_houses = ref 32
+
+let num_hotels = ref 12
+
+let get_property_mortgage property =
+  Board.get_sqr property |> Board.get_mortgage |> remove_option
+
+let can_buy_house player property =
+  Player.get_cash player - get_property_mortgage property >= 0
+
+let develop_property gs property =
+  let owner =
+    Player.get_player_from_name gs.player_lst (Board.get_owner property)
+  in
+  (* TODO: (1) add a check for even development across the color group. *)
+  if
+    Board.complete_propertygroup property
+      (propertylst_to_sqrlst (Player.get_property_lst owner))
+      init_board
+    && can_buy_house owner property
+  then
+    if remove_option (Board.get_dev_lvl property) < 4 && !num_houses > 0
+    then
+      failwith
+        "TODO: (1) Decrement num_houses by 1 (2) Change property \
+         dev_lvl (3) Decrement owner cash"
+    else if
+      remove_option (Board.get_dev_lvl property) = 4 && !num_hotels > 0
+    then
+      failwith
+        "TODO: (1) Decrement num_hotels by 1 (2) Increment num_houses \
+         by 4 (3) Change property dev_lvl (4) Decrement owner cash"
+    else failwith "cannot develop property"
+  else failwith "cannot develop property"
 
 (* steps 1) make sure property color group owned by same player - go
    through gs.playerlist and look through all squares to make sure

@@ -272,8 +272,6 @@ let get_mortgage_state property = property.mortgage_state
 let update_mortgage_state property b =
   { property with mortgage_state = b }
 
-let propertylst_to_sqrlst property_lst = List.map get_sqr property_lst
-
 let init_property sq =
   match sq with
   | Traditional _ ->
@@ -304,12 +302,12 @@ let num_color_group color (b : board) =
   then 2
   else 3
 
+let complete_propertygroup property sqr_lst b =
+  List.length (propertygroup sqr_lst property.sqr)
+  = num_color_group (get_color property.sqr) b
+
 let trent_multiplier property sqr_lst b =
-  if
-    List.length (propertygroup sqr_lst property.sqr)
-    = num_color_group (get_color property.sqr) b
-  then 2
-  else 1
+  if complete_propertygroup property sqr_lst b then 2 else 1
 
 let flat_rent property =
   List.assoc
