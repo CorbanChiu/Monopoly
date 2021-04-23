@@ -209,6 +209,10 @@ let get_mortgage = function
 (* Returns an int option list *)
 let mortgagelist b = List.map get_mortgage b
 
+let get_buildingcost = function
+  | Traditional sq -> Some sq.buildingcost
+  | _ -> None
+
 let test_color b1 b2 =
   match (b1, b2) with
   | Traditional b1, Traditional b2 -> b1.tcolor = b2.tcolor
@@ -336,8 +340,8 @@ let get_rent property sqr_lst b dr =
   | Railroad sq -> rrent_price property sqr_lst
   | _ -> failwith "Cannot get rent from this square"
 
-let rec check_equal_development property owner_property_list =
-  match owner_property_list with
+let rec check_equal_development property property_lst =
+  match property_lst with
   | prop :: t ->
       if get_color prop.sqr != get_color property.sqr then
         check_equal_development property t
@@ -352,8 +356,8 @@ let rec check_equal_development property owner_property_list =
       else false
   | [] -> true
 
-let rec check_no_mortgages property owner_property_list =
-  match owner_property_list with
+let rec check_no_mortgages property property_lst =
+  match property_lst with
   | prop :: t ->
       if get_color prop.sqr != get_color property.sqr then
         check_no_mortgages property t

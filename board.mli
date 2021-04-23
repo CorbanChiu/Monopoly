@@ -39,6 +39,8 @@ val get_mortgage : square -> int option
 (* TODO: is this really necessary to have here? *)
 val mortgagelist : board -> int option list
 
+val get_buildingcost : square -> int option
+
 (** [propertygroup b sq] is the square list of squares part of the same
     "color grouping" (that which you need to own all properties to
     build) *)
