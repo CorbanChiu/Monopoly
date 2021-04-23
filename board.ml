@@ -336,6 +336,34 @@ let get_rent property sqr_lst b dr =
   | Railroad sq -> rrent_price property sqr_lst
   | _ -> failwith "Cannot get rent from this square"
 
+let rec check_equal_development property owner_property_list =
+  match owner_property_list with
+  | prop :: t ->
+      if get_color prop.sqr != get_color property.sqr then
+        check_equal_development property t
+      else if
+        get_color prop.sqr = get_color property.sqr
+        && (remove_option prop.dev_lvl - remove_option property.dev_lvl
+            = 0
+           || remove_option prop.dev_lvl
+              - remove_option property.dev_lvl
+              = 1)
+      then check_equal_development property t
+      else false
+  | [] -> true
+
+let rec check_no_mortgages property owner_property_list =
+  match owner_property_list with
+  | prop :: t ->
+      if get_color prop.sqr != get_color property.sqr then
+        check_no_mortgages property t
+      else if
+        get_color prop.sqr = get_color property.sqr
+        && prop.mortgage_state = Some false
+      then check_no_mortgages property t
+      else false
+  | [] -> true
+
 (****************************************************)
 (* End of property definition and related functions *)
 (****************************************************)

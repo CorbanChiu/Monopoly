@@ -78,6 +78,10 @@ val complete_propertygroup : property -> square list -> board -> bool
 
 val get_rent : property -> square list -> board -> int -> int
 
+val check_equal_development : property -> property list -> bool
+
+val check_no_mortgages : property -> property list -> bool
+
 type action =
   | Buy_ok
   | Auction_ok

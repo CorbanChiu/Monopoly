@@ -221,6 +221,9 @@ let develop_property gs property =
       (propertylst_to_sqrlst (Player.get_property_lst owner))
       init_board
     && can_buy_house owner property
+    && Board.check_equal_development property
+         (Player.get_property_lst owner)
+    && Board.check_no_mortgages property (Player.get_property_lst owner)
   then
     if remove_option (Board.get_dev_lvl property) < 4 && !num_houses > 0
     then
