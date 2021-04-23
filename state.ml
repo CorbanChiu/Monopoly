@@ -20,6 +20,17 @@ let update_property_lst property_ind new_property property_lst =
   List.remove_assoc property_ind property_lst
   |> List.cons (property_ind, new_property)
 
+let rec update_property_lst_given
+    property_list
+    old_property
+    new_property =
+  match property_list with
+  | (a, prop) :: t ->
+      if prop = old_property then
+        (a, new_property) :: List.remove_assoc a property_list
+      else update_property_lst_given t old_property new_property
+  | [] -> failwith ""
+
 let get_player player_ind player_lst = List.assoc player_ind player_lst
 
 (* [updated_playerlst ind np lst] returns a player list lst where the
@@ -226,16 +237,58 @@ let develop_property gs property =
     && Board.check_no_mortgages property (Player.get_property_lst owner)
   then
     if remove_option (Board.get_dev_lvl property) < 4 && !num_houses > 0
-    then
-      failwith
-        "TODO: (1) Decrement num_houses by 1 (2) Change property \
-         dev_lvl (3) Decrement owner cash"
+    then (
+      let old_dev_lvl = remove_option (Board.get_dev_lvl property) in
+      let new_property =
+        Board.update_dev_lvl property (Some (old_dev_lvl + 1))
+      in
+      let new_property_list =
+        update_property_lst_given gs.property_lst property new_property
+      in
+      let new_owner =
+        Player.increment_cash owner
+          (remove_option
+             (Board.get_buildingcost (Board.get_sqr property)))
+      in
+      let new_player_list =
+        update_player_lst gs.next new_owner gs.player_lst
+      in
+      num_houses := !num_houses - 1;
+      {
+        property_lst = new_property_list;
+        player_lst = new_player_list;
+        next = gs.next;
+      }
+      (* failwith "TODO: (1) Decrement num_houses by 1 (2) Change
+         property \ dev_lvl (3) Decrement owner cash" *))
     else if
       remove_option (Board.get_dev_lvl property) = 4 && !num_hotels > 0
-    then
-      failwith
-        "TODO: (1) Decrement num_hotels by 1 (2) Increment num_houses \
-         by 4 (3) Change property dev_lvl (4) Decrement owner cash"
+    then (
+      let old_dev_lvl = remove_option (Board.get_dev_lvl property) in
+      let new_property =
+        Board.update_dev_lvl property (Some (old_dev_lvl + 1))
+      in
+      let new_property_list =
+        update_property_lst_given gs.property_lst property new_property
+      in
+      let new_owner =
+        Player.increment_cash owner
+          (remove_option
+             (Board.get_buildingcost (Board.get_sqr property)))
+      in
+      let new_player_list =
+        update_player_lst gs.next new_owner gs.player_lst
+      in
+      num_houses := !num_houses + 4;
+      num_hotels := !num_hotels - 1;
+      {
+        property_lst = new_property_list;
+        player_lst = new_player_list;
+        next = gs.next;
+      }
+      (* failwith "TODO: (1) Decrement num_hotels by 1 (2) Increment
+         num_houses \ by 4 (3) Change property dev_lvl (4) Decrement
+         owner cash" *))
     else failwith "cannot develop property"
   else failwith "cannot develop property"
 
