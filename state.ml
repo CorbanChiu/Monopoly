@@ -313,3 +313,9 @@ let good_output gs =
     player_lst = sorted_player_list;
     next = gs.next;
   }
+
+let assoc_list_length lst =
+  let rec helper lst acc =
+    match lst with a :: t -> helper t (acc + 1) | [] -> acc
+  in
+  helper lst 0

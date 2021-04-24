@@ -227,20 +227,42 @@ let board_tests =
       ];
   ]
 
-let buy_property_test
-    (name : string)
-    (gs : State.game_state)
-    (dow : State.game_state) =
+let test_player_cash name player_index player_list dow =
   name >:: fun _ ->
-  assert_equal (State.good_output dow)
-    (State.good_output (State.buy_property gs))
+  assert_equal dow
+    (Player.get_cash (State.get_player player_index player_list))
+
+let test_property_owner name property_index property_list dow =
+  name >:: fun _ ->
+  assert_equal dow
+    (Board.get_owner (State.get_property property_index property_list))
+
+let test_player_properties_size name player dow =
+  name >:: fun _ ->
+  assert_equal dow
+    (State.assoc_list_length (Player.get_property_lst player))
 
 let gs0 = State.init
-(* let gs1 = {gs0 with = State.update_player_lst gs0.next } *)
 
-let state_tests = []
+let gs1 =
+  {
+    gs0 with
+    player_lst =
+      State.update_player_lst 1
+        (Player.move (State.get_player 1 gs0.player_lst) 6)
+        gs0.player_lst;
+  }
+
+let gs2 = State.buy_property gs1
+
+let state_tests =
+  [
+    (* buy_property test *)
+    test_player_cash "first buy test" 1 gs2.player_lst 1400;
+  ]
 
 let suite =
-  "Test suite for the Final Project" >::: List.flatten [ board_tests ]
+  "Test suite for the Final Project"
+  >::: List.flatten [ board_tests; state_tests ]
 
 let _ = run_test_tt_main suite

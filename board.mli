@@ -88,13 +88,14 @@ val check_no_mortgages : property -> property list -> bool
 
 type action =
   | Buy_ok
-  | Auction_ok
   | Payrent_ok
   | Mortgage_ok
+  | Develop_ok
   | Card_ok
   | Freeparking_ok
-  | None
+  | None_ok
   | Gotojail_ok
+  | Auction_ok
   | Go_ok
   | Incometax_ok
   | Luxurytax_ok

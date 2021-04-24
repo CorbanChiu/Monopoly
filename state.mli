@@ -1,4 +1,4 @@
-type property
+type property = Board.property
 
 type game_state = {
   property_lst : (int * property) list;
@@ -38,3 +38,5 @@ val unmortgage : game_state -> property -> game_state
 val develop_property : game_state -> property -> game_state
 
 val good_output : game_state -> game_state
+
+val assoc_list_length : 'a list -> int
