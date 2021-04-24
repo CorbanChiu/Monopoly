@@ -258,7 +258,7 @@ let gs2 = State.buy_property gs1
 let state_tests =
   [
     (* buy_property test *)
-    test_player_cash "first buy test" 1 gs2.player_lst 1400;
+    test_player_cash "first\n\n buy test" 1 gs2.player_lst 1400;
   ]
 
 let suite =

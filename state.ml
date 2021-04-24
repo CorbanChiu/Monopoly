@@ -65,7 +65,7 @@ let init =
   {
     property_lst = Board.init_prop_lst init_board 0;
     player_lst = init_player_lst num_players;
-    next = 0;
+    next = 1;
   }
 
 (* [roll_dice] returns a random integer between 2 and 12 (inclusive). *)
