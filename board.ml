@@ -384,28 +384,47 @@ let rec check_no_mortgages property property_lst =
    on square? *)
 type action =
   | Buy_ok
-  | Auction_ok
   | Payrent_ok
   | Mortgage_ok
+  | Develop_ok
   | Card_ok
   | Freeparking_ok
-  | None
+  | None_ok
   | Gotojail_ok
+  | Auction_ok
   | Go_ok
   | Incometax_ok
   | Luxurytax_ok
 
 let get_action prop player =
   match prop.sqr with
-  | Traditional _ | Utility _ | Railroad _ ->
+  (* TODO: factor out copied code? *)
+  | Traditional _ ->
       if prop.owner = Some "Bank" then Buy_ok
+      else if
+        prop.owner != None
+        && prop.owner != Some player
+        && prop.mortgage_state = Some false
+      then Payrent_ok
+      else if prop.owner = Some player && prop.dev_lvl = Some 0 then
+        Mortgage_ok
+      else if prop.owner = Some player && remove_option prop.dev_lvl < 5
+      then Develop_ok
+      else None_ok
+  | Utility _ | Railroad _ ->
+      if prop.owner = Some "Bank" then Buy_ok
+      else if
+        prop.owner != None
+        && prop.owner != Some player
+        && prop.mortgage_state = Some false
+      then Payrent_ok
       else if prop.owner = Some player then Mortgage_ok
-      else Payrent_ok
+      else None_ok
   | Card _ -> Card_ok
   | Misc m -> (
       match m with
       | FreeParking _ -> Freeparking_ok
-      | Jail _ -> None
+      | Jail _ -> None_ok
       | GoToJail _ -> Gotojail_ok
       | Go _ -> Go_ok
       | IncomeTax _ -> Incometax_ok
