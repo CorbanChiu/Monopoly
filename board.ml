@@ -340,6 +340,14 @@ let get_rent property sqr_lst b dr =
   | Railroad sq -> rrent_price property sqr_lst
   | _ -> failwith "Cannot get rent from this square"
 
+let rec check_no_development property property_lst =
+  match property_lst with
+  | prop :: t ->
+      if test_color property.sqr prop.sqr then
+        get_dev_lvl property = Some 0 && check_no_development property t
+      else false
+  | [] -> true
+
 let rec check_equal_development property property_lst =
   match property_lst with
   | prop :: t ->

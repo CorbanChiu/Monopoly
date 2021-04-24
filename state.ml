@@ -29,7 +29,7 @@ let rec update_property_lst_given
       if prop = old_property then
         (a, new_property) :: List.remove_assoc a property_list
       else update_property_lst_given t old_property new_property
-  | [] -> failwith ""
+  | [] -> failwith "cannot update property list"
 
 let get_player player_ind player_lst = List.assoc player_ind player_lst
 
@@ -175,18 +175,22 @@ let mortgage gs property =
   let mortgage_value =
     Board.get_sqr property |> Board.get_mortgage |> remove_option
   in
-  {
-    property_lst =
-      update_property_lst
-        (Player.get_position player)
-        (Board.update_mortgage_state property (Some true))
-        gs.property_lst;
-    player_lst =
-      update_player_lst gs.next
-        (Player.increment_cash player mortgage_value)
-        gs.player_lst;
-    next = gs.next;
-  }
+  if
+    Board.check_no_development property (Player.get_property_lst player)
+  then
+    {
+      property_lst =
+        update_property_lst
+          (Player.get_position player)
+          (Board.update_mortgage_state property (Some true))
+          gs.property_lst;
+      player_lst =
+        update_player_lst gs.next
+          (Player.increment_cash player mortgage_value)
+          gs.player_lst;
+      next = gs.next;
+    }
+  else failwith "cannot mortgage"
 
 let unmortgage gs property =
   let owner =
@@ -228,10 +232,10 @@ let develop_property gs property =
      mortgaged (similar to what needs to be added to mortgage - check
      google spreadsheet for more info) *)
   if
-    Board.complete_propertygroup property
-      (propertylst_to_sqrlst (Player.get_property_lst owner))
-      init_board
-    && can_buy_house owner property
+    can_buy_house owner property
+    && Board.complete_propertygroup property
+         (propertylst_to_sqrlst (Player.get_property_lst owner))
+         init_board
     && Board.check_equal_development property
          (Player.get_property_lst owner)
     && Board.check_no_mortgages property (Player.get_property_lst owner)
@@ -246,12 +250,14 @@ let develop_property gs property =
         update_property_lst_given gs.property_lst property new_property
       in
       let new_owner =
-        Player.increment_cash owner
+        Player.decrement_cash owner
           (remove_option
              (Board.get_buildingcost (Board.get_sqr property)))
       in
       let new_player_list =
-        update_player_lst gs.next new_owner gs.player_lst
+        update_player_lst
+          (get_player_index new_owner gs.player_lst)
+          new_owner gs.player_lst
       in
       num_houses := !num_houses - 1;
       {
@@ -272,12 +278,14 @@ let develop_property gs property =
         update_property_lst_given gs.property_lst property new_property
       in
       let new_owner =
-        Player.increment_cash owner
+        Player.decrement_cash owner
           (remove_option
              (Board.get_buildingcost (Board.get_sqr property)))
       in
       let new_player_list =
-        update_player_lst gs.next new_owner gs.player_lst
+        update_player_lst
+          (get_player_index new_owner gs.player_lst)
+          new_owner gs.player_lst
       in
       num_houses := !num_houses + 4;
       num_hotels := !num_hotels - 1;
@@ -291,15 +299,3 @@ let develop_property gs property =
          owner cash" *))
     else failwith "cannot develop property"
   else failwith "cannot develop property"
-
-(* steps 1) make sure property color group owned by same player - go
-   through gs.playerlist and look through all squares to make sure
-   player owns all squares of the color (get color from the property
-   type passed in as argument) 2) make sure prop color group equally
-   developed - check is dev_lvl of the properties of the same color has
-   a dev_lvl difference of at most 1 3) player enough cash - look
-   through property type, get square and check building cost 4) check
-   property not fully developed - check if dev_lvl is less than 5 5)
-   check that bank has enough houses and hotels - if not enough houses
-   cannot build (no more houses to build) 6) if building a hotel then
-   get rid of the four houses *)
