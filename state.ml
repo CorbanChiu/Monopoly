@@ -56,7 +56,9 @@ let init_board =
 let rec init_player_lst np =
   match np with
   | 0 -> []
-  | a -> (a, Player.init_player) :: init_player_lst (a - 1)
+  | a ->
+      (a, Player.update_name Player.init_player (Some (string_of_int a)))
+      :: init_player_lst (a - 1)
 
 (* [init] is the initial game state *)
 let init =
