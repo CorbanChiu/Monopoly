@@ -32,3 +32,5 @@ val mortgage : game_state -> property -> game_state
 val unmortgage : game_state -> property -> game_state
 
 val develop_property : game_state -> property -> game_state
+
+val good_output : game_state -> game_state

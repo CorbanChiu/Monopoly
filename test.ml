@@ -231,7 +231,14 @@ let buy_property_test
     (name : string)
     (gs : State.game_state)
     (dow : State.game_state) =
-  name >:: fun _ -> assert_equal dow (State.buy_property gs)
+  name >:: fun _ ->
+  assert_equal (State.good_output dow)
+    (State.good_output (State.buy_property gs))
+
+let gs0 = State.init
+(* let gs1 = {gs0 with = State.update_player_lst gs0.next } *)
+
+let state_tests = []
 
 let suite =
   "Test suite for the Final Project" >::: List.flatten [ board_tests ]
