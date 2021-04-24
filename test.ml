@@ -253,12 +253,36 @@ let gs1 =
         gs0.player_lst;
   }
 
-let gs2 = State.buy_property gs1
+let gs2 = State.buy_property gs1 (*testing on*)
+
+let gs3 =
+  {
+    gs2 with
+    player_lst =
+      State.update_player_lst 1
+        (Player.move (State.get_player 1 gs2.player_lst) 2)
+        gs0.player_lst;
+  }
+
+let gs4 = State.buy_property gs3 (*testing on*)
 
 let state_tests =
   [
     (* buy_property test *)
-    test_player_cash "first\n\n buy test" 1 gs2.player_lst 1400;
+    (* not complex *)
+    test_player_cash "first buy test" 1 gs2.player_lst 1400;
+    test_property_owner "first owner name test" 6 gs2.property_lst
+      (Some "1");
+    test_player_properties_size "first player_properties size test"
+      (State.get_player 1 gs2.player_lst)
+      1;
+    (* complex *)
+    test_player_cash "second buy test" 1 gs4.player_lst 1300;
+    test_property_owner "second owner name test" 8 gs4.property_lst
+      (Some "1");
+    test_player_properties_size "second player_properties size test"
+      (State.get_player 1 gs4.player_lst)
+      2;
   ]
 
 let suite =
