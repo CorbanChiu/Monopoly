@@ -227,6 +227,12 @@ let board_tests =
       ];
   ]
 
+let buy_property_test
+    (name : string)
+    (gs : State.game_state)
+    (dow : State.game_state) =
+  name >:: fun _ -> assert_equal dow (State.buy_property gs)
+
 let suite =
   "Test suite for the Final Project" >::: List.flatten [ board_tests ]
 

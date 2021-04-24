@@ -299,3 +299,15 @@ let develop_property gs property =
          owner cash" *))
     else failwith "cannot develop property"
   else failwith "cannot develop property"
+
+let assoc_sort assoc_list =
+  List.sort (fun (k1, v1) (k2, v2) -> Int.compare k1 k2) assoc_list
+
+let good_output gs =
+  let sorted_prop_list = assoc_sort gs.property_lst in
+  let sorted_player_list = assoc_sort gs.player_lst in
+  {
+    property_lst = sorted_prop_list;
+    player_lst = sorted_player_list;
+    next = gs.next;
+  }
