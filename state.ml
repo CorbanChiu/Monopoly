@@ -133,17 +133,6 @@ let current_property gs =
 let get_property_price property =
   Board.get_sqr property |> Board.get_price |> remove_option
 
-(* returns whether a player can afford to buy a property. TODO: change
-   to net worth instead of get_cash *)
-let can_buy_property gs =
-  let player = current_player gs in
-  let property = current_property gs in
-  if Board.get_action property (Player.get_name player) = Buy_ok then
-    if Player.get_cash player - get_property_price property >= 0 then
-      true
-    else false
-  else false
-
 (** [buy_property gs] returns ... *)
 let buy_property gs =
   let player = current_player gs in
@@ -178,43 +167,40 @@ let pay_rent gs dr =
       (propertylst_to_sqrlst (Player.get_property_lst owner))
       init_board dr
   in
-  if can_pay_rent player rent then
-    {
-      property_lst = gs.property_lst;
-      player_lst =
-        update_player_lst gs.next
-          (Player.decrement_cash player rent)
-          gs.player_lst
-        |> update_player_lst
-             (get_player_index owner gs.player_lst)
-             (Player.increment_cash owner rent);
-      next = gs.next;
-    }
-  else failwith "Mortgage or bankrupt"
+  {
+    property_lst = gs.property_lst;
+    player_lst =
+      update_player_lst gs.next
+        (Player.decrement_cash player rent)
+        gs.player_lst
+      |> update_player_lst
+           (get_player_index owner gs.player_lst)
+           (Player.increment_cash owner rent);
+    next = gs.next;
+  }
 
 (* TODO: for a traditional property, check that any other properties in
    the color group are not developed *)
 let mortgage gs property =
-  let player = current_player gs in
+  let owner =
+    Player.get_player_from_name gs.player_lst (Board.get_owner property)
+  in
   let mortgage_value =
     Board.get_sqr property |> Board.get_mortgage |> remove_option
   in
-  if
-    Board.check_no_development property (Player.get_property_lst player)
-  then
-    {
-      property_lst =
-        update_property_lst
-          (Player.get_position player)
-          (Board.update_mortgage_state property (Some true))
-          gs.property_lst;
-      player_lst =
-        update_player_lst gs.next
-          (Player.increment_cash player mortgage_value)
-          gs.player_lst;
-      next = gs.next;
-    }
-  else failwith "cannot mortgage"
+
+  {
+    property_lst =
+      update_property_lst
+        (Player.get_position owner)
+        (Board.update_mortgage_state property (Some true))
+        gs.property_lst;
+    player_lst =
+      update_player_lst gs.next
+        (Player.increment_cash owner mortgage_value)
+        gs.player_lst;
+    next = gs.next;
+  }
 
 let unmortgage gs property =
   let owner =
@@ -341,3 +327,61 @@ let assoc_list_length lst =
     match lst with a :: t -> helper t (acc + 1) | [] -> acc
   in
   helper lst 0
+
+(* returns whether a player can afford to buy a property. TODO: change
+   to net worth instead of get_cash *)
+let can_buy_property gs =
+  let player = current_player gs in
+  let property = current_property gs in
+  if Board.get_action property (Player.get_name player) = Buy_ok then
+    if Player.get_cash player - get_property_price property >= 0 then
+      true
+    else false
+  else false
+
+(* TO DO: if we fail, we need to call "Mortgage or bankrupt". This will
+   be done when we add net worth *)
+let can_pay_rent gs dr =
+  let player = current_player gs in
+  let property = current_property gs in
+  if Board.get_action property (Player.get_name player) != Payrent_ok
+  then false
+  else
+    let owner =
+      Player.get_player_from_name gs.player_lst
+        (Board.get_owner property)
+    in
+    let rent =
+      Board.get_rent property
+        (propertylst_to_sqrlst (Player.get_property_lst owner))
+        init_board dr
+    in
+    can_pay_rent player rent
+
+let can_mortgage gs property =
+  let owner =
+    Player.get_player_from_name gs.player_lst (Board.get_owner property)
+  in
+  let get_action_variant =
+    Board.get_action property (Player.get_name owner)
+  in
+  if
+    get_action_variant == Mortgage_ok
+    || get_action_variant == Mortgage_and_Develop_ok
+  then
+    Board.check_no_development property (Player.get_property_lst owner)
+  else false
+
+let can_unmortgage gs property =
+  let owner =
+    Player.get_player_from_name gs.player_lst (Board.get_owner property)
+  in
+  if Board.get_action property (Player.get_name owner) != Unmortgage_ok
+  then false
+  else
+    let mortgage_value =
+      Board.get_sqr property |> Board.get_mortgage |> remove_option
+      |> Float.of_int |> ( *. ) 1.1 |> Float.to_int
+    in
+
+    Player.get_cash owner - mortgage_value >= 0
