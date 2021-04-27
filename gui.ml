@@ -398,28 +398,42 @@ let index_of_rect r rlst =
   in
   try index_of_rect_aux r rlst 0 with _ -> None
 
-let draw_name r rlst nmlst =
+let draw_hlight_name r rlst nmlst =
   match index_of_rect r rlst with
   | Some n ->
-      moveto 100 600;
-      draw_string (List.nth nmlst n)
+      set_color (rgb 0 0 0);
+      center_text
+        ( calc_sel_l (),
+          calc_sel_b () + calc_sel_h ()
+          - (2 * calc_sel_headline_height ()) )
+        ( calc_sel_l () + calc_sel_w (),
+          calc_sel_b () + calc_sel_h () - calc_sel_headline_height () )
+        (List.nth nmlst n)
   | None -> ()
 
-let draw_price r rlst plst =
+let draw_hlight_price r rlst plst =
   match index_of_rect r rlst with
   | Some n -> (
       match List.nth plst n with
       | Some p ->
-          moveto 100 580;
-          draw_string (p |> string_of_int)
+          set_color (rgb 0 0 0);
+          center_text
+            ( calc_sel_l (),
+              calc_sel_b () + calc_sel_h ()
+              - (2 * calc_sel_headline_height ()) )
+            ( calc_sel_l () + calc_sel_w (),
+              calc_sel_b () + calc_sel_h ()
+              - (2 * calc_sel_headline_height ())
+              - calc_sel_line_height () )
+            ("Purchase Price: $" ^ (p |> string_of_int))
       | None -> ())
   | None -> ()
 
 let mouseloc_handler m msqlst =
   match square_hover m msqlst with
   | Some r ->
-      draw_name r msqlst msquare_name_lst;
-      draw_price r msqlst msquare_price_lst;
+      draw_hlight_name r msqlst msquare_name_lst;
+      draw_hlight_price r msqlst msquare_price_lst;
       set_color Consts.const_hover_color;
       fill_rect (get_rect_x r) (get_rect_y r) (get_rect_w r)
         (get_rect_h r)
@@ -462,21 +476,30 @@ let draw_selection_desc () =
   let line_8_b = line_8_t - calc_sel_line_height () in
   let line_9_t = line_8_b in
   let line_9_b = line_9_t - calc_sel_line_height () in
+  let line_10_t = line_9_b in
+  let line_10_b = line_10_t - calc_sel_line_height () in
+  (* let line_11_t = line_10_b in let line_11_b = line_11_t -
+     calc_sel_line_height () in *)
   match !sel_state with
   | Some sq -> (
       set_color (rgb 0 0 0);
       match Board.get_payments sq with
       | Some [ (k1, v1); (k2, v2) ] -> (
           center_text (text_left, line_1_b) (text_right, line_1_t)
-            ("If " ^ string_of_int k1 ^ " 'Utility' is owned, rent is "
-           ^ string_of_int v1 ^ " times the amount shown on dice.");
+            ("If " ^ string_of_int k1 ^ " 'Utility' is owned");
           center_text (text_left, line_2_b) (text_right, line_2_t)
-            ("If " ^ string_of_int k1
-           ^ " 'Utilities' are owned, rent is " ^ string_of_int v1
-           ^ " times the amount shown on dice.");
+            ("rent is " ^ string_of_int v1 ^ " times");
+          center_text (text_left, line_3_b) (text_right, line_3_t)
+            "shown on dice.";
+          center_text (text_left, line_5_b) (text_right, line_5_t)
+            ("If " ^ string_of_int k2 ^ " 'Utilities' are owned");
+          center_text (text_left, line_6_b) (text_right, line_6_t)
+            ("rent is " ^ string_of_int v2 ^ " times amount");
+          center_text (text_left, line_7_b) (text_right, line_7_t)
+            "shown on dice.";
           match Board.get_mortgage sq with
           | Some m ->
-              center_text (text_left, line_7_b) (text_right, line_7_t)
+              center_text (text_left, line_9_b) (text_right, line_9_t)
                 ("Mortgage Value $" ^ string_of_int m)
           | None -> ())
       | Some [ (k1, v1); (k2, v2); (k3, v3); (k4, v4) ] -> (
@@ -497,7 +520,7 @@ let draw_selection_desc () =
             ("$ " ^ string_of_int v4);
           match Board.get_mortgage sq with
           | Some m ->
-              center_text (text_left, line_7_b) (text_right, line_7_t)
+              center_text (text_left, line_6_b) (text_right, line_6_t)
                 ("Mortgage Value $" ^ string_of_int m)
           | None -> ())
       | Some
@@ -526,21 +549,22 @@ let draw_selection_desc () =
           begin
             match Board.get_mortgage sq with
             | Some m ->
-                center_text (text_left, line_7_b) (text_right, line_7_t)
+                center_text (text_left, line_8_b) (text_right, line_8_t)
                   ("Mortgage Value $" ^ string_of_int m)
             | None -> ()
           end;
           begin
             match Board.get_buildprice sq with
             | Some n ->
-                center_text (text_left, line_8_b) (text_right, line_8_t)
+                center_text (text_left, line_9_b) (text_right, line_9_t)
                   ("Houses cost $" ^ string_of_int n ^ " each")
             | None -> ()
           end;
           begin
             match Board.get_buildprice sq with
             | Some n ->
-                center_text (text_left, line_9_b) (text_right, line_9_t)
+                center_text (text_left, line_10_b)
+                  (text_right, line_10_t)
                   ("Hotels, $" ^ string_of_int n ^ " plus 4 houses")
             | None -> ()
           end;
