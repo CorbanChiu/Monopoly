@@ -121,6 +121,8 @@ let current_player gs = get_player gs.next gs.player_lst
 let current_property gs =
   get_property (Player.get_position (current_player gs)) gs.property_lst
 
+let current_turn_name gs = current_player gs |> Player.get_name
+
 (* [roll_dice] returns a random integer between 2 and 12 (inclusive). *)
 let roll_dice () =
   self_init ();

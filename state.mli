@@ -37,6 +37,8 @@ val move : game_state -> int * int -> game_state
 
 val roll_dice : unit -> int * int
 
+val current_turn_name : game_state -> string option
+
 (* val move : game_state -> int -> game_state *)
 
 val buy_property : game_state -> game_state
