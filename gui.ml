@@ -434,8 +434,9 @@ let draw_selection_name () =
           calc_sel_b () + calc_sel_h ()
           - (2 * calc_sel_headline_height ()) )
         ( calc_sel_l () + calc_sel_w (),
-          calc_sel_b () + calc_sel_h () - calc_sel_headline_height () )
-        (Board.get_name board msq)
+          calc_sel_b () + calc_sel_h () - Consts.const_sel_head_height
+        )
+        (Board.get_name_from_board board msq)
   | None -> ()
 
 let draw_selection_desc () =

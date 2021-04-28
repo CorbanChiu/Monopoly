@@ -1,50 +1,50 @@
 type player
 
-val init_player : player
+val get_name : player -> string option
 
-val position : player -> int
+val update_name : player -> string option -> player
 
-val move : player -> int -> player
+val get_token : player -> Token.token option
 
-val cash : player -> int
+val update_token : player -> Token.token option -> player
 
-val properties : player -> Board.square list
+val get_position : player -> int
 
-val cards : player -> Cards.card list
+val update_position : player -> int -> player
 
-val jail : player -> bool
-
-val token : player -> Token.token option
-
-val name : player -> string option
-
-val net_worth : player -> int
-
-val bankrupt : player -> bool
-
-val move : player -> int -> player
+val get_cash : player -> int
 
 val increment_cash : player -> int -> player
 
 val decrement_cash : player -> int -> player
 
-val add_property : player -> Board.square -> player
+val get_property_lst : player -> Board.property list
 
-val remove_property : player -> Board.square -> player
+val add_property : Board.property -> player -> player
+
+val remove_property : player -> Board.property -> player
+
+val get_card_lst : player -> Cards.card list
 
 val add_card : player -> Cards.card -> player
 
 val remove_card : player -> Cards.card -> player
 
-val send_to_jail : player -> player
+val get_jail_state : player -> bool
 
-val let_out_of_jail : player -> player
+val update_jail_state : player -> bool -> player
 
-val change_to_bankrupt : player -> player
+val get_bankrupt_state : player -> bool
 
-val change_to_not_bankrupt : player -> player
+val update_bankrupt_state : player -> bool -> player
 
-val get_player_from_player_list_given_name :
-  ('a * player) list -> string option -> player
+val get_player_from_name :
+  (int * player) list -> string option -> player
 
-val get_player_number : ('a * player) list -> player -> 'a
+(* val net_worth : player -> int *)
+
+(* val bankrupt : player -> bool *)
+
+val move : player -> int -> player
+
+val init_player : player

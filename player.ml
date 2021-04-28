@@ -1,105 +1,91 @@
 type player = {
+  name : string option;
+  token : Token.token option;
   pos : int;
   cash : int;
-  properties : Board.square list;
-  cards : Cards.card list;
-  jail : bool;
-  token : Token.token option;
-  name : string option;
-  bankrupt : bool;
+  property_lst : Board.property list;
+  card_lst : Cards.card list;
+  jail_state : bool;
+  bankrupt_state : bool;
 }
+
+let get_name player = player.name
+
+let update_name player n = { player with name = n }
+
+let get_token player = player.token
+
+let update_token player t = { player with token = t }
+
+let get_position player = player.pos
+
+let update_position player p = { player with pos = p }
+
+let get_cash player = player.cash
+
+let increment_cash player c = { player with cash = player.cash + c }
+
+let decrement_cash player c = { player with cash = player.cash - c }
+
+let get_property_lst player = player.property_lst
+
+let add_property p player =
+  { player with property_lst = p :: player.property_lst }
+
+let remove_property player p =
+  {
+    player with
+    property_lst = List.filter (( <> ) p) player.property_lst;
+  }
+
+let get_card_lst player = player.card_lst
+
+let add_card player c = { player with card_lst = c :: player.card_lst }
+
+let remove_card player c =
+  { player with card_lst = List.filter (( <> ) c) player.card_lst }
+
+let get_jail_state player = player.jail_state
+
+let update_jail_state player b = { player with jail_state = b }
+
+let get_bankrupt_state player = player.bankrupt_state
+
+let update_bankrupt_state player b = { player with bankrupt_state = b }
 
 let init_player =
   {
-    pos = 0;
-    cash = 0;
-    properties = [];
-    cards = [];
-    jail = false;
-    token = None;
     name = None;
-    bankrupt = false;
+    token = None;
+    pos = 0;
+    cash = 1500;
+    property_lst = [];
+    card_lst = [];
+    jail_state = false;
+    bankrupt_state = false;
   }
 
 (* [move p dr] returns a new player type p after moving dr spaces. *)
-let move p dr = { p with pos = dr }
+let move p dr = { p with pos = p.pos + dr }
 
-let position player = player.pos
+(* let sum_mortgage_value property_lst = List.fold_left ( + ) 0
+   property_lst *)
 
-let cash player = player.cash
+(* let int_of_square sq = match Board.mortgage sq with None -> 0 | Some
+   x -> x *)
 
-let properties player = player.properties
+(* let intlist_of_squarelist lst = List.map int_of_square lst *)
 
-let cards player = player.cards
+(* TODO: need to include houses / hotels *)
 
-let jail player = player.jail
+(* let net_worth player = player.cash + sum_mortgage_value
+   (intlist_of_squarelist player.property_lst) *)
 
-let token player = player.token
+(* let bankrupt player = net_worth player >= 0 *)
 
-let name player = player.name
-
-let sum_mortgage_value prop = List.fold_left ( + ) 0 prop
-
-let int_of_square sq =
-  match Board.get_mortgage sq with None -> 0 | Some x -> x
-
-let intlist_of_squarelist lst = List.map int_of_square lst
-
-(* TODO: need to include houses *)
-let net_worth player =
-  player.cash
-  + sum_mortgage_value (intlist_of_squarelist player.properties)
-
-let bankrupt player = net_worth player >= 0
-
-(* Helper *)
-let remove_from_list lst member =
-  let rec helper lst member acc =
-    match lst with
-    | [] -> acc
-    | a :: t ->
-        if a = member then helper t member acc
-        else helper t member (a :: acc)
-  in
-  helper lst member []
-
-let increment_cash player added_cash =
-  { player with cash = player.cash + added_cash }
-
-let decrement_cash player subtracted_cash =
-  { player with cash = player.cash - subtracted_cash }
-
-let add_card player card = { player with cards = card :: player.cards }
-
-let remove_card player card =
-  { player with cards = remove_from_list player.cards card }
-
-let add_property player property =
-  { player with properties = property :: player.properties }
-
-let remove_property player property =
-  {
-    player with
-    properties = remove_from_list player.properties property;
-  }
-
-let send_to_jail player = { player with jail = true }
-
-let let_out_of_jail player = { player with jail = false }
-
-let change_to_bankrupt player = { player with bankrupt = true }
-
-let change_to_not_bankrupt player = { player with bankrupt = false }
-
-let rec get_player_from_player_list_given_name player_lst owner_option =
+let rec get_player_from_name player_lst owner_option =
   match player_lst with
-  | [] -> failwith "Player could not be found"
-  | (ind, pl) :: t ->
-      if pl.name = owner_option then pl
-      else get_player_from_player_list_given_name t owner_option
-
-let rec get_player_number player_lst (player : player) =
-  match player_lst with
-  | (a, pl) :: t ->
-      if pl = player then a else get_player_number t player
   | [] -> failwith "player could not be found"
+  | (_, pl) :: t ->
+      if pl.name = owner_option then pl
+      else get_player_from_name t owner_option
