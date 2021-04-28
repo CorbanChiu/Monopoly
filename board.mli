@@ -30,7 +30,7 @@ val get_price : square -> int option
 
 val pricelist : board -> int option list
 
-val get_paymentstruct : square -> paymentstruct option
+val get_payments : square -> paymentstructure
 
 val get_color : square -> propertycolor option
 
@@ -41,7 +41,7 @@ val get_mortgage : square -> int option
 (* TODO: is this really necessary to have here? *)
 val mortgagelist : board -> int option list
 
-val get_buildingcost : square -> int option
+val get_buildprice : square -> int option
 
 val get_mortgage : square -> int option
 

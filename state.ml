@@ -276,7 +276,7 @@ let develop_property gs property =
       let new_owner =
         Player.decrement_cash owner
           (remove_option
-             (Board.get_buildingcost (Board.get_sqr property)))
+             (Board.get_buildprice (Board.get_sqr property)))
       in
       let new_player_list =
         update_player_lst
@@ -304,7 +304,7 @@ let develop_property gs property =
       let new_owner =
         Player.decrement_cash owner
           (remove_option
-             (Board.get_buildingcost (Board.get_sqr property)))
+             (Board.get_buildprice (Board.get_sqr property)))
       in
       let new_player_list =
         update_player_lst

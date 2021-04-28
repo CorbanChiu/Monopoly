@@ -189,8 +189,8 @@ let get_price = function
 (* Returns an int option list for the purchase price *)
 let pricelist b = List.map get_price b
 
-let get_paymentstruct = function
-  | Traditional sq -> Some sq.tpaymentstruct
+let get_payments = function
+  | Traditional sq -> (Some sq.tpaymentstruct : paymentstructure)
   | Utility sq -> Some sq.upaymentstruct
   | Railroad sq -> Some sq.rpaymentstruct
   | Card sq -> None
@@ -211,7 +211,7 @@ let get_mortgage = function
 (* Returns an int option list *)
 let mortgagelist b = List.map get_mortgage b
 
-let get_buildingcost = function
+let get_buildprice = function
   | Traditional sq -> Some sq.buildingcost
   | _ -> None
 
@@ -318,7 +318,7 @@ let trent_multiplier property sqr_lst b =
 let flat_rent property =
   List.assoc
     (remove_option property.dev_lvl)
-    (remove_option (get_paymentstruct property.sqr))
+    (remove_option (get_payments property.sqr))
 
 let trent_price property sqr_lst b =
   if property.dev_lvl = Some 0 then
@@ -328,12 +328,12 @@ let trent_price property sqr_lst b =
 let rrent_price property sqr_lst =
   List.assoc
     (List.length (railroadgroup sqr_lst))
-    (remove_option (get_paymentstruct property.sqr))
+    (remove_option (get_payments property.sqr))
 
 let urent_price property sqr_lst =
   List.assoc
     (List.length (utilitygroup sqr_lst))
-    (remove_option (get_paymentstruct property.sqr))
+    (remove_option (get_payments property.sqr))
 
 let get_rent property sqr_lst b dr =
   match property.sqr with

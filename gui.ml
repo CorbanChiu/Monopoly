@@ -434,8 +434,7 @@ let draw_selection_name () =
           calc_sel_b () + calc_sel_h ()
           - (2 * calc_sel_headline_height ()) )
         ( calc_sel_l () + calc_sel_w (),
-          calc_sel_b () + calc_sel_h () - Consts.const_sel_head_height
-        )
+          calc_sel_b () + calc_sel_h () - calc_sel_headline_height () )
         (Board.get_name_from_board board msq)
   | None -> ()
 
@@ -466,7 +465,7 @@ let draw_selection_desc () =
   match !sel_state with
   | Some sq -> (
       set_color (rgb 0 0 0);
-      match Board.get_payments board sq with
+      match Board.get_payments sq with
       | Some [ (k1, v1); (k2, v2) ] -> (
           center_text (text_left, line_1_b) (text_right, line_1_t)
             ("If " ^ string_of_int k1 ^ " 'Utility' is owned, rent is "
@@ -532,14 +531,14 @@ let draw_selection_desc () =
             | None -> ()
           end;
           begin
-            match Board.get_buildprice board sq with
+            match Board.get_buildprice sq with
             | Some n ->
                 center_text (text_left, line_8_b) (text_right, line_8_t)
                   ("Houses cost $" ^ string_of_int n ^ " each")
             | None -> ()
           end;
           begin
-            match Board.get_buildprice board sq with
+            match Board.get_buildprice sq with
             | Some n ->
                 center_text (text_left, line_9_b) (text_right, line_9_t)
                   ("Hotels, $" ^ string_of_int n ^ " plus 4 houses")
