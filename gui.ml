@@ -890,9 +890,9 @@ let process_prop_purchase () =
   game_state := State.buy_property !game_state
 
 let process_rent_payment () =
-  (* TODO: this function does nothing, waiting on clarification from
-     state *)
-  game_state := !game_state
+  let roll = !gui_state.dice in
+  let rt = match roll with Some (v1, v2) -> v1 + v2 | None -> 0 in
+  game_state := State.pay_rent !game_state rt
 
 (* game_state := State.move !game_state roll *)
 (* TODO: the move function needs to be fixed so that it actually works *)
