@@ -107,7 +107,10 @@ type action =
   | Buy_ok
   | Payrent_ok
   | Mortgage_ok
+  | Mortgage_and_Develop_ok
+  | Unmortgage_ok
   | Develop_ok
+  | Undevelop_ok
   | Card_ok
   | Freeparking_ok
   | None_ok
@@ -116,3 +119,5 @@ type action =
   | Go_ok
   | Incometax_ok
   | Luxurytax_ok
+
+val get_action : property -> string option -> action

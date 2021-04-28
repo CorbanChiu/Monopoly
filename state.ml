@@ -47,6 +47,26 @@ let rec get_player_index player player_lst =
 
 type action = Board.action
 
+let get_players_from gs f =
+  List.map (fun (ind, player) -> (ind, f player)) gs.player_lst
+
+let get_players_name gs = get_players_from gs Player.get_name
+
+let get_players_position gs = get_players_from gs Player.get_position
+
+let get_players_cash gs = get_players_from gs Player.get_cash
+
+let get_property_info_from gs ind f = f (List.assoc ind gs.property_lst)
+
+let get_square_owner gs ind =
+  get_property_info_from gs ind Board.get_owner
+
+let get_square_dev_lvl gs ind =
+  get_property_info_from gs ind Board.get_dev_lvl
+
+let get_square_mortgage_state gs ind =
+  get_property_info_from gs ind Board.get_mortgage_state
+
 let num_players = 4
 
 (* [init_board] is the board converted from the json file *)
@@ -113,32 +133,34 @@ let current_property gs =
 let get_property_price property =
   Board.get_sqr property |> Board.get_price |> remove_option
 
-(* returns whether a player can afford to buy a property *)
-let can_buy_property player property =
-  Player.get_cash player - get_property_price property >= 0
+(* returns whether a player can afford to buy a property. TODO: change
+   to net worth instead of get_cash *)
+let can_buy_property gs =
+  let player = current_player gs in
+  let property = current_property gs in
+  if Board.get_action property (Player.get_name player) = Buy_ok then
+    if Player.get_cash player - get_property_price property >= 0 then
+      true
+    else false
+  else false
 
 (** [buy_property gs] returns ... *)
 let buy_property gs =
   let player = current_player gs in
   let property = current_property gs in
-  if can_buy_property player property then
-    let new_player =
-      Player.decrement_cash player (get_property_price property)
-      |> Player.add_property property
-    in
-    {
-      property_lst =
-        update_property_lst
-          (Player.get_position player)
-          (Board.update_owner property (Player.get_name player))
-          gs.property_lst;
-      player_lst = update_player_lst gs.next new_player gs.player_lst;
-      next = gs.next;
-    }
-  else
-    failwith
-      "TODO: auction -> auction can also happen if player chooses not \
-       to buy"
+  let new_player =
+    Player.decrement_cash player (get_property_price property)
+    |> Player.add_property property
+  in
+  {
+    property_lst =
+      update_property_lst
+        (Player.get_position player)
+        (Board.update_owner property (Player.get_name player))
+        gs.property_lst;
+    player_lst = update_player_lst gs.next new_player gs.player_lst;
+    next = gs.next;
+  }
 
 let propertylst_to_sqrlst property_lst =
   List.map Board.get_sqr property_lst

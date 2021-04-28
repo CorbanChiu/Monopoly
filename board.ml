@@ -388,7 +388,10 @@ type action =
   | Buy_ok
   | Payrent_ok
   | Mortgage_ok
+  | Mortgage_and_Develop_ok
+  | Unmortgage_ok
   | Develop_ok
+  | Undevelop_ok
   | Card_ok
   | Freeparking_ok
   | None_ok
@@ -398,29 +401,40 @@ type action =
   | Incometax_ok
   | Luxurytax_ok
 
-let get_action prop player =
+let get_action prop player_name =
   match prop.sqr with
   (* TODO: factor out copied code? *)
   | Traditional _ ->
       if prop.owner = Some "Bank" then Buy_ok
       else if
-        prop.owner != None
-        && prop.owner != Some player
+        prop.owner != player_name
+        && prop.owner != Some "Bank"
         && prop.mortgage_state = Some false
       then Payrent_ok
-      else if prop.owner = Some player && prop.dev_lvl = Some 0 then
-        Mortgage_ok
-      else if prop.owner = Some player && remove_option prop.dev_lvl < 5
+      else if
+        prop.owner != Some "Bank"
+        && prop.dev_lvl = Some 0
+        && prop.mortgage_state = Some false
+      then Mortgage_and_Develop_ok
+      else if prop.mortgage_state = Some true then Unmortgage_ok
+      else if
+        prop.owner != Some "Bank"
+        && prop.mortgage_state = Some false
+        && remove_option prop.dev_lvl < 5
       then Develop_ok
+      else if remove_option prop.dev_lvl > 0 then Undevelop_ok
       else None_ok
   | Utility _ | Railroad _ ->
       if prop.owner = Some "Bank" then Buy_ok
       else if
-        prop.owner != None
-        && prop.owner != Some player
+        prop.owner != player_name
+        && prop.owner != Some "Bank"
         && prop.mortgage_state = Some false
       then Payrent_ok
-      else if prop.owner = Some player then Mortgage_ok
+      else if
+        prop.owner != Some "Bank" && prop.mortgage_state = Some false
+      then Mortgage_ok
+      else if prop.mortgage_state = Some true then Unmortgage_ok
       else None_ok
   | Card _ -> Card_ok
   | Misc m -> (
