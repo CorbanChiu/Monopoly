@@ -2,6 +2,8 @@ open Yojson.Basic.Util
 
 type paymentstruct = (int * int) list
 
+type paymentstructure = paymentstruct option
+
 type propertycolor = int * int * int
 
 exception UnknownJSON

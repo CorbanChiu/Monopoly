@@ -11,6 +11,21 @@ type paymentstruct
 (** The type of value representing a color (r,g,b) *)
 type propertycolor = int * int * int
 
+type paymentstructure = (int * int) list option
+
+type action =
+  | Buy_ok
+  | Auction_ok
+  | Payrent_ok
+  | Mortgage_ok
+  | Card_ok
+  | Freeparking_ok
+  | None
+  | Gotojail_ok
+  | Go_ok
+  | Incometax_ok
+  | Luxurytax_ok
+
 exception UnknownJSON
 
 val from_json : Yojson.Basic.t -> board
@@ -40,6 +55,8 @@ val get_mortgage : square -> int option
 val mortgagelist : board -> int option list
 
 val get_buildingcost : square -> int option
+
+val get_mortgage : square -> int option
 
 (** [propertygroup b sq] is the square list of squares part of the same
     "color grouping" (that which you need to own all properties to

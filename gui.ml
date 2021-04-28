@@ -39,6 +39,20 @@ let center_text (x1, y1) (x2, y2) t =
   moveto (rx + x1) (ry + y1);
   draw_string t
 
+let rightj_text (x1, y1) (x2, y2) t =
+  let w, h = text_size t in
+  let rx = x2 - w in
+  let ry = (y2 - y1 - h) / 2 in
+  moveto rx (ry + y1);
+  draw_string t
+
+let leftj_text (x1, y1) (x2, y2) t =
+  let w, h = text_size t in
+  let rx = x1 in
+  let ry = (y2 - y1 - h) / 2 in
+  moveto rx (ry + y1);
+  draw_string t
+
 let open_window () =
   open_graph Consts.const_window_dim;
   set_window_title Consts.const_window_name
@@ -95,20 +109,27 @@ let calc_sel_w () =
   Consts.const_sel_size *. float_of_int (calc_board_width ())
   |> int_of_float
 
-(* calc_board_l () + calc_board_width () - calc_square_h () -
-   calc_window_buffer () - calc_sel_l () *)
-
 let calc_sel_h () =
   Consts.const_sel_size *. float_of_int (calc_board_height ())
   |> int_of_float
 
-(* calc_board_b () + calc_board_height () - calc_square_h () -
-   calc_window_buffer () - calc_sel_b () *)
 let calc_sel_l () =
   ((calc_board_width () - calc_sel_h ()) / 2) + calc_board_l ()
 
 let calc_sel_b () =
   ((calc_board_height () - calc_sel_w ()) / 2) + calc_board_b ()
+
+let calc_sel_headline_height () =
+  Consts.const_sel_headline_height *. float_of_int (calc_sel_h ())
+  |> int_of_float
+
+let calc_sel_line_height () =
+  Consts.const_sel_line_height *. float_of_int (calc_sel_h ())
+  |> int_of_float
+
+let calc_sel_buffer () =
+  Consts.const_sel_buffer *. float_of_int (calc_sel_w ())
+  |> int_of_float
 
 let current_res () =
   {
@@ -380,7 +401,6 @@ let index_of_rect r rlst =
 let draw_name r rlst nmlst =
   match index_of_rect r rlst with
   | Some n ->
-      (* TODO: figure out how to center this *)
       moveto 100 600;
       draw_string (List.nth nmlst n)
   | None -> ()
@@ -390,7 +410,6 @@ let draw_price r rlst plst =
   | Some n -> (
       match List.nth plst n with
       | Some p ->
-          (* TODO: figure out how to center this *)
           moveto 100 580;
           draw_string (p |> string_of_int)
       | None -> ())
@@ -413,11 +432,122 @@ let draw_selection_name () =
       center_text
         ( calc_sel_l (),
           calc_sel_b () + calc_sel_h ()
-          - (2 * Consts.const_sel_head_height) )
+          - (2 * calc_sel_headline_height ()) )
         ( calc_sel_l () + calc_sel_w (),
           calc_sel_b () + calc_sel_h () - Consts.const_sel_head_height
         )
         (Board.get_name_from_board board msq)
+  | None -> ()
+
+let draw_selection_desc () =
+  let text_left = calc_sel_l () + calc_sel_buffer () in
+  let text_right = calc_sel_l () + calc_sel_w () - calc_sel_buffer () in
+  let text_top =
+    calc_sel_b () + calc_sel_h () - (2 * calc_sel_headline_height ())
+  in
+  let line_1_t = text_top in
+  let line_1_b = line_1_t - calc_sel_line_height () in
+  let line_2_t = line_1_b in
+  let line_2_b = line_2_t - calc_sel_line_height () in
+  let line_3_t = line_2_b in
+  let line_3_b = line_3_t - calc_sel_line_height () in
+  let line_4_t = line_3_b in
+  let line_4_b = line_4_t - calc_sel_line_height () in
+  let line_5_t = line_4_b in
+  let line_5_b = line_5_t - calc_sel_line_height () in
+  let line_6_t = line_5_b in
+  let line_6_b = line_6_t - calc_sel_line_height () in
+  let line_7_t = line_6_b in
+  let line_7_b = line_7_t - calc_sel_line_height () in
+  let line_8_t = line_7_b in
+  let line_8_b = line_8_t - calc_sel_line_height () in
+  let line_9_t = line_8_b in
+  let line_9_b = line_9_t - calc_sel_line_height () in
+  match !sel_state with
+  | Some sq -> (
+      set_color (rgb 0 0 0);
+      match Board.get_payments board sq with
+      | Some [ (k1, v1); (k2, v2) ] -> (
+          center_text (text_left, line_1_b) (text_right, line_1_t)
+            ("If " ^ string_of_int k1 ^ " 'Utility' is owned, rent is "
+           ^ string_of_int v1 ^ " times the amount shown on dice.");
+          center_text (text_left, line_2_b) (text_right, line_2_t)
+            ("If " ^ string_of_int k1
+           ^ " 'Utilities' are owned, rent is " ^ string_of_int v1
+           ^ " times the amount shown on dice.");
+          match Board.get_mortgage sq with
+          | Some m ->
+              center_text (text_left, line_7_b) (text_right, line_7_t)
+                ("Mortgage Value $" ^ string_of_int m)
+          | None -> ())
+      | Some [ (k1, v1); (k2, v2); (k3, v3); (k4, v4) ] -> (
+          leftj_text (text_left, line_1_b) (text_right, line_1_t) "Rent";
+          rightj_text (text_left, line_1_b) (text_right, line_1_t)
+            ("$ " ^ string_of_int v1);
+          leftj_text (text_left, line_2_b) (text_right, line_2_t)
+            ("If " ^ string_of_int k2 ^ " R.R.'s are owned");
+          rightj_text (text_left, line_2_b) (text_right, line_2_t)
+            ("$ " ^ string_of_int v2);
+          leftj_text (text_left, line_3_b) (text_right, line_3_t)
+            ("If " ^ string_of_int k3 ^ " R.R.'s are owned");
+          rightj_text (text_left, line_3_b) (text_right, line_3_t)
+            ("$ " ^ string_of_int v3);
+          leftj_text (text_left, line_4_b) (text_right, line_4_t)
+            ("If " ^ string_of_int k4 ^ " R.R.'s are owned");
+          rightj_text (text_left, line_4_b) (text_right, line_4_t)
+            ("$ " ^ string_of_int v4);
+          match Board.get_mortgage sq with
+          | Some m ->
+              center_text (text_left, line_7_b) (text_right, line_7_t)
+                ("Mortgage Value $" ^ string_of_int m)
+          | None -> ())
+      | Some
+          [ (k0, v0); (k1, v1); (k2, v2); (k3, v3); (k4, v4); (k5, v5) ]
+        ->
+          center_text (text_left, line_1_b) (text_right, line_1_t)
+            ("Rent $" ^ string_of_int v0);
+          leftj_text (text_left, line_2_b) (text_right, line_2_t)
+            ("With " ^ string_of_int k1 ^ " House");
+          rightj_text (text_left, line_2_b) (text_right, line_2_t)
+            ("$ " ^ string_of_int v1);
+          leftj_text (text_left, line_3_b) (text_right, line_3_t)
+            ("With " ^ string_of_int k2 ^ " Houses");
+          rightj_text (text_left, line_3_b) (text_right, line_3_t)
+            ("$ " ^ string_of_int v2);
+          leftj_text (text_left, line_4_b) (text_right, line_4_t)
+            ("With " ^ string_of_int k3 ^ " Houses");
+          rightj_text (text_left, line_4_b) (text_right, line_4_t)
+            ("$ " ^ string_of_int v3);
+          leftj_text (text_left, line_5_b) (text_right, line_5_t)
+            ("With " ^ string_of_int k4 ^ " Houses");
+          rightj_text (text_left, line_5_b) (text_right, line_5_t)
+            ("$ " ^ string_of_int v4);
+          center_text (text_left, line_6_b) (text_right, line_6_t)
+            ("With HOTEL $" ^ string_of_int v5);
+          begin
+            match Board.get_mortgage sq with
+            | Some m ->
+                center_text (text_left, line_7_b) (text_right, line_7_t)
+                  ("Mortgage Value $" ^ string_of_int m)
+            | None -> ()
+          end;
+          begin
+            match Board.get_buildprice board sq with
+            | Some n ->
+                center_text (text_left, line_8_b) (text_right, line_8_t)
+                  ("Houses cost $" ^ string_of_int n ^ " each")
+            | None -> ()
+          end;
+          begin
+            match Board.get_buildprice board sq with
+            | Some n ->
+                center_text (text_left, line_9_b) (text_right, line_9_t)
+                  ("Hotels, $" ^ string_of_int n ^ " plus 4 houses")
+            | None -> ()
+          end;
+          ()
+      | None -> ()
+      | _ -> failwith "improper payment structure")
   | None -> ()
 
 let draw_selection_color () =
@@ -432,8 +562,9 @@ let draw_selection_color () =
     | None -> set_color (rgb 255 255 255)
   end;
   fill_rect (calc_sel_l ())
-    (calc_sel_b () + calc_sel_h () - Consts.const_sel_head_height)
-    (calc_sel_w ()) Consts.const_sel_head_height
+    (calc_sel_b () + calc_sel_h () - calc_sel_headline_height ())
+    (calc_sel_w ())
+    (calc_sel_headline_height ())
 
 let is_selected sq =
   match !sel_state with Some n -> n = sq | None -> false
@@ -482,10 +613,10 @@ let draw_selection_fill (msqlst : rect list) =
 
 let btn_exit_sel () =
   {
-    l = calc_sel_l () + calc_sel_w () - Consts.const_sel_head_height;
-    b = calc_sel_b () + calc_sel_h () - Consts.const_sel_head_height;
-    w = Consts.const_sel_head_height;
-    h = Consts.const_sel_head_height;
+    l = calc_sel_l () + calc_sel_w () - calc_sel_headline_height ();
+    b = calc_sel_b () + calc_sel_h () - calc_sel_headline_height ();
+    w = calc_sel_headline_height ();
+    h = calc_sel_headline_height ();
     action = "exit selection";
   }
 
@@ -517,7 +648,8 @@ let draw_selection msqlst =
       draw_selection_color ();
       draw_btn_exit_sel ();
       draw_selection_box ();
-      draw_selection_name ()
+      draw_selection_name ();
+      draw_selection_desc ()
 
 (*********************************************************)
 (**** Code that runs everthing - Add functions above ****)

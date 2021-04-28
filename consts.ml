@@ -6,7 +6,11 @@ let const_window_dim = " 1100x700+100-100"
 
 let const_color_height = 5
 
-let const_sel_head_height = 40
+let const_sel_headline_height = 0.1
+
+let const_sel_line_height = 0.04
+
+let const_sel_buffer = 0.1
 
 let const_hover_color = Graphics.rgb 200 200 200
 

@@ -19,6 +19,12 @@ val update_player_lst :
   (int * Player.player) list ->
   (int * Player.player) list
 
+val init : game_state
+
+val move : game_state -> Player.player list -> game_state
+
+val next_player : game_state -> Player.player
+
 val roll_dice : unit -> int
 
 val next_player : game_state -> int -> int
