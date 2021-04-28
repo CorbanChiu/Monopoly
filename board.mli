@@ -13,19 +13,6 @@ type propertycolor = int * int * int
 
 type paymentstructure = (int * int) list option
 
-type action =
-  | Buy_ok
-  | Auction_ok
-  | Payrent_ok
-  | Mortgage_ok
-  | Card_ok
-  | Freeparking_ok
-  | None
-  | Gotojail_ok
-  | Go_ok
-  | Incometax_ok
-  | Luxurytax_ok
-
 exception UnknownJSON
 
 val from_json : Yojson.Basic.t -> board
