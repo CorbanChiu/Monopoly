@@ -135,7 +135,8 @@ let move gs dr =
     player_lst =
       update_player_lst
         (get_player_index player gs.player_lst)
-        (Player.update_position player (fst dr + snd dr))
+        (Player.update_position player
+           ((fst dr + snd dr + Player.get_position player) mod 40))
         gs.player_lst;
   }
 
