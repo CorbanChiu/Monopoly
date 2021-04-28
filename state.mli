@@ -31,7 +31,7 @@ val get_square_dev_lvl : game_state -> int -> int option
 
 val get_square_mortgage_state : game_state -> int -> bool option
 
-val init : game_state
+val init_game_state : game_state
 
 val move : game_state -> Player.player list -> game_state
 

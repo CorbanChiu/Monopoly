@@ -73,15 +73,19 @@ let num_players = 4
 let init_board =
   Board.from_json (Yojson.Basic.from_file Consts.const_board_path)
 
+let name_list = [ "Sunny"; "Corban"; "Connor"; "Jessica" ]
+
 let rec init_player_lst np =
   match np with
   | 0 -> []
   | a ->
-      (a, Player.update_name Player.init_player (Some (string_of_int a)))
+      ( a,
+        Player.update_name Player.init_player
+          (List.nth_opt name_list (a - 1)) )
       :: init_player_lst (a - 1)
 
 (* [init] is the initial game state *)
-let init =
+let init_game_state =
   {
     property_lst = Board.init_prop_lst init_board 0;
     player_lst = init_player_lst num_players;
