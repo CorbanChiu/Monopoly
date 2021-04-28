@@ -124,8 +124,8 @@ let current_property gs =
 (* [roll_dice] returns a random integer between 2 and 12 (inclusive). *)
 let roll_dice () =
   self_init ();
-  ( nativeint (of_int 5) |> to_int |> ( + ) 1,
-    nativeint (of_int 5) |> to_int |> ( + ) 1 )
+  ( nativeint (of_int 6) |> to_int |> ( + ) 1,
+    nativeint (of_int 6) |> to_int |> ( + ) 1 )
 
 (* [move gs dr] returns a new game state gs *)
 let move gs dr =

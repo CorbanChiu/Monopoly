@@ -35,11 +35,7 @@ val init_game_state : game_state
 
 val move : game_state -> int * int -> game_state
 
-val next_player : game_state -> Player.player
-
 val roll_dice : unit -> int * int
-
-val next_player : game_state -> int -> int
 
 (* val move : game_state -> int -> game_state *)
 
@@ -56,3 +52,5 @@ val develop_property : game_state -> property -> game_state
 val good_output : game_state -> game_state
 
 val assoc_list_length : 'a list -> int
+
+val end_turn : game_state -> game_state

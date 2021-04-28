@@ -15,6 +15,13 @@ let sel_state = ref (None : selection)
 
 let game_state = ref (State.init_game_state : State.game_state)
 
+type gui_state = {
+  has_moved : bool;
+  dice : (int * int) option;
+}
+
+let gui_state = ref ({ has_moved = false; dice = None } : gui_state)
+
 type coord = int * int
 
 type button = {
@@ -735,37 +742,37 @@ let draw_selection msqlst =
 let draw_player_names_cash_aux elt1 elt2 =
   match (elt1, elt2) with
   | (k1, Some v1), (k2, v2) -> (
-      match (k1, k2) with
-      | 1, 1 ->
+      match k1 with
+      | 1 ->
           set_color (List.nth Consts.p_colors 0);
           center_text
             (calc_sel_l (), calc_sel_b () + calc_player_name_spacing ())
             ( calc_middle_width (),
               calc_sel_b () + (2 * calc_player_name_spacing ()) )
             (v1 ^ ": $" ^ string_of_int v2)
-      | 2, 2 ->
+      | 2 ->
           set_color (List.nth Consts.p_colors 1);
           center_text
             ( calc_middle_width (),
-              calc_sel_b () + +calc_player_name_spacing () )
+              calc_sel_b () + calc_player_name_spacing () )
             ( calc_sel_l () + calc_sel_w (),
               calc_sel_b () + (2 * calc_player_name_spacing ()) )
             (v1 ^ ": $" ^ string_of_int v2)
-      | 3, 3 ->
+      | 3 ->
           set_color (List.nth Consts.p_colors 2);
           center_text
             (calc_sel_l (), calc_sel_b ())
             ( calc_middle_width (),
               calc_sel_b () + calc_player_name_spacing () )
             (v1 ^ ": $" ^ string_of_int v2)
-      | 4, 4 ->
+      | 4 ->
           set_color (List.nth Consts.p_colors 3);
           center_text
             (calc_middle_width (), calc_sel_b ())
             ( calc_sel_l () + calc_sel_w (),
               calc_sel_b () + calc_player_name_spacing () )
             (v1 ^ ": $" ^ string_of_int v2)
-      | 0, 0 -> ()
+      | 0 -> ()
       | _ -> failwith "can't draw this many players")
   | _ -> failwith "this is an improperly formatted player name list"
 
@@ -837,17 +844,47 @@ let draw_player_pos msqlst =
     (draw_player_pos_aux msqlst)
     (State.get_players_position !game_state)
 
+let update_move_state () =
+  let gs = !gui_state in
+  match gs with
+  | { has_moved } when has_moved = false ->
+      gui_state := { gs with has_moved = true }
+  | { has_moved } when has_moved = true ->
+      gui_state := { gs with has_moved = false }
+  | _ -> failwith "impossible move status"
+
 let process_roll () =
   let roll = State.roll_dice () in
+  let gs = !gui_state in
+  gui_state := { gs with dice = Some roll };
+  game_state := State.move !game_state roll;
+  update_move_state ()
+
+let draw_roll_and_turn () =
   set_color (rgb 0 0 0);
   center_text
     ( calc_sel_l (),
-      calc_sel_b () + calc_sel_h () - (4 * calc_sel_headline_height ())
-    )
+      calc_sel_b () + calc_sel_h ()
+      - ((4 * calc_sel_headline_height ()) - calc_sel_line_height ()) )
     ( calc_sel_l () + calc_sel_w (),
-      calc_sel_b () + calc_sel_h () - (3 * calc_sel_headline_height ())
-    )
-    ("Dice Roll: " ^ string_of_int roll)
+      calc_sel_b () + calc_sel_h ()
+      - ((3 * calc_sel_headline_height ()) - calc_sel_line_height ()) )
+    "Current Turn: Unimplemented";
+  match !gui_state.dice with
+  | Some (v1, v2) ->
+      center_text
+        ( calc_sel_l (),
+          calc_sel_b () + calc_sel_h ()
+          - (4 * calc_sel_headline_height ()) )
+        ( calc_sel_l () + calc_sel_w (),
+          calc_sel_b () + calc_sel_h ()
+          - (3 * calc_sel_headline_height ()) )
+        ("Dice Roll: " ^ string_of_int v1 ^ ", " ^ string_of_int v2)
+  | None -> ()
+
+let process_endturn () =
+  game_state := State.end_turn !game_state;
+  update_move_state ()
 
 (* game_state := State.move !game_state roll *)
 (* TODO: the move function needs to be fixed so that it actually works *)
@@ -861,11 +898,13 @@ let update () =
   set_line_width Consts.const_line_width;
   let msquare_lst = construct_msquares () in
   let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
-  if st.key = 'n' then process_roll ();
+  if st.key = 'n' && !gui_state.has_moved = false then process_roll ();
+  if st.key = 'm' then process_endturn ();
   button_handler st;
   update_sel_state st msquare_lst;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;
   draw_player_names_cash ();
+  draw_roll_and_turn ();
   draw_selection msquare_lst;
   draw_all_colors msquare_lst msquare_color_lst;
   draw_all_msquares msquare_lst;
