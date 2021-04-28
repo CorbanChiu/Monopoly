@@ -886,6 +886,14 @@ let process_endturn () =
   game_state := State.end_turn !game_state;
   update_move_state ()
 
+let process_prop_purchase () =
+  game_state := State.buy_property !game_state
+
+let process_rent_payment () =
+  (* TODO: this function does nothing, waiting on clarification from
+     state *)
+  game_state := !game_state
+
 (* game_state := State.move !game_state roll *)
 (* TODO: the move function needs to be fixed so that it actually works *)
 
@@ -899,7 +907,11 @@ let update () =
   let msquare_lst = construct_msquares () in
   let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
   if st.key = 'n' && !gui_state.has_moved = false then process_roll ();
-  if st.key = 'm' then process_endturn ();
+  if st.key = 'm' && !gui_state.has_moved = true then process_endturn ();
+  (* temporary "buy property key" *)
+  if st.key = 'b' then process_prop_purchase ();
+  (* temporary "pay rent key" *)
+  if st.key = 'v' then process_rent_payment ();
   button_handler st;
   update_sel_state st msquare_lst;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;
