@@ -45,6 +45,4 @@ val get_player_from_name :
 
 (* val bankrupt : player -> bool *)
 
-val move : player -> int -> player
-
 val init_player : player
