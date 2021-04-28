@@ -33,11 +33,11 @@ val get_square_mortgage_state : game_state -> int -> bool option
 
 val init_game_state : game_state
 
-val move : game_state -> Player.player list -> game_state
+val move : game_state -> int * int -> game_state
 
 val next_player : game_state -> Player.player
 
-val roll_dice : unit -> int
+val roll_dice : unit -> int * int
 
 val next_player : game_state -> int -> int
 

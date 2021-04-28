@@ -92,14 +92,6 @@ let init_game_state =
     next = 1;
   }
 
-(* [roll_dice] returns a random integer between 2 and 12 (inclusive). *)
-let roll_dice () =
-  self_init ();
-  add (nativeint (of_int 5)) (nativeint (of_int 5)) |> to_int |> ( + ) 2
-
-(* [move gs lst] returns a new game state gs *)
-let move gs dr = gs
-
 let possible_action gs ind = List.nth gs.property_lst ind
 
 (* [next_player gs nxt] returns the index of the next player who is not
@@ -117,11 +109,6 @@ let end_turn gs =
     next = next_player gs gs.next;
   }
 
-let player_turn gs =
-  (* let player = List.assoc gs.next gs.player_lst in let dr = roll_dice
-     () in *)
-  move gs gs.player_lst |> end_turn
-
 (* removes option *)
 let remove_option = Board.remove_option
 
@@ -133,6 +120,24 @@ let current_player gs = get_player gs.next gs.player_lst
 
 let current_property gs =
   get_property (Player.get_position (current_player gs)) gs.property_lst
+
+(* [roll_dice] returns a random integer between 2 and 12 (inclusive). *)
+let roll_dice () =
+  self_init ();
+  ( nativeint (of_int 5) |> to_int |> ( + ) 1,
+    nativeint (of_int 5) |> to_int |> ( + ) 1 )
+
+(* [move gs dr] returns a new game state gs *)
+let move gs dr =
+  let player = current_player gs in
+  {
+    gs with
+    player_lst =
+      update_player_lst
+        (get_player_index player gs.player_lst)
+        (Player.update_position player (fst dr + snd dr))
+        gs.player_lst;
+  }
 
 let get_property_price property =
   Board.get_sqr property |> Board.get_price |> remove_option
