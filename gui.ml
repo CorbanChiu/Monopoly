@@ -13,6 +13,8 @@ type selection = Board.square option
 
 let sel_state = ref (None : selection)
 
+let game_state = ref (State.init_game_state : State.game_state)
+
 type coord = int * int
 
 type button = {
@@ -83,6 +85,10 @@ let calc_valid_height () =
 let calc_valid_width () =
   fst (calc_window_size ()) - (2 * calc_window_buffer ())
 
+let calc_middle_height () = calc_valid_height () / 2
+
+let calc_middle_width () = calc_valid_width () / 2
+
 let calc_board_height () =
   min (calc_valid_width ()) (calc_valid_height ())
 
@@ -129,6 +135,10 @@ let calc_sel_line_height () =
 
 let calc_sel_buffer () =
   Consts.const_sel_buffer *. float_of_int (calc_sel_w ())
+  |> int_of_float
+
+let calc_player_name_spacing () =
+  Consts.const_player_name_spacing *. float_of_int (calc_sel_h ())
   |> int_of_float
 
 let current_res () =
@@ -573,6 +583,53 @@ let draw_selection_desc () =
       | _ -> failwith "improper payment structure")
   | None -> ()
 
+let draw_selection_mutables () =
+  set_color (rgb 0 0 0);
+  let text_0 = calc_sel_b () + calc_sel_buffer () in
+  let text_1 = text_0 + calc_sel_line_height () in
+  let text_2 = text_1 + calc_sel_line_height () in
+  let text_3 = text_2 + calc_sel_line_height () in
+  let text_left = calc_sel_l () + calc_sel_buffer () in
+  let text_right = calc_sel_l () + calc_sel_w () - calc_sel_buffer () in
+  match !sel_state with
+  | Some sq -> (
+      let i = Board.find_square board sq in
+      let owner = State.get_square_owner !game_state i in
+      let devlvl = State.get_square_dev_lvl !game_state i in
+      let mort = State.get_square_mortgage_state !game_state i in
+      begin
+        match owner with
+        | Some name ->
+            center_text (text_left, text_2) (text_right, text_3)
+              ("Owner: " ^ name)
+        | None -> ()
+      end;
+      begin
+        match devlvl with
+        | Some dlvl when dlvl = 0 ->
+            center_text (text_left, text_1) (text_right, text_2)
+              "Undeveloped"
+        | Some dlvl when dlvl = 5 ->
+            center_text (text_left, text_1) (text_right, text_2)
+              "Development: Hotel"
+        | Some dlvl when dlvl = 1 ->
+            center_text (text_left, text_1) (text_right, text_2)
+              ("Development: " ^ string_of_int dlvl ^ " house")
+        | Some dlvl ->
+            center_text (text_left, text_1) (text_right, text_2)
+              ("Development: " ^ string_of_int dlvl ^ "houses")
+        | None -> ()
+      end;
+      match mort with
+      | Some true ->
+          center_text (text_left, text_0) (text_right, text_1)
+            "Mortgaged"
+      | Some false ->
+          center_text (text_left, text_0) (text_right, text_1)
+            "Not Mortgaged"
+      | None -> ())
+  | _ -> ()
+
 let draw_selection_color () =
   begin
     match !sel_state with
@@ -672,50 +729,147 @@ let draw_selection msqlst =
       draw_btn_exit_sel ();
       draw_selection_box ();
       draw_selection_name ();
-      draw_selection_desc ()
+      draw_selection_desc ();
+      draw_selection_mutables ()
+
+let draw_player_names_cash_aux elt1 elt2 =
+  match (elt1, elt2) with
+  | (k1, Some v1), (k2, v2) -> (
+      match (k1, k2) with
+      | 1, 1 ->
+          set_color (List.nth Consts.p_colors 0);
+          center_text
+            (calc_sel_l (), calc_sel_b () + calc_player_name_spacing ())
+            ( calc_middle_width (),
+              calc_sel_b () + (2 * calc_player_name_spacing ()) )
+            (v1 ^ ": $" ^ string_of_int v2)
+      | 2, 2 ->
+          set_color (List.nth Consts.p_colors 1);
+          center_text
+            ( calc_middle_width (),
+              calc_sel_b () + +calc_player_name_spacing () )
+            ( calc_sel_l () + calc_sel_w (),
+              calc_sel_b () + (2 * calc_player_name_spacing ()) )
+            (v1 ^ ": $" ^ string_of_int v2)
+      | 3, 3 ->
+          set_color (List.nth Consts.p_colors 2);
+          center_text
+            (calc_sel_l (), calc_sel_b ())
+            ( calc_middle_width (),
+              calc_sel_b () + calc_player_name_spacing () )
+            (v1 ^ ": $" ^ string_of_int v2)
+      | 4, 4 ->
+          set_color (List.nth Consts.p_colors 3);
+          center_text
+            (calc_middle_width (), calc_sel_b ())
+            ( calc_sel_l () + calc_sel_w (),
+              calc_sel_b () + calc_player_name_spacing () )
+            (v1 ^ ": $" ^ string_of_int v2)
+      | 0, 0 -> ()
+      | _ -> failwith "can't draw this many players")
+  | _ -> failwith "this is an improperly formatted player name list"
+
+let draw_player_names_cash () =
+  set_color (rgb 0 0 0);
+  List.iter2 draw_player_names_cash_aux
+    (State.get_players_name !game_state)
+    (State.get_players_cash !game_state)
+
+let center_circle (x1, y1) (x2, y2) r =
+  fill_circle ((x1 + x2) / 2) ((y1 + y2) / 2) r
+
+let draw_player_circle_aux (x1, y1) (x2, y2) i =
+  let x_mid = ((x2 - x1) / 2) + x1 in
+  let y_mid = ((y2 - y1) / 2) + y1 in
+  match i with
+  | 1 -> center_circle (x1, y_mid) (x_mid, y2) Consts.p_token_radius
+  | 2 -> center_circle (x_mid, y_mid) (x2, y2) Consts.p_token_radius
+  | 3 -> center_circle (x1, y1) (x_mid, y_mid) Consts.p_token_radius
+  | 4 -> center_circle (x_mid, y1) (x2, y_mid) Consts.p_token_radius
+  | _ -> failwith "improper player to draw the circle"
+
+let draw_player_circle r i =
+  match r.orient with
+  | "bot" ->
+      draw_player_circle_aux r.lb
+        (fst r.rt, snd r.rt - calc_color_h ())
+        i
+  | "left" ->
+      draw_player_circle_aux r.lb
+        (fst r.rt - calc_color_h (), snd r.rt)
+        i
+  | "top" ->
+      draw_player_circle_aux
+        (fst r.lb, snd r.lb + calc_color_h ())
+        r.rt i
+  | "right" ->
+      draw_player_circle_aux
+        (fst r.lb + calc_color_h (), snd r.lb)
+        r.rt i
+  | "corner" ->
+      draw_player_circle_aux
+        (fst r.lb + calc_color_h (), snd r.lb + calc_color_h ())
+        (fst r.rt - calc_color_h (), snd r.rt - calc_color_h ())
+        i
+  | _ -> failwith "improper square to draw a player on"
+
+let draw_player_pos_aux msqlst elt =
+  match elt with
+  | k, v -> (
+      match k with
+      | 0 -> ()
+      | 1 ->
+          set_color (List.nth Consts.p_colors 0);
+          draw_player_circle (List.nth msqlst v) 1
+      | 2 ->
+          set_color (List.nth Consts.p_colors 1);
+          draw_player_circle (List.nth msqlst v) 2
+      | 3 ->
+          set_color (List.nth Consts.p_colors 2);
+          draw_player_circle (List.nth msqlst v) 3
+      | 4 ->
+          set_color (List.nth Consts.p_colors 3);
+          draw_player_circle (List.nth msqlst v) 4
+      | _ -> failwith "improperly formatted player position list")
+
+let draw_player_pos msqlst =
+  List.iter
+    (draw_player_pos_aux msqlst)
+    (State.get_players_position !game_state)
+
+let process_roll () =
+  let roll = State.roll_dice () in
+  set_color (rgb 0 0 0);
+  center_text
+    ( calc_sel_l (),
+      calc_sel_b () + calc_sel_h () - (4 * calc_sel_headline_height ())
+    )
+    ( calc_sel_l () + calc_sel_w (),
+      calc_sel_b () + calc_sel_h () - (3 * calc_sel_headline_height ())
+    )
+    ("Dice Roll: " ^ string_of_int roll)
+
+(* game_state := State.move !game_state roll *)
+(* TODO: the move function needs to be fixed so that it actually works *)
 
 (*********************************************************)
 (**** Code that runs everthing - Add functions above ****)
 (*********************************************************)
-
-let key_input char =
-  match read_key () with a when a = char -> true | _ -> false
-
-let modulo x y = if x mod y < 0 then (x mod y) + y else x mod y
-
-(* let move_index ind dr = List.nth coords_list (modulo (ind + dr) 40) *)
-
-let draw_token r =
-  draw_circle
-    (get_rect_x r + (get_rect_w r / 2))
-    (get_rect_y r + (2 * get_rect_h r / 5))
-    (get_rect_w r / 10)
-
-(* TODO: Temporary implementation of draw_state *)
-(* let rec draw_state (state : State.game_state) = match key_input 'p'
-   with | true -> let msquare_lst = construct_msquares () in
-
-   let dr = State.roll_dice () in let np = State.next_player state in
-   let new_index player dr = List.nth msquare_lst (modulo
-   (Player.position player + dr) 40) in (* let nc = (get_rect_x
-   (new_index np dr), get_rect_y (new_index np dr)) in *) moveto
-   (calc_board_l () - 200) (calc_board_b () + 100); draw_string ("Dice
-   Roll: " ^ string_of_int dr); draw_token (new_index np dr); draw_state
-   (State.move state [ Player.move np (modulo (Player.position np + dr)
-   40) ]) | false -> () *)
 
 let update () =
   clear_graph ();
   set_line_width Consts.const_line_width;
   let msquare_lst = construct_msquares () in
   let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
-  (* if st.keypressed then raise Exit; *)
+  if st.key = 'n' then process_roll ();
   button_handler st;
   update_sel_state st msquare_lst;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;
+  draw_player_names_cash ();
   draw_selection msquare_lst;
   draw_all_colors msquare_lst msquare_color_lst;
-  draw_all_msquares msquare_lst
+  draw_all_msquares msquare_lst;
+  draw_player_pos msquare_lst
 
 let driver () =
   try

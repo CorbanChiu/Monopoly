@@ -43,8 +43,6 @@ val next_player : game_state -> int -> int
 
 (* val move : game_state -> int -> game_state *)
 
-val init : game_state
-
 val buy_property : game_state -> game_state
 
 val pay_rent : game_state -> int -> game_state

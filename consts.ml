@@ -23,3 +23,15 @@ let const_line_width = 0
 let const_exit_sel_color = Graphics.rgb 255 100 100
 
 let const_sel_size = 0.65
+
+let const_player_name_spacing = 0.2
+
+let p_colors =
+  [
+    Graphics.rgb 200 0 0;
+    Graphics.rgb 0 200 0;
+    Graphics.rgb 0 0 200;
+    Graphics.rgb 200 200 0;
+  ]
+
+let p_token_radius = 10
