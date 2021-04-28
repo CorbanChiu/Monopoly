@@ -97,7 +97,7 @@ let possible_action gs ind = List.nth gs.property_lst ind
 (* [next_player gs nxt] returns the index of the next player who is not
    in jail. *)
 let rec next_player gs nxt =
-  let next_ind = (nxt + 1) mod num_players in
+  let next_ind = (nxt mod num_players) + 1 in
   if Player.get_jail_state (List.assoc next_ind gs.player_lst) then
     next_player gs (nxt + 1)
   else next_ind

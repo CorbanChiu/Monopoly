@@ -65,9 +65,6 @@ let init_player =
     bankrupt_state = false;
   }
 
-(* [move p dr] returns a new player type p after moving dr spaces. *)
-let move p dr = { p with pos = p.pos + dr }
-
 (* let sum_mortgage_value property_lst = List.fold_left ( + ) 0
    property_lst *)
 
