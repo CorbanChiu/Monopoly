@@ -2,6 +2,8 @@ open Yojson.Basic.Util
 
 type paymentstruct = (int * int) list
 
+type paymentstructure = paymentstruct option
+
 type propertycolor = int * int * int
 
 exception UnknownJSON
@@ -39,6 +41,7 @@ type railroad = {
 type card = {
   cname : string;
   ctype : string;
+  cnum : int;
 }
 
 type freeparking = { fpname : string }
@@ -123,6 +126,7 @@ let to_card j =
     {
       cname = j |> member "name" |> to_string;
       ctype = j |> member "card type" |> to_string;
+      cnum = j |> member "order" |> to_int;
     }
 
 let to_misc j =
@@ -185,12 +189,19 @@ let get_price = function
 (* Returns an int option list for the purchase price *)
 let pricelist b = List.map get_price b
 
+let get_paymentstruct = function
+  | Traditional sq -> Some sq.tpaymentstruct
+  | Utility sq -> Some sq.upaymentstruct
+  | Railroad sq -> Some sq.rpaymentstruct
+  | Card sq -> None
+  | Misc sq -> None
+
 let get_color = function Traditional sq -> Some sq.tcolor | _ -> None
 
 (* Returns a propertycolor option list *)
 let colorlist b = List.map get_color b
 
-let get_mortage = function
+let get_mortgage = function
   | Traditional sq -> Some sq.tmortgageprice
   | Utility sq -> Some sq.umortgageprice
   | Railroad sq -> Some sq.rmortgageprice
@@ -198,9 +209,7 @@ let get_mortage = function
   | Misc sq -> None
 
 (* Returns an int option list *)
-let mortgagelist b = List.map get_mortage b
-
-let mortgage = get_mortage
+let mortgagelist b = List.map get_mortgage b
 
 let test_color b1 b2 =
   match (b1, b2) with
@@ -216,3 +225,181 @@ let railroadgroup b = List.filter testrr b
 let testutil = function Utility sq -> true | _ -> false
 
 let utilitygroup b = List.filter testutil b
+
+let get_name b sq =
+  List.find (( = ) sq) b |> function
+  | Traditional { tname } -> tname
+  | Utility { uname } -> uname
+  | Railroad { rname } -> rname
+  | Card { cname } -> cname
+  | Misc m -> (
+      match m with
+      | FreeParking { fpname } -> fpname
+      | Jail { jname } -> jname
+      | GoToJail { gtjname } -> gtjname
+      | Go { gname } -> gname
+      | IncomeTax { itname } -> itname
+      | LuxuryTax { ltname } -> ltname)
+
+type property = {
+  sqr : square;
+  (* None indicates unbuyability while Bank indicates not owned by any
+     player yet *)
+  owner : string option;
+  dev_lvl : int option;
+  mortgaged : bool option;
+}
+
+type action =
+  | Buy_ok
+  | Auction_ok
+  | Payrent_ok
+  | Mortgage_ok
+  | Card_ok
+  | Freeparking_ok
+  | None
+  | Gotojail_ok
+  | Go_ok
+  | Incometax_ok
+  | Luxurytax_ok
+
+let get_action prop player =
+  match prop.sqr with
+  | Traditional _ | Utility _ | Railroad _ ->
+      if prop.owner = Some "Bank" then Buy_ok
+      else if prop.owner = Some player then Mortgage_ok
+      else Payrent_ok
+  | Card _ -> Card_ok
+  | Misc m -> (
+      match m with
+      | FreeParking _ -> Freeparking_ok
+      | Jail _ -> None
+      | GoToJail _ -> Gotojail_ok
+      | Go _ -> Go_ok
+      | IncomeTax _ -> Incometax_ok
+      | LuxuryTax _ -> Luxurytax_ok)
+
+let get_sqr prop = prop.sqr
+
+let get_owner prop = prop.owner
+
+let get_dev_lvl prop = prop.dev_lvl
+
+let get_mortgaged prop = prop.mortgaged
+
+let property_to_mortgaged prop = { prop with mortgaged = Some true }
+
+let init_property sq =
+  match sq with
+  | Traditional _ ->
+      {
+        sqr = sq;
+        owner = Some "Bank";
+        dev_lvl = Some 0;
+        mortgaged = Some false;
+      }
+  | Utility _ ->
+      {
+        sqr = sq;
+        owner = Some "Bank";
+        dev_lvl = None;
+        mortgaged = Some false;
+      }
+  | Railroad _ ->
+      {
+        sqr = sq;
+        owner = Some "Bank";
+        dev_lvl = None;
+        mortgaged = Some false;
+      }
+  | _ -> { sqr = sq; owner = None; dev_lvl = None; mortgaged = None }
+
+let rec init_prop_lst (b : board) a =
+  match b with
+  | [] -> []
+  | h :: t -> (a, init_property h) :: init_prop_lst t (a + 1)
+
+let update_property_new_owner prop owner_name =
+  { prop with owner = owner_name }
+
+let get_property_square (prop : property) = prop.sqr
+
+let rec num_same_color sq sqr_lst =
+  match sqr_lst with
+  | [] -> 0
+  | h :: t ->
+      if test_color sq h then 1 + num_same_color sq t
+      else num_same_color sq t
+
+let rec num_railroads sqr_lst =
+  match sqr_lst with
+  | [] -> 0
+  | h :: t -> (
+      match h with
+      | Railroad _ -> 1 + num_railroads t
+      | _ -> num_railroads t)
+
+let rec num_utilities sqr_lst =
+  match sqr_lst with
+  | [] -> 0
+  | h :: t -> (
+      match h with
+      | Utility _ -> 1 + num_utilities t
+      | _ -> num_utilities t)
+
+let num_color_group color (b : board) =
+  let color_list = colorlist b in
+  if color = List.nth color_list 1 || color = List.nth color_list 39
+  then 2
+  else 3
+
+let remove_option opt =
+  match opt with Some a -> a | None -> failwith "No reason to call"
+
+let trent_multiplier prop sqr_lst b =
+  if
+    num_same_color prop.sqr sqr_lst
+    = num_color_group (get_color prop.sqr) b
+  then 2
+  else 1
+
+let flat_rent prop =
+  List.assoc
+    (remove_option prop.dev_lvl)
+    (remove_option (get_paymentstruct prop.sqr))
+
+let trent_price prop sqr_lst b =
+  if prop.dev_lvl = Some 0 then
+    trent_multiplier prop sqr_lst b * flat_rent prop
+  else flat_rent prop
+
+let rrent_price prop sqr_lst =
+  List.assoc (num_railroads sqr_lst)
+    (remove_option (get_paymentstruct prop.sqr))
+
+let urent_price prop sqr_lst =
+  List.assoc (num_utilities sqr_lst)
+    (remove_option (get_paymentstruct prop.sqr))
+
+let get_rent prop sqr_lst b dr =
+  match prop.sqr with
+  | Traditional sq -> trent_price prop sqr_lst b
+  | Utility sq -> urent_price prop sqr_lst * dr
+  | Railroad sq -> rrent_price prop sqr_lst
+  | _ -> failwith "Cannot get rent from this square"
+
+let get_payments b sq =
+  List.find (( = ) sq) b |> function
+  | Traditional { tpaymentstruct } -> Some tpaymentstruct
+  | Utility { upaymentstruct } -> Some upaymentstruct
+  | Railroad { rpaymentstruct } -> Some rpaymentstruct
+  | Card _ -> None
+  | Misc _ -> None
+
+let get_buildprice b sq =
+  List.find (( = ) sq) b |> function
+  | Traditional { buildingcost } -> Some buildingcost
+  | Utility { upaymentstruct } -> None
+  | Railroad { rpaymentstruct } -> None
+  | Card _ -> None
+  | Misc _ -> None
