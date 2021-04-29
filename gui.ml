@@ -15,12 +15,16 @@ let sel_state = ref (None : selection)
 
 let game_state = ref (State.init_game_state : State.game_state)
 
-type gui_state = {
+type turn_state = {
   has_moved : bool;
   dice : (int * int) option;
+  can_end_turn : bool;
 }
 
-let gui_state = ref ({ has_moved = false; dice = None } : gui_state)
+let turn_state =
+  ref
+    ({ has_moved = false; dice = None; can_end_turn = false }
+      : turn_state)
 
 type coord = int * int
 
@@ -845,23 +849,32 @@ let draw_player_pos msqlst =
     (State.get_players_position !game_state)
 
 let update_move_state () =
-  let gs = !gui_state in
+  let gs = !turn_state in
   match gs with
   | { has_moved } when has_moved = false ->
-      gui_state := { gs with has_moved = true }
+      turn_state := { gs with has_moved = true }
   | { has_moved } when has_moved = true ->
-      gui_state := { gs with has_moved = false }
+      turn_state := { gs with has_moved = false }
   | _ -> failwith "impossible move status"
 
 let process_roll () =
   let roll = State.roll_dice () in
-  let gs = !gui_state in
-  gui_state := { gs with dice = Some roll };
+  let rt = match roll with v1, v2 -> v1 + v2 in
+  let gs = !turn_state in
+  turn_state := { gs with dice = Some roll };
   game_state := State.move !game_state roll;
+  if State.can_pay_rent !game_state rt then
+    turn_state := { !turn_state with can_end_turn = false }
+  else turn_state := { !turn_state with can_end_turn = true };
   update_move_state ()
 
 let draw_roll_and_turn () =
   set_color (rgb 0 0 0);
+  let name =
+    match State.current_turn_name !game_state with
+    | Some s -> s
+    | None -> ""
+  in
   center_text
     ( calc_sel_l (),
       calc_sel_b () + calc_sel_h ()
@@ -869,8 +882,8 @@ let draw_roll_and_turn () =
     ( calc_sel_l () + calc_sel_w (),
       calc_sel_b () + calc_sel_h ()
       - ((3 * calc_sel_headline_height ()) - calc_sel_line_height ()) )
-    "Current Turn: Unimplemented";
-  match !gui_state.dice with
+    ("Current Turn: " ^ name);
+  match !turn_state.dice with
   | Some (v1, v2) ->
       center_text
         ( calc_sel_l (),
@@ -883,16 +896,30 @@ let draw_roll_and_turn () =
   | None -> ()
 
 let process_endturn () =
-  game_state := State.end_turn !game_state;
-  update_move_state ()
+  if !turn_state.can_end_turn = true then (
+    game_state := State.end_turn !game_state;
+    update_move_state ())
+  else ()
 
 let process_prop_purchase () =
   game_state := State.buy_property !game_state
 
 let process_rent_payment () =
-  let roll = !gui_state.dice in
+  let roll = !turn_state.dice in
   let rt = match roll with Some (v1, v2) -> v1 + v2 | None -> 0 in
-  game_state := State.pay_rent !game_state rt
+  game_state := State.pay_rent !game_state rt;
+  turn_state := { !turn_state with can_end_turn = true }
+
+let process_mortgaging_aux s =
+  let ind = Board.find_square board s in
+  (* if State.get_mortgage_state !game_state ind = true then
+     State.unmortgage !game_state ind else State.mortgage !game_state
+     ind *)
+  ()
+
+let process_mortgaging () =
+  let sq = !sel_state in
+  match sq with Some s -> process_mortgaging_aux s | None -> ()
 
 (* game_state := State.move !game_state roll *)
 (* TODO: the move function needs to be fixed so that it actually works *)
@@ -906,12 +933,21 @@ let update () =
   set_line_width Consts.const_line_width;
   let msquare_lst = construct_msquares () in
   let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
-  if st.key = 'n' && !gui_state.has_moved = false then process_roll ();
-  if st.key = 'm' && !gui_state.has_moved = true then process_endturn ();
+  if st.key = 'n' && !turn_state.has_moved = false then process_roll ();
+  if st.key = 'm' && !turn_state.has_moved = true then
+    process_endturn ();
   (* temporary "buy property key" *)
-  if st.key = 'b' then process_prop_purchase ();
+  if st.key = 'b' && State.can_buy_property !game_state then
+    process_prop_purchase ();
   (* temporary "pay rent key" *)
-  if st.key = 'v' then process_rent_payment ();
+  if
+    st.key = 'v'
+    && State.can_pay_rent !game_state
+         (match !turn_state.dice with
+         | Some (v1, v2) -> v1 + v2
+         | None -> 0)
+  then process_rent_payment ();
+  if st.key = 'c' then process_mortgaging ();
   button_handler st;
   update_sel_state st msquare_lst;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;
