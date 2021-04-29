@@ -237,88 +237,39 @@ let num_houses = ref 32
 
 let num_hotels = ref 12
 
-let get_property_mortgage property =
-  Board.get_sqr property |> Board.get_mortgage |> remove_option
-
-let can_buy_house player property =
-  Player.get_cash player - get_property_mortgage property >= 0
-
-let develop_property gs property =
+let develop_helper gs property change =
   let owner =
     Player.get_player_from_name gs.player_lst (Board.get_owner property)
   in
-  (* TODO: (1) check for even development across the color group (2)
-     check that the other properties in the color group are not
-     mortgaged (similar to what needs to be added to mortgage - check
-     google spreadsheet for more info) *)
-  if
-    can_buy_house owner property
-    && Board.complete_propertygroup property
-         (propertylst_to_sqrlst (Player.get_property_lst owner))
-         init_board
-    && Board.check_equal_development property
-         (Player.get_property_lst owner)
-    && Board.check_no_mortgages property (Player.get_property_lst owner)
-  then
-    if remove_option (Board.get_dev_lvl property) < 4 && !num_houses > 0
-    then (
-      let old_dev_lvl = remove_option (Board.get_dev_lvl property) in
-      let new_property =
-        Board.update_dev_lvl property (Some (old_dev_lvl + 1))
-      in
-      let new_property_list =
-        update_property_lst_given gs.property_lst property new_property
-      in
-      let new_owner =
-        Player.decrement_cash owner
-          (remove_option
-             (Board.get_buildprice (Board.get_sqr property)))
-      in
-      let new_player_list =
-        update_player_lst
-          (get_player_index new_owner gs.player_lst)
-          new_owner gs.player_lst
-      in
-      num_houses := !num_houses - 1;
-      {
-        property_lst = new_property_list;
-        player_lst = new_player_list;
-        next = gs.next;
-      }
-      (* failwith "TODO: (1) Decrement num_houses by 1 (2) Change
-         property \ dev_lvl (3) Decrement owner cash" *))
-    else if
-      remove_option (Board.get_dev_lvl property) = 4 && !num_hotels > 0
-    then (
-      let old_dev_lvl = remove_option (Board.get_dev_lvl property) in
-      let new_property =
-        Board.update_dev_lvl property (Some (old_dev_lvl + 1))
-      in
-      let new_property_list =
-        update_property_lst_given gs.property_lst property new_property
-      in
-      let new_owner =
-        Player.decrement_cash owner
-          (remove_option
-             (Board.get_buildprice (Board.get_sqr property)))
-      in
-      let new_player_list =
-        update_player_lst
-          (get_player_index new_owner gs.player_lst)
-          new_owner gs.player_lst
-      in
-      num_houses := !num_houses + 4;
-      num_hotels := !num_hotels - 1;
-      {
-        property_lst = new_property_list;
-        player_lst = new_player_list;
-        next = gs.next;
-      }
-      (* failwith "TODO: (1) Decrement num_hotels by 1 (2) Increment
-         num_houses \ by 4 (3) Change property dev_lvl (4) Decrement
-         owner cash" *))
-    else failwith "cannot develop property"
-  else failwith "cannot develop property"
+  let old_dev_lvl = remove_option (Board.get_dev_lvl property) in
+  let new_property =
+    Board.update_dev_lvl property (Some (old_dev_lvl + 1))
+  in
+  let new_property_list =
+    update_property_lst_given gs.property_lst property new_property
+  in
+  let new_owner =
+    Player.decrement_cash owner
+      (remove_option (Board.get_buildprice (Board.get_sqr property)))
+  in
+  let new_player_list =
+    update_player_lst
+      (get_player_index new_owner gs.player_lst)
+      new_owner gs.player_lst
+  in
+  change;
+  {
+    property_lst = new_property_list;
+    player_lst = new_player_list;
+    next = gs.next;
+  }
+
+let develop_property gs property =
+  if remove_option (Board.get_dev_lvl property) = 4 then
+    develop_helper gs property
+      (num_houses := !num_houses + 4;
+       num_hotels := !num_hotels - 1)
+  else develop_helper gs property (num_houses := !num_houses + 1)
 
 let undevelop_helper gs property change =
   let owner =
@@ -348,8 +299,7 @@ let undevelop_helper gs property change =
   }
 
 let undevelop_property gs property =
-  if remove_option (Board.get_dev_lvl property) = 5 && !num_houses >= 4
-  then
+  if remove_option (Board.get_dev_lvl property) = 5 then
     undevelop_helper gs property
       (num_houses := !num_houses - 4;
        num_hotels := !num_hotels + 1)
@@ -430,6 +380,9 @@ let can_unmortgage gs property =
     in
     Player.get_cash owner - mortgage_value >= 0
 
+let get_property_buildprice property =
+  Board.get_sqr property |> Board.get_buildprice |> remove_option
+
 let can_develop_property gs property =
   let owner =
     Player.get_player_from_name gs.player_lst (Board.get_owner property)
@@ -438,7 +391,7 @@ let can_develop_property gs property =
     (Board.get_action property (Player.get_name owner) = Develop_ok
     || Board.get_action property (Player.get_name owner)
        = Mortgage_and_Develop_ok)
-    && can_buy_house owner property
+    && Player.get_cash owner - get_property_buildprice property >= 0
     && Board.complete_propertygroup property
          (propertylst_to_sqrlst (Player.get_property_lst owner))
          init_board
@@ -452,4 +405,15 @@ let can_develop_property gs property =
          && !num_hotels > 0
     then true
     else false
+  else false
+
+let can_undevelop_property gs property =
+  let owner =
+    Player.get_player_from_name gs.player_lst (Board.get_owner property)
+  in
+  if
+    Board.get_action property (Player.get_name owner) = Undevelop_ok
+    && Board.check_equal_undevelopment property
+         (Player.get_property_lst owner)
+  then true
   else false

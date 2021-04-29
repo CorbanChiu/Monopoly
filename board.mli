@@ -88,6 +88,8 @@ val check_no_development : property -> property list -> bool
 
 val check_equal_development : property -> property list -> bool
 
+val check_equal_undevelopment : property -> property list -> bool
+
 val check_no_mortgages : property -> property list -> bool
 
 type action =
