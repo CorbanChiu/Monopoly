@@ -166,8 +166,6 @@ let buy_property gs =
 let propertylst_to_sqrlst property_lst =
   List.map Board.get_sqr property_lst
 
-let can_pay_rent player rent = Player.get_cash player - rent >= 0
-
 let pay_rent gs dr =
   let player = current_player gs in
   let property = current_property gs in
@@ -351,7 +349,7 @@ let can_buy_property gs =
     else false
   else false
 
-(* TO DO: if we fail, we need to call "Mortgage or bankrupt". This will
+(* TODO: if we fail, we need to call "Mortgage or bankrupt". This will
    be done when we add net worth *)
 let can_pay_rent gs dr =
   let player = current_player gs in
@@ -368,7 +366,7 @@ let can_pay_rent gs dr =
         (propertylst_to_sqrlst (Player.get_property_lst owner))
         init_board dr
     in
-    can_pay_rent player rent
+    Player.get_cash player - rent >= 0
 
 let can_mortgage gs property =
   let owner =
@@ -378,8 +376,8 @@ let can_mortgage gs property =
     Board.get_action property (Player.get_name owner)
   in
   if
-    get_action_variant == Mortgage_ok
-    || get_action_variant == Mortgage_and_Develop_ok
+    get_action_variant = Mortgage_ok
+    || get_action_variant = Mortgage_and_Develop_ok
   then
     Board.check_no_development property (Player.get_property_lst owner)
   else false
@@ -395,5 +393,4 @@ let can_unmortgage gs property =
       Board.get_sqr property |> Board.get_mortgage |> remove_option
       |> Float.of_int |> ( *. ) 1.1 |> Float.to_int
     in
-
     Player.get_cash owner - mortgage_value >= 0
