@@ -320,6 +320,41 @@ let develop_property gs property =
     else failwith "cannot develop property"
   else failwith "cannot develop property"
 
+let undevelop_helper gs property change =
+  let owner =
+    Player.get_player_from_name gs.player_lst (Board.get_owner property)
+  in
+  let old_dev_lvl = remove_option (Board.get_dev_lvl property) in
+  let new_property =
+    Board.update_dev_lvl property (Some (old_dev_lvl + 1))
+  in
+  let new_property_list =
+    update_property_lst_given gs.property_lst property new_property
+  in
+  let new_owner =
+    Player.increment_cash owner
+      (remove_option (Board.get_buildprice (Board.get_sqr property)) / 2)
+  in
+  let new_player_list =
+    update_player_lst
+      (get_player_index new_owner gs.player_lst)
+      new_owner gs.player_lst
+  in
+  change;
+  {
+    property_lst = new_property_list;
+    player_lst = new_player_list;
+    next = gs.next;
+  }
+
+let undevelop_property gs property =
+  if remove_option (Board.get_dev_lvl property) = 5 && !num_houses >= 4
+  then
+    undevelop_helper gs property
+      (num_houses := !num_houses - 4;
+       num_hotels := !num_hotels + 1)
+  else undevelop_helper gs property (num_houses := !num_houses + 1)
+
 let assoc_sort assoc_list =
   List.sort (fun (k1, v1) (k2, v2) -> Int.compare k1 k2) assoc_list
 
