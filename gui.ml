@@ -912,10 +912,16 @@ let process_rent_payment () =
 
 let process_mortgaging_aux s =
   let ind = Board.find_square board s in
-  (* if State.get_mortgage_state !game_state ind = true then
-     State.unmortgage !game_state ind else State.mortgage !game_state
-     ind *)
-  ()
+  if State.get_square_mortgage_state !game_state ind = Some true then
+    if State.can_unmortgage !game_state ind then
+      game_state := State.unmortgage !game_state ind
+    else ()
+  else if State.get_square_mortgage_state !game_state ind = Some false
+  then
+    if State.can_mortgage !game_state ind then
+      game_state := State.mortgage !game_state ind
+    else ()
+  else ()
 
 let process_mortgaging () =
   let sq = !sel_state in

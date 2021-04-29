@@ -202,8 +202,7 @@ let mortgage gs property_ind =
 
   {
     property_lst =
-      update_property_lst
-        (Player.get_position owner)
+      update_property_lst property_ind
         (Board.update_mortgage_state property (Some true))
         gs.property_lst;
     player_lst =
@@ -224,8 +223,7 @@ let unmortgage gs property_ind =
   in
   {
     property_lst =
-      update_property_lst
-        (Player.get_position owner)
+      update_property_lst property_ind
         (Board.update_mortgage_state property (Some false))
         gs.property_lst;
     player_lst =
