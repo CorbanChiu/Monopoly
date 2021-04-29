@@ -191,7 +191,8 @@ let pay_rent gs dr =
 
 (* TODO: for a traditional property, check that any other properties in
    the color group are not developed *)
-let mortgage gs property =
+let mortgage gs property_ind =
+  let property = get_property property_ind gs.property_lst in
   let owner =
     Player.get_player_from_name gs.player_lst (Board.get_owner property)
   in
@@ -212,7 +213,8 @@ let mortgage gs property =
     next = gs.next;
   }
 
-let unmortgage gs property =
+let unmortgage gs property_ind =
+  let property = get_property property_ind gs.property_lst in
   let owner =
     Player.get_player_from_name gs.player_lst (Board.get_owner property)
   in
@@ -264,7 +266,8 @@ let develop_helper gs property change =
     next = gs.next;
   }
 
-let develop_property gs property =
+let develop_property gs property_ind =
+  let property = get_property property_ind gs.property_lst in
   if remove_option (Board.get_dev_lvl property) = 4 then
     develop_helper gs property
       (num_houses := !num_houses + 4;
@@ -298,7 +301,8 @@ let undevelop_helper gs property change =
     next = gs.next;
   }
 
-let undevelop_property gs property =
+let undevelop_property gs property_ind =
+  let property = get_property property_ind gs.property_lst in
   if remove_option (Board.get_dev_lvl property) = 5 then
     undevelop_helper gs property
       (num_houses := !num_houses - 4;
@@ -353,7 +357,8 @@ let can_pay_rent gs dr =
     in
     Player.get_cash player - rent >= 0
 
-let can_mortgage gs property =
+let can_mortgage gs property_ind =
+  let property = get_property property_ind gs.property_lst in
   let owner =
     Player.get_player_from_name gs.player_lst (Board.get_owner property)
   in
@@ -367,7 +372,8 @@ let can_mortgage gs property =
     Board.check_no_development property (Player.get_property_lst owner)
   else false
 
-let can_unmortgage gs property =
+let can_unmortgage gs property_ind =
+  let property = get_property property_ind gs.property_lst in
   let owner =
     Player.get_player_from_name gs.player_lst (Board.get_owner property)
   in
@@ -383,7 +389,8 @@ let can_unmortgage gs property =
 let get_property_buildprice property =
   Board.get_sqr property |> Board.get_buildprice |> remove_option
 
-let can_develop_property gs property =
+let can_develop_property gs property_ind =
+  let property = get_property property_ind gs.property_lst in
   let owner =
     Player.get_player_from_name gs.player_lst (Board.get_owner property)
   in
@@ -407,7 +414,8 @@ let can_develop_property gs property =
     else false
   else false
 
-let can_undevelop_property gs property =
+let can_undevelop_property gs property_ind =
+  let property = get_property property_ind gs.property_lst in
   let owner =
     Player.get_player_from_name gs.player_lst (Board.get_owner property)
   in
