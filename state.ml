@@ -361,14 +361,16 @@ let can_mortgage gs property_ind =
   let property = get_property property_ind gs.property_lst in
   let owner = Board.get_owner property in
   let get_action_variant = Board.get_action property owner in
-  let owner =
-    Player.get_player_from_name gs.player_lst (Board.get_owner property)
-  in
   if
     get_action_variant = Mortgage_ok
     || get_action_variant = Mortgage_and_Develop_ok
   then
-    Board.check_no_development property (Player.get_property_lst owner)
+    let player_owner =
+      Player.get_player_from_name gs.player_lst
+        (Board.get_owner property)
+    in
+    Board.check_no_development property
+      (Player.get_property_lst player_owner)
   else false
 
 let can_unmortgage gs property_ind =
