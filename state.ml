@@ -429,3 +429,27 @@ let can_unmortgage gs property =
       |> Float.of_int |> ( *. ) 1.1 |> Float.to_int
     in
     Player.get_cash owner - mortgage_value >= 0
+
+let can_develop_property gs property =
+  let owner =
+    Player.get_player_from_name gs.player_lst (Board.get_owner property)
+  in
+  if
+    (Board.get_action property (Player.get_name owner) = Develop_ok
+    || Board.get_action property (Player.get_name owner)
+       = Mortgage_and_Develop_ok)
+    && can_buy_house owner property
+    && Board.complete_propertygroup property
+         (propertylst_to_sqrlst (Player.get_property_lst owner))
+         init_board
+    && Board.check_equal_development property
+         (Player.get_property_lst owner)
+    && Board.check_no_mortgages property (Player.get_property_lst owner)
+  then
+    if
+      (remove_option (Board.get_dev_lvl property) < 4 && !num_houses > 0)
+      || remove_option (Board.get_dev_lvl property) = 4
+         && !num_hotels > 0
+    then true
+    else false
+  else false
