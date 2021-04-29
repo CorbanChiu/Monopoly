@@ -359,11 +359,10 @@ let can_pay_rent gs dr =
 
 let can_mortgage gs property_ind =
   let property = get_property property_ind gs.property_lst in
+  let owner = Board.get_owner property in
+  let get_action_variant = Board.get_action property owner in
   let owner =
     Player.get_player_from_name gs.player_lst (Board.get_owner property)
-  in
-  let get_action_variant =
-    Board.get_action property (Player.get_name owner)
   in
   if
     get_action_variant = Mortgage_ok
