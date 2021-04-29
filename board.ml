@@ -347,7 +347,7 @@ let rec check_no_development property property_lst =
   | prop :: t ->
       if test_color property.sqr prop.sqr then
         get_dev_lvl property = Some 0 && check_no_development property t
-      else false
+      else true
   | [] -> true
 
 let rec check_equal_helper property property_lst diff =

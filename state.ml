@@ -199,7 +199,6 @@ let mortgage gs property_ind =
   let mortgage_value =
     Board.get_sqr property |> Board.get_mortgage |> remove_option
   in
-
   {
     property_lst =
       update_property_lst property_ind
@@ -361,6 +360,7 @@ let can_mortgage gs property_ind =
   let property = get_property property_ind gs.property_lst in
   let owner = Board.get_owner property in
   let get_action_variant = Board.get_action property owner in
+  (* print_string "before action check"; *)
   if
     get_action_variant = Mortgage_ok
     || get_action_variant = Mortgage_and_Develop_ok
@@ -369,6 +369,7 @@ let can_mortgage gs property_ind =
       Player.get_player_from_name gs.player_lst
         (Board.get_owner property)
     in
+    (* print_string "after action check"; *)
     Board.check_no_development property
       (Player.get_property_lst player_owner)
   else false
