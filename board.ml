@@ -350,21 +350,27 @@ let rec check_no_development property property_lst =
       else false
   | [] -> true
 
-let rec check_equal_development property property_lst =
+let rec check_equal_helper property property_lst diff =
   match property_lst with
   | prop :: t ->
       if get_color prop.sqr != get_color property.sqr then
-        check_equal_development property t
+        check_equal_helper property t diff
       else if
         get_color prop.sqr = get_color property.sqr
         && (remove_option prop.dev_lvl - remove_option property.dev_lvl
             = 0
            || remove_option prop.dev_lvl
               - remove_option property.dev_lvl
-              = 1)
-      then check_equal_development property t
+              = diff)
+      then check_equal_helper property t diff
       else false
   | [] -> true
+
+let check_equal_development property property_lst =
+  check_equal_helper property property_lst 1
+
+let check_equal_undevelopment property property_lst =
+  check_equal_helper property property_lst (-1)
 
 let rec check_no_mortgages property property_lst =
   match property_lst with
