@@ -56,3 +56,15 @@ val good_output : game_state -> game_state
 val assoc_list_length : 'a list -> int
 
 val end_turn : game_state -> game_state
+
+val can_buy_property : game_state -> bool
+
+val can_buy_rent : game_state -> int -> bool
+
+val can_mortgage : game_state -> Board.property -> bool
+
+val can_unmortgage : game_state -> Board.property -> bool
+
+val can_develop_property : game_state -> Board.property -> bool
+
+val can_undevelop_property : game_state -> Board.property -> bool
