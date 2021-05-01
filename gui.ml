@@ -927,6 +927,26 @@ let process_mortgaging () =
   let sq = !sel_state in
   match sq with Some s -> process_mortgaging_aux s | None -> ()
 
+let process_develop_aux s =
+  let ind = Board.find_square board s in
+  if State.can_develop_property !game_state ind then
+    game_state := State.develop_property !game_state ind
+  else ()
+
+let process_develop () =
+  let sq = !sel_state in
+  match sq with Some s -> process_develop_aux s | None -> ()
+
+let process_undevelop_aux s =
+  let ind = Board.find_square board s in
+  if State.can_undevelop_property !game_state ind then
+    game_state := State.undevelop_property !game_state ind
+  else ()
+
+let process_undevelop () =
+  let sq = !sel_state in
+  match sq with Some s -> process_undevelop_aux s | None -> ()
+
 (* game_state := State.move !game_state roll *)
 (* TODO: the move function needs to be fixed so that it actually works *)
 
@@ -955,6 +975,8 @@ let update () =
          | None -> 0)
   then process_rent_payment ();
   if st.key = 'c' then process_mortgaging ();
+  if st.key = 'x' then process_develop ();
+  if st.key = 'z' then process_undevelop ();
   button_handler st;
   update_sel_state st msquare_lst;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;
