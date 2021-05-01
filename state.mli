@@ -70,3 +70,5 @@ val can_unmortgage : game_state -> int -> bool
 val can_develop_property : game_state -> int -> bool
 
 val can_undevelop_property : game_state -> int -> bool
+
+val test_game_state : game_state

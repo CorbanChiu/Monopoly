@@ -427,3 +427,29 @@ let can_undevelop_property gs property_ind =
          (Player.get_property_lst owner)
   then true
   else false
+
+let switch f y x = f x y
+
+let test_game_state =
+  move init_game_state (2, 3)
+  |> buy_property
+  |> switch move (5, 6)
+  |> buy_property
+  |> switch move (3, 2)
+  |> end_turn
+  |> switch move (1, 2)
+  |> buy_property
+  |> switch move (4, 3)
+  |> switch move (2, 1)
+  |> buy_property |> end_turn
+  |> switch move (5, 1)
+  |> buy_property
+  |> switch move (4, 4)
+  |> buy_property
+  |> switch move (6, 4)
+  |> buy_property |> end_turn
+  |> switch move (5, 2)
+  |> switch move (6, 6)
+  |> buy_property
+  |> switch move (6, 6)
+  |> buy_property |> end_turn
