@@ -255,7 +255,7 @@ let develop_helper gs property change =
   in
   let new_player_list =
     update_player_lst
-      (get_player_index new_owner gs.player_lst)
+      (get_player_index owner gs.player_lst)
       new_owner gs.player_lst
   in
   change;
@@ -279,7 +279,7 @@ let undevelop_helper gs property change =
   in
   let old_dev_lvl = remove_option (Board.get_dev_lvl property) in
   let new_property =
-    Board.update_dev_lvl property (Some (old_dev_lvl + 1))
+    Board.update_dev_lvl property (Some (old_dev_lvl - 1))
   in
   let new_property_list =
     update_property_lst_given gs.property_lst property new_property
@@ -290,7 +290,7 @@ let undevelop_helper gs property change =
   in
   let new_player_list =
     update_player_lst
-      (get_player_index new_owner gs.player_lst)
+      (get_player_index owner gs.player_lst)
       new_owner gs.player_lst
   in
   change;
@@ -435,8 +435,8 @@ let demo_game_state =
   |> buy_property
   |> switch move (5, 6)
   |> buy_property
-  |> switch move (3, 2)
-  |> end_turn
+  |> switch move (2, 3)
+  |> buy_property |> end_turn
   |> switch move (1, 2)
   |> buy_property
   |> switch move (4, 3)
@@ -453,3 +453,7 @@ let demo_game_state =
   |> buy_property
   |> switch move (6, 6)
   |> buy_property |> end_turn
+
+(* let demo_game_state = move init_game_state (3, 3) |> buy_property |>
+   switch move (1, 1) |> buy_property |> switch move (1, 0) |>
+   buy_property |> end_turn *)
