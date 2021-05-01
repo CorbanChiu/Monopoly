@@ -939,7 +939,7 @@ let update () =
   set_line_width Consts.const_line_width;
   let msquare_lst = construct_msquares () in
   let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
-  if st.key = 'q' then game_state := State.test_game_state;
+  if st.key = 'q' then game_state := State.demo_game_state;
   if st.key = 'n' && !turn_state.has_moved = false then process_roll ();
   if st.key = 'm' && !turn_state.has_moved = true then
     process_endturn ();

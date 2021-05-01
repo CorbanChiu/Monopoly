@@ -430,7 +430,7 @@ let can_undevelop_property gs property_ind =
 
 let switch f y x = f x y
 
-let test_game_state =
+let demo_game_state =
   move init_game_state (2, 3)
   |> buy_property
   |> switch move (5, 6)
