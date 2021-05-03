@@ -347,16 +347,16 @@ let rec check_no_development property property_lst =
   | prop :: t ->
       if test_color property.sqr prop.sqr then
         get_dev_lvl property = Some 0 && check_no_development property t
-      else true
+      else check_no_development property t
   | [] -> true
 
 let rec check_equal_helper property property_lst diff =
   match property_lst with
   | prop :: t ->
-      if get_color prop.sqr != get_color property.sqr then
+      if not (test_color prop.sqr property.sqr) then
         check_equal_helper property t diff
       else if
-        get_color prop.sqr = get_color property.sqr
+        test_color prop.sqr property.sqr
         && (remove_option prop.dev_lvl - remove_option property.dev_lvl
             = 0
            || remove_option prop.dev_lvl
@@ -396,7 +396,7 @@ type action =
   | Mortgage_ok
   | Mortgage_and_Develop_ok
   | Unmortgage_ok
-  | Develop_ok
+  | Develop_and_Undevelop_ok
   | Undevelop_ok
   | Card_ok
   | Freeparking_ok
@@ -427,8 +427,8 @@ let get_action prop player_name =
         prop.owner != Some "Bank"
         && prop.mortgage_state = Some false
         && remove_option prop.dev_lvl < 5
-      then Develop_ok
-      else if remove_option prop.dev_lvl > 0 then Undevelop_ok
+      then Develop_and_Undevelop_ok
+      else if remove_option prop.dev_lvl = 5 then Undevelop_ok
       else None_ok
   | Utility _ | Railroad _ ->
       if prop.owner = Some "Bank" then Buy_ok

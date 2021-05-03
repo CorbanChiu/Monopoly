@@ -98,7 +98,7 @@ type action =
   | Mortgage_ok
   | Mortgage_and_Develop_ok
   | Unmortgage_ok
-  | Develop_ok
+  | Develop_and_Undevelop_ok
   | Undevelop_ok
   | Card_ok
   | Freeparking_ok

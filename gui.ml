@@ -975,8 +975,8 @@ let update () =
          | None -> 0)
   then process_rent_payment ();
   if st.key = 'c' then process_mortgaging ();
-  (* if st.key = 'x' then process_develop (); if st.key = 'z' then
-     process_undevelop (); *)
+  if st.key = 'x' then process_develop ();
+  if st.key = 'z' then process_undevelop ();
   button_handler st;
   update_sel_state st msquare_lst;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;

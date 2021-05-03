@@ -358,20 +358,19 @@ let can_pay_rent gs dr =
 
 let can_mortgage gs property_ind =
   let property = get_property property_ind gs.property_lst in
-  let owner = Board.get_owner property in
-  let get_action_variant = Board.get_action property owner in
+  let owner_name = Board.get_owner property in
+  let get_action_variant = Board.get_action property owner_name in
   (* print_string "before action check"; *)
   if
     get_action_variant = Mortgage_ok
     || get_action_variant = Mortgage_and_Develop_ok
   then
-    let player_owner =
+    let owner =
       Player.get_player_from_name gs.player_lst
         (Board.get_owner property)
     in
     (* print_string "after action check"; *)
-    Board.check_no_development property
-      (Player.get_property_lst player_owner)
+    Board.check_no_development property (Player.get_property_lst owner)
   else false
 
 let can_unmortgage gs property_ind =
@@ -393,25 +392,25 @@ let get_property_buildprice property =
 
 let can_develop_property gs property_ind =
   let property = get_property property_ind gs.property_lst in
-  let owner =
-    Player.get_player_from_name gs.player_lst (Board.get_owner property)
-  in
+  let owner_name = Board.get_owner property in
   if
-    (Board.get_action property (Player.get_name owner) = Develop_ok
-    || Board.get_action property (Player.get_name owner)
-       = Mortgage_and_Develop_ok)
-    && Player.get_cash owner - get_property_buildprice property >= 0
-    && Board.complete_propertygroup property
-         (propertylst_to_sqrlst (Player.get_property_lst owner))
-         init_board
-    && Board.check_equal_development property
-         (Player.get_property_lst owner)
-    && Board.check_no_mortgages property (Player.get_property_lst owner)
+    Board.get_action property owner_name = Develop_and_Undevelop_ok
+    || Board.get_action property owner_name = Mortgage_and_Develop_ok
   then
+    let owner = Player.get_player_from_name gs.player_lst owner_name in
     if
-      (remove_option (Board.get_dev_lvl property) < 4 && !num_houses > 0)
-      || remove_option (Board.get_dev_lvl property) = 4
-         && !num_hotels > 0
+      Player.get_cash owner - get_property_buildprice property >= 0
+      && Board.complete_propertygroup property
+           (propertylst_to_sqrlst (Player.get_property_lst owner))
+           init_board
+      && Board.check_equal_development property
+           (Player.get_property_lst owner)
+      && Board.check_no_mortgages property
+           (Player.get_property_lst owner)
+      && (remove_option (Board.get_dev_lvl property) < 4
+          && !num_houses > 0
+         || remove_option (Board.get_dev_lvl property) = 4
+            && !num_hotels > 0)
     then true
     else false
   else false
@@ -423,37 +422,28 @@ let can_undevelop_property gs property_ind =
   in
   if
     Board.get_action property (Player.get_name owner) = Undevelop_ok
-    && Board.check_equal_undevelopment property
-         (Player.get_property_lst owner)
+    || Board.get_action property (Player.get_name owner)
+       = Develop_and_Undevelop_ok
+       && Board.check_equal_undevelopment property
+            (Player.get_property_lst owner)
   then true
   else false
 
 let switch f y x = f x y
 
-let demo_game_state =
-  move init_game_state (2, 3)
-  |> buy_property
-  |> switch move (5, 6)
-  |> buy_property
-  |> switch move (2, 3)
-  |> buy_property |> end_turn
-  |> switch move (1, 2)
-  |> buy_property
-  |> switch move (4, 3)
-  |> switch move (2, 1)
-  |> buy_property |> end_turn
-  |> switch move (5, 1)
-  |> buy_property
-  |> switch move (4, 4)
-  |> buy_property
-  |> switch move (6, 4)
-  |> buy_property |> end_turn
-  |> switch move (5, 2)
-  |> switch move (6, 6)
-  |> buy_property
-  |> switch move (6, 6)
-  |> buy_property |> end_turn
+(* let demo_game_state = move init_game_state (2, 3) |> buy_property |>
+   switch move (5, 6) |> buy_property |> switch move (2, 3) |>
+   buy_property |> end_turn |> switch move (1, 2) |> buy_property |>
+   switch move (4, 3) |> switch move (2, 1) |> buy_property |> end_turn
+   |> switch move (5, 1) |> buy_property |> switch move (4, 4) |>
+   buy_property |> switch move (6, 4) |> buy_property |> end_turn |>
+   switch move (5, 2) |> switch move (6, 6) |> buy_property |> switch
+   move (6, 6) |> buy_property |> end_turn *)
 
-(* let demo_game_state = move init_game_state (3, 3) |> buy_property |>
-   switch move (1, 1) |> buy_property |> switch move (1, 0) |>
-   buy_property |> end_turn *)
+let demo_game_state =
+  move init_game_state (3, 3)
+  |> buy_property
+  |> switch move (1, 1)
+  |> buy_property
+  |> switch move (1, 0)
+  |> buy_property |> end_turn
