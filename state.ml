@@ -447,8 +447,6 @@ let can_undevelop_property gs property_ind =
   then true
   else false
 
-let switch f y x = f x y
-
 (* let demo_game_state = move init_game_state (2, 3) |> buy_property |>
    switch move (5, 6) |> buy_property |> switch move (2, 3) |>
    buy_property |> end_turn |> switch move (1, 2) |> buy_property |>
@@ -461,7 +459,7 @@ let switch f y x = f x y
 let demo_game_state =
   move init_game_state (3, 3)
   |> buy_property
-  |> switch move (1, 1)
+  |> flip_arg move (1, 1)
   |> buy_property
-  |> switch move (1, 0)
+  |> flip_arg move (1, 0)
   |> buy_property |> end_turn
