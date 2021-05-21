@@ -31,7 +31,6 @@
     "type": "Card",
     "square": {
       "name": "Community Chest",
-      "card type": "Community Chest",
       "order": 1
     }
   },
@@ -103,7 +102,6 @@
     "type": "Card",
     "square": {
       "name": "Chance",
-      "card type": "Chance",
       "order": 1
     }
   },
@@ -275,7 +273,6 @@
     "type": "Card",
     "square": {
       "name": "Community Chest",
-      "card type": "Community Chest",
       "order": 2
     }
   },
@@ -355,7 +352,6 @@
     "type": "Card",
     "square": {
       "name": "Chance",
-      "card type": "Chance",
       "order": 2
     }
   },
@@ -549,7 +545,6 @@
     "type": "Card",
     "square": {
       "name": "Community Chest",
-      "card type": "Community Chest",
       "order": 3
     }
   },
@@ -593,7 +588,6 @@
     "type": "Card",
     "square": {
       "name": "Chance",
-      "card type": "Chance",
       "order": 3
     }
   },
