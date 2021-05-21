@@ -20,16 +20,11 @@ let update_property_lst property_ind new_property property_lst =
   List.remove_assoc property_ind property_lst
   |> List.cons (property_ind, new_property)
 
-let rec update_property_lst_given
-    property_list
-    old_property
-    new_property =
-  match property_list with
-  | (a, prop) :: t ->
-      if prop = old_property then
-        (a, new_property) :: List.remove_assoc a property_list
-      else update_property_lst_given t old_property new_property
-  | [] -> failwith "cannot update property list"
+(* let rec update_property_lst_given property_list old_property
+   new_property = match property_list with | (a, prop) :: t -> if prop =
+   old_property then (a, new_property) :: List.remove_assoc a
+   property_list else update_property_lst_given t old_property
+   new_property | [] -> failwith "cannot update property list" *)
 
 let get_player player_ind player_lst = List.assoc player_ind player_lst
 
@@ -238,7 +233,7 @@ let num_houses = ref 32
 
 let num_hotels = ref 12
 
-let develop_helper gs property change =
+let develop_helper gs property prop_index change =
   let owner =
     Player.get_player_from_name gs.player_lst (Board.get_owner property)
   in
@@ -247,7 +242,8 @@ let develop_helper gs property change =
     Board.update_dev_lvl property (Some (old_dev_lvl + 1))
   in
   let new_property_list =
-    update_property_lst_given gs.property_lst property new_property
+    update_property_lst prop_index new_property gs.property_lst
+    (*gs.property_lst property new_property*)
   in
   let new_owner =
     Player.decrement_cash owner
@@ -268,12 +264,14 @@ let develop_helper gs property change =
 let develop_property gs property_ind =
   let property = get_property property_ind gs.property_lst in
   if remove_option (Board.get_dev_lvl property) = 4 then
-    develop_helper gs property
+    develop_helper gs property property_ind
       (num_houses := !num_houses + 4;
        num_hotels := !num_hotels - 1)
-  else develop_helper gs property (num_houses := !num_houses - 1)
+  else
+    develop_helper gs property property_ind
+      (num_houses := !num_houses - 1)
 
-let undevelop_helper gs property change =
+let undevelop_helper gs property prop_index change =
   let owner =
     Player.get_player_from_name gs.player_lst (Board.get_owner property)
   in
@@ -282,7 +280,8 @@ let undevelop_helper gs property change =
     Board.update_dev_lvl property (Some (old_dev_lvl - 1))
   in
   let new_property_list =
-    update_property_lst_given gs.property_lst property new_property
+    update_property_lst prop_index new_property gs.property_lst
+    (*gs.property_lst property new_property*)
   in
   let new_owner =
     Player.increment_cash owner
@@ -303,10 +302,12 @@ let undevelop_helper gs property change =
 let undevelop_property gs property_ind =
   let property = get_property property_ind gs.property_lst in
   if remove_option (Board.get_dev_lvl property) = 5 then
-    undevelop_helper gs property
+    undevelop_helper gs property property_ind
       (num_houses := !num_houses - 4;
        num_hotels := !num_hotels + 1)
-  else undevelop_helper gs property (num_houses := !num_houses + 1)
+  else
+    undevelop_helper gs property property_ind
+      (num_houses := !num_houses + 1)
 
 let assoc_sort assoc_list =
   List.sort (fun (k1, v1) (k2, v2) -> Int.compare k1 k2) assoc_list
@@ -411,8 +412,12 @@ let can_develop_property gs property_ind =
           && !num_houses > 0
          || remove_option (Board.get_dev_lvl property) = 4
             && !num_hotels > 0)
-    then true
-    else false
+    then
+      let b = print_string "INSIDE NEXT TRUE:         " in
+      true
+    else
+      let c = print_string "INSIDE NEXT False:         " in
+      false
   else false
 
 let can_undevelop_property gs property_ind =
