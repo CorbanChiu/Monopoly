@@ -85,11 +85,9 @@ let name_list = [ "Sunny"; "Corban"; "Connor"; "Jessica" ]
 
 let init_cards =
   {
-    cc =
-      Cards.empty
-        (* cc = Cards.from_json Consts.const_community_chest_path; *)
-        chance
-      = Cards.from_json Consts.const_chance_path;
+    cc = Cards.from_json Consts.const_community_chest_path;
+    (* cc = Cards.from_json Consts.const_community_chest_path; *)
+    chance = Cards.from_json Consts.const_chance_path;
   }
 
 let rec init_player_lst np =
