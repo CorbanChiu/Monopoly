@@ -1,5 +1,5 @@
 (* TODO: appropriately credit this from the Clarkson's textbook *)
-(*  *)
+(* *)
 (* [{front=[a;b]; back=[e;d;c]}] represents the queue containing the
    elements a,b,c,d,e. That is, the back of the queue is stored in
    reverse order. [{front; back}] is in *normal form* if [front] being
