@@ -51,6 +51,13 @@ let get_players_position gs = get_players_from gs Player.get_position
 
 let get_players_cash gs = get_players_from gs Player.get_cash
 
+let flip_arg f a b = f b a
+
+let get_players_prop gs p =
+  List.map
+    (flip_arg List.assoc gs.property_lst)
+    (Player.get_property_lst p)
+
 let get_property_info_from gs ind f = f (List.assoc ind gs.property_lst)
 
 let get_square_owner gs ind =
@@ -146,7 +153,8 @@ let buy_property gs =
   let property = current_property gs in
   let new_player =
     Player.decrement_cash player (get_property_price property)
-    |> Player.add_property property
+    |> Player.add_property
+         (Board.find_square init_board (Board.get_sqr property))
   in
   {
     property_lst =
@@ -169,7 +177,7 @@ let pay_rent gs dr =
   in
   let rent =
     Board.get_rent property
-      (propertylst_to_sqrlst (Player.get_property_lst owner))
+      (propertylst_to_sqrlst (get_players_prop gs owner))
       init_board dr
   in
   {
@@ -352,7 +360,7 @@ let can_pay_rent gs dr =
     in
     let rent =
       Board.get_rent property
-        (propertylst_to_sqrlst (Player.get_property_lst owner))
+        (propertylst_to_sqrlst (get_players_prop gs owner))
         init_board dr
     in
     Player.get_cash player - rent >= 0
@@ -371,7 +379,7 @@ let can_mortgage gs property_ind =
         (Board.get_owner property)
     in
     (* print_string "after action check"; *)
-    Board.check_no_development property (Player.get_property_lst owner)
+    Board.check_no_development property (get_players_prop gs owner)
   else false
 
 let can_unmortgage gs property_ind =
@@ -402,22 +410,17 @@ let can_develop_property gs property_ind =
     if
       Player.get_cash owner - get_property_buildprice property >= 0
       && Board.complete_propertygroup property
-           (propertylst_to_sqrlst (Player.get_property_lst owner))
+           (propertylst_to_sqrlst (get_players_prop gs owner))
            init_board
       && Board.check_equal_development property
-           (Player.get_property_lst owner)
-      && Board.check_no_mortgages property
-           (Player.get_property_lst owner)
+           (get_players_prop gs owner)
+      && Board.check_no_mortgages property (get_players_prop gs owner)
       && (remove_option (Board.get_dev_lvl property) < 4
           && !num_houses > 0
          || remove_option (Board.get_dev_lvl property) = 4
             && !num_hotels > 0)
-    then
-      let b = print_string "INSIDE NEXT TRUE:         " in
-      true
-    else
-      let c = print_string "INSIDE NEXT False:         " in
-      false
+    then true
+    else false
   else false
 
 let can_undevelop_property gs property_ind =
@@ -430,7 +433,7 @@ let can_undevelop_property gs property_ind =
     || Board.get_action property (Player.get_name owner)
        = Develop_and_Undevelop_ok
        && Board.check_equal_undevelopment property
-            (Player.get_property_lst owner)
+            (get_players_prop gs owner)
   then true
   else false
 

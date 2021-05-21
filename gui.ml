@@ -628,7 +628,7 @@ let draw_selection_mutables () =
               ("Development: " ^ string_of_int dlvl ^ " house")
         | Some dlvl ->
             center_text (text_left, text_1) (text_right, text_2)
-              ("Development: " ^ string_of_int dlvl ^ "houses")
+              ("Development: " ^ string_of_int dlvl ^ " houses")
         | None -> ()
       end;
       match mort with

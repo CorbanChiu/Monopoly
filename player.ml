@@ -3,7 +3,7 @@ type player = {
   token : Token.token option;
   pos : int;
   cash : int;
-  property_lst : Board.property list;
+  property_lst : int list;
   card_lst : Cards.card list;
   jail_state : bool;
   bankrupt_state : bool;

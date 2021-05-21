@@ -18,11 +18,11 @@ val increment_cash : player -> int -> player
 
 val decrement_cash : player -> int -> player
 
-val get_property_lst : player -> Board.property list
+val get_property_lst : player -> int list
 
-val add_property : Board.property -> player -> player
+val add_property : int -> player -> player
 
-val remove_property : player -> Board.property -> player
+val remove_property : player -> int -> player
 
 val get_card_lst : player -> Cards.card list
 
