@@ -1,70 +1,186 @@
 [
   {
     "name": "Advance to 'Go'.",
-    "description": "(Collect $200)."
+    "description": "(Collect $200).",
+    "action type": {
+      "type": "move",
+      "destination": [
+        0
+      ],
+      "altered": false
+    }
   },
   {
     "name": "Bank error in your favor.",
-    "description": "Collect $200."
+    "description": "Collect $200.",
+    "action type": {
+      "type": "money",
+      "amount": [
+        200
+      ],
+      "object": true
+    }
   },
   {
     "name": "Doctor's fees.",
-    "description": "Pay $50."
+    "description": "Pay $50.",
+    "action type": {
+      "type": "money",
+      "amount": [
+        -50
+      ],
+      "object": true
+    }
   },
   {
     "name": "From sale of stock you get $50.",
-    "description": ""
+    "description": "",
+    "action type": {
+      "type": "money",
+      "amount": [
+        50
+      ],
+      "object": true
+    }
   },
   {
     "name": "Get Out of Jail Free.",
-    "description": "This card may be kept until needed or sold/traded."
+    "description": "This card may be kept until needed or sold/traded.",
+    "action type": {
+      "type": "gojf"
+    }
   },
   {
     "name": "Go to Jail.",
-    "description": "Go directly to jail. Do not pass Go, Do not collect $200."
+    "description": "Go directly to jail. Do not pass Go, Do not collect $200.",
+    "action type": {
+      "type": "move",
+      "destination": [
+        10
+      ],
+      "altered": false
+    }
   },
   {
     "name": "Grand Opera Night.",
-    "description": "Collect $50 from every player for opening night seats."
+    "description": "Collect $50 from every player for opening night seats.",
+    "action type": {
+      "type": "money",
+      "amount": [
+        50
+      ],
+      "object": false
+    }
   },
   {
     "name": "Holiday Fund Matures.",
-    "description": "Receive $100."
+    "description": "Receive $100.",
+    "action type": {
+      "type": "money",
+      "amount": [
+        100
+      ],
+      "object": true
+    }
   },
   {
     "name": "Income Tax Refund.",
-    "description": "Collect $20."
+    "description": "Collect $20.",
+    "action type": {
+      "type": "money",
+      "amount": [
+        20
+      ],
+      "object": true
+    }
   },
   {
     "name": "It is your birthday.",
-    "description": "Collect $10 from every player."
+    "description": "Collect $10 from every player.",
+    "action type": {
+      "type": "money",
+      "amount": [
+        10
+      ],
+      "object": false
+    }
   },
   {
     "name": "Life insurance matures.",
-    "description": "Collect $100."
+    "description": "Collect $100.",
+    "action type": {
+      "type": "money",
+      "amount": [
+        100
+      ],
+      "object": true
+    }
   },
   {
     "name": "Hospital Fees.",
-    "description": "Pay $50."
+    "description": "Pay $50.",
+    "action type": {
+      "type": "money",
+      "amount": [
+        -50
+      ],
+      "object": true
+    }
   },
   {
     "name": "School Fees.",
-    "description": "Pay $50."
+    "description": "Pay $50.",
+    "action type": {
+      "type": "money",
+      "amount": [
+        -50
+      ],
+      "object": true
+    }
   },
   {
     "name": "Receive $25 consultancy fee.",
-    "description": ""
+    "description": "",
+    "action type": {
+      "type": "money",
+      "amount": [
+        -25
+      ],
+      "object": true
+    }
   },
   {
     "name": "You are assessed for street repairs:",
-    "description": "Pay $40 per house and $115 per hotel you own."
+    "description": "Pay $40 per house and $115 per hotel you own.",
+    "action type": {
+      "type": "money",
+      "amount": [
+        -40,
+        -115
+      ],
+      "object": true
+    }
   },
   {
     "name": "You have won second prize in a beauty contest.",
-    "description": "Collect $10."
+    "description": "Collect $10.",
+    "action type": {
+      "type": "money",
+      "amount": [
+        10
+      ],
+      "object": true
+    }
   },
   {
     "name": "You inheret $100.",
-    "description": ""
+    "description": "",
+    "action type": {
+      "type": "money",
+      "amount": [
+        100
+      ],
+      "object": true
+    }
   }
 ]

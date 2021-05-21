@@ -1,8 +1,19 @@
 open Yojson.Basic.Util
 
+type cardaction =
+  (* This int designates the index of the square to move to and then the
+     bool whether rent amount is altered *)
+  | Move of int list * bool
+  (* This int indicates the money gained/lost (positive/negative) and if
+     its paying the bank (true) or everyone else (false) *)
+  | Money of int list * bool
+  (* This indicates a Get Out of Jail Free card *)
+  | GOJF
+
 type card = {
   name : string;
   desc : string;
+  action : cardaction;
 }
 
 type cardpile = card Queue.t
@@ -13,10 +24,27 @@ let take_topcard cardpile =
   Queue.push top cardpile;
   top
 
+let handle_list lst = List.map (fun x -> to_int x) lst
+
+let to_action j =
+  let str = j |> member "type" |> to_string in
+  match str with
+  | "move" ->
+      let amt = j |> member "destination" |> to_list |> handle_list in
+      let altered = j |> member "altered" |> to_bool in
+      Move (amt, altered)
+  | "money" ->
+      let amt = j |> member "amount" |> to_list |> handle_list in
+      let bool = j |> member "object" |> to_bool in
+      Money (amt, bool)
+  | "gojf" -> GOJF
+  | _ -> failwith "improper formatting of card json"
+
 let to_card j =
   {
     name = j |> member "name" |> to_string;
     desc = j |> member "description" |> to_string;
+    action = j |> member "action type" |> to_action;
   }
 
 let pile_of_list lst =
@@ -42,3 +70,5 @@ let shuffle lst =
 let from_json j =
   j |> Yojson.Basic.from_file |> to_list |> List.map to_card |> shuffle
   |> pile_of_list
+
+let empty = Queue.create ()
