@@ -271,7 +271,7 @@ let develop_property gs property_ind =
     develop_helper gs property
       (num_houses := !num_houses + 4;
        num_hotels := !num_hotels - 1)
-  else develop_helper gs property (num_houses := !num_houses + 1)
+  else develop_helper gs property (num_houses := !num_houses - 1)
 
 let undevelop_helper gs property change =
   let owner =
