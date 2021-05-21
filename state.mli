@@ -1,10 +1,8 @@
 type property = Board.property
 
-type game_state = {
-  property_lst : (int * property) list;
-  player_lst : (int * Player.player) list;
-  next : int;
-}
+type game_state
+(* (* = { property_lst : (int * property) list; player_lst : (int *
+   Player.player) list; next : int; *) } *)
 
 val get_property : int -> (int * property) list -> property
 

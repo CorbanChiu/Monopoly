@@ -40,7 +40,6 @@ type railroad = {
 (* The type of values representing squares that give the player a card*)
 type card = {
   cname : string;
-  ctype : string;
   cnum : int;
 }
 
@@ -125,7 +124,6 @@ let to_card j =
   Card
     {
       cname = j |> member "name" |> to_string;
-      ctype = j |> member "card type" |> to_string;
       cnum = j |> member "order" |> to_int;
     }
 

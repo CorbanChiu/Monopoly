@@ -5,38 +5,13 @@ type card = {
   desc : string;
 }
 
-type cardpile = card Pile.pile
+type cardpile = card Queue.t
 
-type cardtype
-
-type cardstate = {
-  cname : string;
-  cdesc : string;
-  cpile : cardpile;
-}
-
-let topcard crdst =
-  crdst.cpile |> Pile.peek |> function
-  | Some card -> card
-  | None -> failwith "no card found"
-
-let replace_topcard crdst =
-  let t = topcard crdst in
-  let smaller =
-    match Pile.dequeue crdst.cpile with
-    | Some card -> card
-    | None -> failwith "no card found"
-  in
-  Pile.enqueue t smaller
-
-(* this may not actually work due to get out of jail cards that the
-   player keeps *)
-let take_topcard crdst =
-  {
-    cname = (topcard crdst).name;
-    cdesc = (topcard crdst).desc;
-    cpile = replace_topcard crdst;
-  }
+let take_topcard cardpile =
+  (* Note: this allows for the creation of multiple GOJF cards *)
+  let top = Queue.pop cardpile in
+  Queue.push top cardpile;
+  top
 
 let to_card j =
   {
@@ -45,17 +20,25 @@ let to_card j =
   }
 
 let pile_of_list lst =
-  let rec pof_helper lst p =
+  let p = Queue.create () in
+  let rec pof_aux lst p =
     match lst with
-    | [ h ] -> Pile.enqueue h p
-    | h :: t -> pof_helper t p
-    | _ -> failwith "unintended"
+    | h :: t ->
+        Queue.push h p;
+        pof_aux t p
+    | [] -> p
   in
-  match lst with [] -> Pile.empty | lst -> pof_helper lst Pile.empty
+  pof_aux lst p
+
+let compare_aux elt1 elt2 =
+  match (elt1, elt2) with (k1, v1), (k2, v2) -> compare k1 k2
+
+let shuffle lst =
+  Random.self_init ();
+  let assoc_list = List.map (fun elt -> (Random.bits (), elt)) lst in
+  let shuffled = List.sort compare_aux assoc_list in
+  List.map snd shuffled
 
 let from_json j =
-  {
-    cpile = j |> to_list |> List.map to_card |> pile_of_list;
-    cname = "";
-    cdesc = "";
-  }
+  j |> Yojson.Basic.from_file |> to_list |> List.map to_card |> shuffle
+  |> pile_of_list

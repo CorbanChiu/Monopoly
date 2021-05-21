@@ -1,5 +1,9 @@
 let const_board_path = "board_monopoly.json"
 
+let const_community_chest_path = "cards_communitychest.json"
+
+let const_chance_path = "cards_chance.json"
+
 let const_window_name = "Monopoly"
 
 let const_window_dim = " 1100x700+100-100"
