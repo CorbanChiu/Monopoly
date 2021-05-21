@@ -848,25 +848,16 @@ let draw_player_pos msqlst =
     (draw_player_pos_aux msqlst)
     (State.get_players_position !game_state)
 
-let update_move_state () =
-  let gs = !turn_state in
-  match gs with
-  | { has_moved } when has_moved = false ->
-      turn_state := { gs with has_moved = true }
-  | { has_moved } when has_moved = true ->
-      turn_state := { gs with has_moved = false }
-  | _ -> failwith "impossible move status"
-
 let process_roll () =
   let roll = State.roll_dice () in
   let rt = match roll with v1, v2 -> v1 + v2 in
   let gs = !turn_state in
   turn_state := { gs with dice = Some roll };
   game_state := State.move !game_state roll;
+  turn_state := { !turn_state with has_moved = true };
   if State.can_pay_rent !game_state rt then
     turn_state := { !turn_state with can_end_turn = false }
-  else turn_state := { !turn_state with can_end_turn = true };
-  update_move_state ()
+  else turn_state := { !turn_state with can_end_turn = true }
 
 let draw_roll_and_turn () =
   set_color (rgb 0 0 0);
@@ -896,19 +887,21 @@ let draw_roll_and_turn () =
   | None -> ()
 
 let process_endturn () =
-  if !turn_state.can_end_turn = true then (
+  if !turn_state.can_end_turn && !turn_state.has_moved then (
     game_state := State.end_turn !game_state;
-    update_move_state ())
+    turn_state := { !turn_state with has_moved = false })
   else ()
 
 let process_prop_purchase () =
-  game_state := State.buy_property !game_state
+  if !turn_state.has_moved then
+    game_state := State.buy_property !game_state
 
 let process_rent_payment () =
-  let roll = !turn_state.dice in
-  let rt = match roll with Some (v1, v2) -> v1 + v2 | None -> 0 in
-  game_state := State.pay_rent !game_state rt;
-  turn_state := { !turn_state with can_end_turn = true }
+  if !turn_state.has_moved then (
+    let roll = !turn_state.dice in
+    let rt = match roll with Some (v1, v2) -> v1 + v2 | None -> 0 in
+    game_state := State.pay_rent !game_state rt;
+    turn_state := { !turn_state with can_end_turn = true })
 
 let process_mortgaging_aux s =
   let ind = Board.find_square board s in
