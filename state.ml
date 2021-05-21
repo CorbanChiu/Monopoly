@@ -111,11 +111,7 @@ let possible_action gs ind = List.nth gs.property_lst ind
 
 (* [next_player gs nxt] returns the index of the next player who is not
    in jail. *)
-let rec next_player gs nxt =
-  let next_ind = (nxt mod num_players) + 1 in
-  if Player.get_jail_state (List.assoc next_ind gs.player_lst) then
-    next_player gs (nxt + 1)
-  else next_ind
+let rec next_player gs nxt = (nxt mod num_players) + 1
 
 let end_turn gs = { gs with next = next_player gs gs.next }
 
@@ -139,18 +135,57 @@ let roll_dice () =
   ( nativeint (of_int 6) |> to_int |> ( + ) 1,
     nativeint (of_int 6) |> to_int |> ( + ) 1 )
 
-(* [move gs dr] returns a new game state gs *)
-let move gs dr =
-  let player = current_player gs in
+let go_to_jail gs player =
   {
     gs with
     player_lst =
       update_player_lst
         (get_player_index player gs.player_lst)
-        (Player.update_position player
-           ((fst dr + snd dr + Player.get_position player) mod 40))
+        ((Player.update_position player 10 |> Player.update_jail_state)
+           3)
         gs.player_lst;
   }
+
+let get_out_of_jail gs player np =
+  {
+    gs with
+    player_lst =
+      update_player_lst
+        (get_player_index player gs.player_lst)
+        ((Player.update_position player np |> Player.update_jail_state)
+           0)
+        gs.player_lst;
+  }
+
+(* [move gs dr] returns a new game state gs *)
+let move gs dr =
+  let player = current_player gs in
+  let d1 = fst dr in
+  let d2 = snd dr in
+  let new_pos = (d1 + d2 + Player.get_position player) mod 40 in
+  if new_pos = 30 then go_to_jail gs player
+  else
+    let jail_turns = Player.get_jail_state player in
+    if jail_turns > 0 then
+      if d1 = d2 then get_out_of_jail gs player new_pos
+      else
+        {
+          gs with
+          player_lst =
+            update_player_lst
+              (get_player_index player gs.player_lst)
+              (Player.update_jail_state player (jail_turns - 1))
+              gs.player_lst;
+        }
+    else
+      {
+        gs with
+        player_lst =
+          update_player_lst
+            (get_player_index player gs.player_lst)
+            (Player.update_position player new_pos)
+            gs.player_lst;
+      }
 
 let get_property_price property =
   Board.get_sqr property |> Board.get_price |> remove_option
@@ -453,10 +488,8 @@ let can_undevelop_property gs property_ind =
    switch move (5, 2) |> switch move (6, 6) |> buy_property |> switch
    move (6, 6) |> buy_property |> end_turn *)
 
-let demo_game_state =
-  move init_game_state (3, 3)
-  |> buy_property
-  |> flip_arg move (1, 1)
-  |> buy_property
-  |> flip_arg move (1, 0)
-  |> buy_property |> end_turn
+(* let demo_game_state = move init_game_state (3, 3) |> buy_property |>
+   flip_arg move (1, 1) |> buy_property |> flip_arg move (1, 0) |>
+   buy_property |> end_turn *)
+
+let demo_game_state = move init_game_state (15, 15) |> end_turn

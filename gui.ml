@@ -19,11 +19,17 @@ type turn_state = {
   has_moved : bool;
   dice : (int * int) option;
   can_end_turn : bool;
+  has_rolled : bool;
 }
 
 let turn_state =
   ref
-    ({ has_moved = false; dice = None; can_end_turn = false }
+    ({
+       has_moved = false;
+       dice = None;
+       can_end_turn = false;
+       has_rolled = false;
+     }
       : turn_state)
 
 type coord = int * int
@@ -850,12 +856,13 @@ let draw_player_pos msqlst =
 
 let process_roll () =
   let roll = State.roll_dice () in
-  let rt = match roll with v1, v2 -> v1 + v2 in
-  let gs = !turn_state in
-  turn_state := { gs with dice = Some roll };
+  let d1, d2 = match roll with v1, v2 -> (v1, v2) in
+  turn_state := { !turn_state with has_rolled = true };
+  let change_turn_state = d1 <> d2 in
+  turn_state := { !turn_state with dice = Some roll };
   game_state := State.move !game_state roll;
-  turn_state := { !turn_state with has_moved = true };
-  if State.can_pay_rent !game_state rt then
+  turn_state := { !turn_state with has_moved = change_turn_state };
+  if State.can_pay_rent !game_state (d1 + d2) then
     turn_state := { !turn_state with can_end_turn = false }
   else turn_state := { !turn_state with can_end_turn = true }
 
@@ -874,22 +881,24 @@ let draw_roll_and_turn () =
       calc_sel_b () + calc_sel_h ()
       - ((3 * calc_sel_headline_height ()) - calc_sel_line_height ()) )
     ("Current Turn: " ^ name);
-  match !turn_state.dice with
-  | Some (v1, v2) ->
-      center_text
-        ( calc_sel_l (),
-          calc_sel_b () + calc_sel_h ()
-          - (4 * calc_sel_headline_height ()) )
-        ( calc_sel_l () + calc_sel_w (),
-          calc_sel_b () + calc_sel_h ()
-          - (3 * calc_sel_headline_height ()) )
-        ("Dice Roll: " ^ string_of_int v1 ^ ", " ^ string_of_int v2)
-  | None -> ()
+  if !turn_state.has_rolled then
+    match !turn_state.dice with
+    | Some (v1, v2) ->
+        center_text
+          ( calc_sel_l (),
+            calc_sel_b () + calc_sel_h ()
+            - (4 * calc_sel_headline_height ()) )
+          ( calc_sel_l () + calc_sel_w (),
+            calc_sel_b () + calc_sel_h ()
+            - (3 * calc_sel_headline_height ()) )
+          ("Dice Roll: " ^ string_of_int v1 ^ ", " ^ string_of_int v2)
+    | None -> ()
 
 let process_endturn () =
   if !turn_state.can_end_turn && !turn_state.has_moved then (
     game_state := State.end_turn !game_state;
-    turn_state := { !turn_state with has_moved = false })
+    turn_state :=
+      { !turn_state with has_moved = false; has_rolled = false })
   else ()
 
 let process_prop_purchase () =

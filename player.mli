@@ -30,9 +30,9 @@ val add_card : player -> Cards.card -> player
 
 val remove_card : player -> Cards.card -> player
 
-val get_jail_state : player -> bool
+val get_jail_state : player -> int
 
-val update_jail_state : player -> bool -> player
+val update_jail_state : player -> int -> player
 
 val get_bankrupt_state : player -> bool
 

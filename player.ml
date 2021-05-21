@@ -5,7 +5,7 @@ type player = {
   cash : int;
   property_lst : int list;
   card_lst : Cards.card list;
-  jail_state : bool;
+  jail_state : int;
   bankrupt_state : bool;
 }
 
@@ -61,7 +61,7 @@ let init_player =
     cash = 1500;
     property_lst = [];
     card_lst = [];
-    jail_state = false;
+    jail_state = 0;
     bankrupt_state = false;
   }
 
