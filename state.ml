@@ -3,10 +3,16 @@ open Random
 
 type property = Board.property
 
+type card = {
+  cc : Cards.cardpile;
+  chance : Cards.cardpile;
+}
+
 type game_state = {
   property_lst : (int * property) list;
   player_lst : (int * Player.player) list;
   next : int;
+  cards : card;
 }
 
 (* [get_property ind lst] returns the property at index ind in the
@@ -77,6 +83,12 @@ let init_board =
 
 let name_list = [ "Sunny"; "Corban"; "Connor"; "Jessica" ]
 
+let init_cards =
+  {
+    cc = Cards.from_json Consts.const_community_chest_path;
+    chance = Cards.from_json Consts.const_chance_path;
+  }
+
 let rec init_player_lst np =
   match np with
   | 0 -> []
@@ -92,6 +104,7 @@ let init_game_state =
     property_lst = Board.init_prop_lst init_board 0;
     player_lst = init_player_lst num_players;
     next = 1;
+    cards = init_cards;
   }
 
 let possible_action gs ind = List.nth gs.property_lst ind
@@ -104,12 +117,7 @@ let rec next_player gs nxt =
     next_player gs (nxt + 1)
   else next_ind
 
-let end_turn gs =
-  {
-    property_lst = gs.property_lst;
-    player_lst = gs.player_lst;
-    next = next_player gs gs.next;
-  }
+let end_turn gs = { gs with next = next_player gs gs.next }
 
 (* removes option *)
 let remove_option = Board.remove_option
@@ -157,13 +165,13 @@ let buy_property gs =
          (Board.find_square init_board (Board.get_sqr property))
   in
   {
+    gs with
     property_lst =
       update_property_lst
         (Player.get_position player)
         (Board.update_owner property (Player.get_name player))
         gs.property_lst;
     player_lst = update_player_lst gs.next new_player gs.player_lst;
-    next = gs.next;
   }
 
 let propertylst_to_sqrlst property_lst =
@@ -181,7 +189,7 @@ let pay_rent gs dr =
       init_board dr
   in
   {
-    property_lst = gs.property_lst;
+    gs with
     player_lst =
       update_player_lst gs.next
         (Player.decrement_cash player rent)
@@ -189,7 +197,6 @@ let pay_rent gs dr =
       |> update_player_lst
            (get_player_index owner gs.player_lst)
            (Player.increment_cash owner rent);
-    next = gs.next;
   }
 
 (* TODO: for a traditional property, check that any other properties in
@@ -203,6 +210,7 @@ let mortgage gs property_ind =
     Board.get_sqr property |> Board.get_mortgage |> remove_option
   in
   {
+    gs with
     property_lst =
       update_property_lst property_ind
         (Board.update_mortgage_state property (Some true))
@@ -212,7 +220,6 @@ let mortgage gs property_ind =
         (get_player_index owner gs.player_lst)
         (Player.increment_cash owner mortgage_value)
         gs.player_lst;
-    next = gs.next;
   }
 
 let unmortgage gs property_ind =
@@ -225,6 +232,7 @@ let unmortgage gs property_ind =
     |> Float.of_int |> ( *. ) 1.1 |> Float.to_int
   in
   {
+    gs with
     property_lst =
       update_property_lst property_ind
         (Board.update_mortgage_state property (Some false))
@@ -234,7 +242,6 @@ let unmortgage gs property_ind =
         (get_player_index owner gs.player_lst)
         (Player.decrement_cash owner mortgage_value)
         gs.player_lst;
-    next = gs.next;
   }
 
 let num_houses = ref 32
@@ -264,9 +271,9 @@ let develop_helper gs property prop_index change =
   in
   change;
   {
+    gs with
     property_lst = new_property_list;
     player_lst = new_player_list;
-    next = gs.next;
   }
 
 let develop_property gs property_ind =
@@ -302,9 +309,9 @@ let undevelop_helper gs property prop_index change =
   in
   change;
   {
+    gs with
     property_lst = new_property_list;
     player_lst = new_player_list;
-    next = gs.next;
   }
 
 let undevelop_property gs property_ind =
@@ -324,9 +331,9 @@ let good_output gs =
   let sorted_prop_list = assoc_sort gs.property_lst in
   let sorted_player_list = assoc_sort gs.player_lst in
   {
+    gs with
     property_lst = sorted_prop_list;
     player_lst = sorted_player_list;
-    next = gs.next;
   }
 
 let assoc_list_length lst =
