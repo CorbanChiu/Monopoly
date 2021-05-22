@@ -7,6 +7,8 @@ type player = {
   card_lst : Cards.card list;
   jail_state : int;
   bankrupt_state : bool;
+  gojf : int;
+  net_worth_diff_cash : int;
 }
 
 let get_name player = player.name
@@ -63,6 +65,8 @@ let init_player =
     card_lst = [];
     jail_state = 0;
     bankrupt_state = false;
+    gojf = 0;
+    net_worth_diff_cash = 0;
   }
 
 (* let sum_mortgage_value property_lst = List.fold_left ( + ) 0
@@ -86,3 +90,21 @@ let rec get_player_from_name player_lst owner_option =
   | (_, pl) :: t ->
       if pl.name = owner_option then pl
       else get_player_from_name t owner_option
+
+let get_gojf p = p.gojf
+
+let add_gojf p =
+  let prev = p.gojf in
+  { p with gojf = prev + 1 }
+
+let remove_gojf p =
+  let prev = p.gojf in
+  { p with gojf = prev - 1 }
+
+let incr_net_worth amt p =
+  let prev = p.net_worth_diff_cash in
+  { p with net_worth_diff_cash = prev + amt }
+
+let decr_net_worth amt p =
+  let prev = p.net_worth_diff_cash in
+  { p with net_worth_diff_cash = prev - amt }

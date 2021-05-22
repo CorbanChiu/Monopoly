@@ -41,6 +41,7 @@ let update_player_lst player_ind new_player player_lst =
   |> List.cons (player_ind, new_player)
 
 let rec get_player_index player player_lst =
+  (* TODO: why couldn't this be a find/filter/map *)
   match player_lst with
   | (ind, pl) :: t ->
       if pl = player then ind else get_player_index player t
@@ -207,10 +208,14 @@ let get_property_price property =
 let buy_property gs =
   let player = current_player gs in
   let property = current_property gs in
+  let mortgage_value =
+    Board.get_sqr property |> Board.get_mortgage |> remove_option
+  in
   let new_player =
     Player.decrement_cash player (get_property_price property)
     |> Player.add_property
          (Board.find_square init_board (Board.get_sqr property))
+    |> Player.incr_net_worth mortgage_value
   in
   {
     gs with
@@ -266,7 +271,8 @@ let mortgage gs property_ind =
     player_lst =
       update_player_lst
         (get_player_index owner gs.player_lst)
-        (Player.increment_cash owner mortgage_value)
+        (Player.increment_cash owner mortgage_value
+        |> Player.decr_net_worth mortgage_value)
         gs.player_lst;
   }
 
@@ -277,7 +283,9 @@ let unmortgage gs property_ind =
   in
   let mortgage_value =
     Board.get_sqr property |> Board.get_mortgage |> remove_option
-    |> Float.of_int |> ( *. ) 1.1 |> Float.to_int
+  in
+  let mortgage_payment =
+    mortgage_value |> Float.of_int |> ( *. ) 1.1 |> Float.to_int
   in
   {
     gs with
@@ -288,13 +296,16 @@ let unmortgage gs property_ind =
     player_lst =
       update_player_lst
         (get_player_index owner gs.player_lst)
-        (Player.decrement_cash owner mortgage_value)
+        (Player.decrement_cash owner mortgage_payment
+        |> Player.incr_net_worth mortgage_value)
         gs.player_lst;
   }
 
 let num_houses = ref 32
 
 let num_hotels = ref 12
+
+let free_parking_cash = ref 0
 
 let develop_helper gs property prop_index change =
   let owner =
@@ -308,9 +319,12 @@ let develop_helper gs property prop_index change =
     update_property_lst prop_index new_property gs.property_lst
     (*gs.property_lst property new_property*)
   in
+  let house_price =
+    remove_option (Board.get_buildprice (Board.get_sqr property))
+  in
   let new_owner =
-    Player.decrement_cash owner
-      (remove_option (Board.get_buildprice (Board.get_sqr property)))
+    Player.decrement_cash owner house_price
+    |> Player.incr_net_worth (house_price / 2)
   in
   let new_player_list =
     update_player_lst
@@ -346,9 +360,12 @@ let undevelop_helper gs property prop_index change =
     update_property_lst prop_index new_property gs.property_lst
     (*gs.property_lst property new_property*)
   in
+  let house_price =
+    remove_option (Board.get_buildprice (Board.get_sqr property))
+  in
   let new_owner =
-    Player.increment_cash owner
-      (remove_option (Board.get_buildprice (Board.get_sqr property)) / 2)
+    Player.increment_cash owner (house_price / 2)
+    |> Player.decr_net_worth (house_price / 2)
   in
   let new_player_list =
     update_player_lst
@@ -492,11 +509,41 @@ let can_undevelop_property gs property_ind =
   then true
   else false
 
+let process_cc gs p =
+  let player_ind = get_player_index p gs.player_lst in
+  match Cards.take_topcard gs.cards.cc |> Cards.get_action with
+  | Move (lst, b) -> gs
+  | Money (lst, b) -> (
+      match lst with
+      | [ h; t ] -> gs
+      | [ h ] ->
+          if h < 0 then
+            if b then (
+              free_parking_cash := !free_parking_cash + -h;
+              gs (* reduce_money p by h*))
+            else gs
+              (* reduce money p by h * num player *)
+              (* increase money player_list / p by h *)
+          else if b then gs (* increase money p by h *)
+          else
+            (* increase money p by h * num player *)
+            (* reduce money player_list / p by h *)
+            gs
+      | _ -> failwith "improperly formatted card money list")
+  | GOJF ->
+      let new_player = Player.add_gojf p in
+      {
+        gs with
+        player_lst =
+          update_player_lst player_ind new_player gs.player_lst;
+      }
+
 let community_chest gs =
   let player = current_player gs in
   let name_opt = Player.get_name player in
   let prop = current_property gs in
-  gs
+  if Board.get_action prop name_opt = CC_ok then process_cc gs player
+  else gs
 
 (* let demo_game_state = move init_game_state (2, 3) |> buy_property |>
    switch move (5, 6) |> buy_property |> switch move (2, 3) |>

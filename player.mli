@@ -46,3 +46,13 @@ val get_player_from_name :
 (* val bankrupt : player -> bool *)
 
 val init_player : player
+
+val get_gojf : player -> int
+
+val add_gojf : player -> player
+
+val remove_gojf : player -> player
+
+val incr_net_worth : int -> player -> player
+
+val decr_net_worth : int -> player -> player
