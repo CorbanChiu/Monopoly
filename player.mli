@@ -38,6 +38,20 @@ val get_bankrupt_state : player -> bool
 
 val update_bankrupt_state : player -> bool -> player
 
+val get_in_debt : player -> (int * int) list
+
+val update_in_debt : player -> (int * int) list -> player
+
+val add_debt : player -> int -> int -> player
+
+val remove_debt : player -> int -> int -> player
+
+val total_debt : player -> int
+
+val no_debt : player -> bool
+
+val get_debt : player -> int -> int
+
 val get_player_from_name :
   (int * player) list -> string option -> player
 

@@ -48,7 +48,6 @@ let game_state = ref (init_game_state ())
 type turn_state = {
   has_moved : bool;
   dice : (int * int) option;
-  can_end_turn : bool;
   has_rolled : bool;
   num_rolls : int;
 }
@@ -58,7 +57,6 @@ let turn_state =
     ({
        has_moved = false;
        dice = None;
-       can_end_turn = false;
        has_rolled = false;
        num_rolls = 0;
      }
@@ -905,10 +903,11 @@ let process_roll () =
     turn_state := { !turn_state with has_moved = true; num_rolls = 0 };
     game_state :=
       State.go_to_jail !game_state (State.current_player !game_state))
-  else game_state := State.move !game_state roll;
-  if State.can_pay_rent !game_state (d1 + d2) then
-    turn_state := { !turn_state with can_end_turn = false }
-  else turn_state := { !turn_state with can_end_turn = true }
+  else (
+    game_state := State.move !game_state roll;
+    if State.can_pay_rent !game_state (d1 + d2) then
+      game_state := State.add_rent !game_state (d1 + d2)
+    else ())
 
 let draw_roll_and_turn () =
   set_color (rgb 0 0 0);
@@ -939,27 +938,24 @@ let draw_roll_and_turn () =
     | None -> ()
 
 let process_endturn () =
-  if !turn_state.can_end_turn && !turn_state.has_moved then (
-    game_state := State.end_turn !game_state;
-    turn_state :=
-      {
-        !turn_state with
-        has_moved = false;
-        has_rolled = false;
-        num_rolls = 0;
-      })
-  else ()
+  game_state := State.end_turn !game_state;
+  turn_state :=
+    {
+      !turn_state with
+      has_moved = false;
+      has_rolled = false;
+      num_rolls = 0;
+    }
 
 let process_prop_purchase () =
   if !turn_state.has_moved then
     game_state := State.buy_property !game_state
 
 let process_rent_payment () =
-  if !turn_state.has_moved && not !turn_state.can_end_turn then (
+  if !turn_state.has_rolled then
     let roll = !turn_state.dice in
     let rt = match roll with Some (v1, v2) -> v1 + v2 | None -> 0 in
-    game_state := State.pay_rent !game_state rt;
-    turn_state := { !turn_state with can_end_turn = true })
+    game_state := State.pay_rent !game_state rt
 
 let process_mortgaging_aux s =
   let ind = Board.find_square board s in
@@ -1006,14 +1002,25 @@ let process_undevelop () =
 (*********************************************************)
 
 let update () =
+  print_string
+    ((State.current_player !game_state
+     |> Player.total_debt |> string_of_int)
+    ^ "\n");
   clear_graph ();
   set_line_width Consts.const_line_width;
   let msquare_lst = construct_msquares () in
   let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
   if st.key = 'q' then game_state := State.demo_game_state;
-  if st.key = 'n' && !turn_state.has_moved = false then process_roll ();
-  if st.key = 'm' && !turn_state.has_moved = true then
-    process_endturn ();
+  if
+    st.key = 'n'
+    && !turn_state.has_moved = false
+    && State.current_player !game_state |> Player.no_debt
+  then process_roll ();
+  if
+    st.key = 'm'
+    && !turn_state.has_moved = true
+    && State.current_player !game_state |> Player.no_debt
+  then process_endturn ();
   (* temporary "buy property key" *)
   if st.key = 'b' && State.can_buy_property !game_state then
     process_prop_purchase ();

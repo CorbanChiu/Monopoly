@@ -229,7 +229,7 @@ let buy_property gs =
 let propertylst_to_sqrlst property_lst =
   List.map Board.get_sqr property_lst
 
-let pay_rent gs dr =
+let add_rent gs dr =
   let player = current_player gs in
   let property = current_property gs in
   let owner =
@@ -240,12 +240,35 @@ let pay_rent gs dr =
       (propertylst_to_sqrlst (get_players_prop gs owner))
       init_board dr
   in
+  let new_player =
+    Player.add_debt player rent (get_player_index owner gs.player_lst)
+  in
   {
     gs with
     player_lst =
-      update_player_lst gs.next
-        (Player.decrement_cash player rent)
-        gs.player_lst
+      update_player_lst
+        (get_player_index player gs.player_lst)
+        new_player gs.player_lst;
+  }
+
+let pay_rent gs dr =
+  let player = current_player gs in
+  let property = current_property gs in
+  let owner =
+    Player.get_player_from_name gs.player_lst (Board.get_owner property)
+  in
+  let rent =
+    Player.get_debt player (get_player_index owner gs.player_lst)
+  in
+  let new_player = Player.decrement_cash player rent in
+  let newer_player =
+    Player.remove_debt new_player rent
+      (get_player_index owner gs.player_lst)
+  in
+  {
+    gs with
+    player_lst =
+      update_player_lst gs.next newer_player gs.player_lst
       |> update_player_lst
            (get_player_index owner gs.player_lst)
            (Player.increment_cash owner rent);
