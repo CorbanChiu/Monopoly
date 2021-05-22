@@ -2,6 +2,7 @@
 #require "oUnit";;
 #require "bisect_ppx";;
 #require "graphics";;
+#require "ANSITerminal";;
 
 #directory "_build";;
 #load "board.cmo";;

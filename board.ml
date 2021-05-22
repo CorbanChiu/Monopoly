@@ -388,7 +388,8 @@ type action =
   | Unmortgage_ok
   | Develop_and_Undevelop_ok
   | Undevelop_ok
-  | Card_ok
+  | Chance_ok
+  | CC_ok
   | Freeparking_ok
   | None_ok
   | Gotojail_ok
@@ -432,7 +433,11 @@ let get_action prop player_name =
       then Mortgage_ok
       else if prop.mortgage_state = Some true then Unmortgage_ok
       else None_ok
-  | Card _ -> Card_ok
+  | Card c -> (
+      match c.cname with
+      | "Chance" -> Chance_ok
+      | "Community Chance" -> CC_ok
+      | _ -> failwith "this isn't the name of a real card")
   | Misc m -> (
       match m with
       | FreeParking _ -> Freeparking_ok
