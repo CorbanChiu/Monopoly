@@ -30,7 +30,7 @@ val get_square_dev_lvl : game_state -> int -> int option
 
 val get_square_mortgage_state : game_state -> int -> bool option
 
-val init_game_state : game_state
+val init_game_state : string list -> game_state
 
 val go_to_jail : game_state -> Player.player -> game_state
 

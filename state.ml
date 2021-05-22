@@ -82,29 +82,28 @@ let num_players = 4
 let init_board =
   Board.from_json (Yojson.Basic.from_file Consts.const_board_path)
 
-let name_list = [ "Sunny"; "Corban"; "Connor"; "Jessica" ]
+let name_list names = names
 
 let init_cards =
   {
     cc = Cards.from_json Consts.const_community_chest_path;
-    (* cc = Cards.from_json Consts.const_community_chest_path; *)
     chance = Cards.from_json Consts.const_chance_path;
   }
 
-let rec init_player_lst np =
+let rec init_player_lst np names =
   match np with
   | 0 -> []
   | a ->
       ( a,
         Player.update_name Player.init_player
-          (List.nth_opt name_list (a - 1)) )
-      :: init_player_lst (a - 1)
+          (List.nth_opt (name_list names) (a - 1)) )
+      :: init_player_lst (a - 1) names
 
 (* [init] is the initial game state *)
-let init_game_state =
+let init_game_state names =
   {
     property_lst = Board.init_prop_lst init_board 0;
-    player_lst = init_player_lst num_players;
+    player_lst = init_player_lst num_players names;
     next = 1;
     cards = init_cards;
   }
@@ -543,7 +542,9 @@ let community_chest gs =
    move (6, 6) |> buy_property |> end_turn *)
 
 let demo_game_state =
-  move init_game_state (3, 3)
+  move
+    (init_game_state [ "Sunny"; "Corban"; "Connor"; "Jessica" ])
+    (3, 3)
   |> buy_property
   |> flip_arg move (1, 1)
   |> buy_property

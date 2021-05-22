@@ -13,7 +13,37 @@ type selection = Board.square option
 
 let sel_state = ref (None : selection)
 
-let game_state = ref (State.init_game_state : State.game_state)
+let names = ref []
+
+let init_game_state () : State.game_state = State.init_game_state !names
+
+let ask_names () =
+  ANSITerminal.print_string [ ANSITerminal.blue ]
+    "Let's play Monopoly! This is a 4-person game developed by Sunny, \
+     Corban, and Connor. Please enter four unique player names.\n";
+  print_endline "Please enter the name of the first player:";
+  print_string "> ";
+  (match read_line () with
+  | exception End_of_file -> ()
+  | name -> names := name :: !names);
+  print_endline "Please enter the name of the second player:";
+  print_string "> ";
+  (match read_line () with
+  | exception End_of_file -> ()
+  | name -> names := name :: !names);
+  print_endline "Please enter the name of the third player:";
+  print_string "> ";
+  (match read_line () with
+  | exception End_of_file -> ()
+  | name -> names := name :: !names);
+  print_endline "Please enter the name of the fourth player:";
+  print_string "> ";
+  (match read_line () with
+  | exception End_of_file -> ()
+  | name -> names := name :: !names);
+  names := List.rev !names
+
+let game_state = ref (init_game_state ())
 
 type turn_state = {
   has_moved : bool;
@@ -925,7 +955,7 @@ let process_prop_purchase () =
     game_state := State.buy_property !game_state
 
 let process_rent_payment () =
-  if !turn_state.has_moved then (
+  if !turn_state.has_moved && not !turn_state.can_end_turn then (
     let roll = !turn_state.dice in
     let rt = match roll with Some (v1, v2) -> v1 + v2 | None -> 0 in
     game_state := State.pay_rent !game_state rt;
@@ -1016,10 +1046,15 @@ let driver () =
     done
   with Exit -> ()
 
-let init =
+let play_game () =
+  game_state := init_game_state ();
   open_window ();
   let msquare_lst = construct_msquares () in
   draw_all_colors msquare_lst msquare_color_lst;
   draw_all_msquares msquare_lst;
   auto_synchronize false;
   driver ()
+
+let init =
+  ask_names ();
+  play_game ()
