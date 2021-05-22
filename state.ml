@@ -542,8 +542,24 @@ let community_chest gs =
    switch move (5, 2) |> switch move (6, 6) |> buy_property |> switch
    move (6, 6) |> buy_property |> end_turn *)
 
-(* let demo_game_state = move init_game_state (3, 3) |> buy_property |>
-   flip_arg move (1, 1) |> buy_property |> flip_arg move (1, 0) |>
-   buy_property |> end_turn *)
+let demo_game_state =
+  move init_game_state (3, 3)
+  |> buy_property
+  |> flip_arg move (1, 1)
+  |> buy_property
+  |> flip_arg move (1, 0)
+  |> buy_property |> end_turn
+  |> flip_arg move (6, 10)
+  |> buy_property
+  |> flip_arg move (1, 1)
+  |> buy_property
+  |> flip_arg move (1, 0)
+  |> buy_property |> end_turn
+  |> flip_arg move (5, 6)
+  |> buy_property
+  |> flip_arg move (1, 1)
+  |> buy_property
+  |> flip_arg move (0, 1)
+  |> buy_property |> end_turn
 
-let demo_game_state = move init_game_state (15, 15) |> end_turn
+(* let demo_game_state = move init_game_state (15, 15) |> end_turn *)

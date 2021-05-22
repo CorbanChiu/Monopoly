@@ -20,6 +20,7 @@ type turn_state = {
   dice : (int * int) option;
   can_end_turn : bool;
   has_rolled : bool;
+  num_rolls : int;
 }
 
 let turn_state =
@@ -29,6 +30,7 @@ let turn_state =
        dice = None;
        can_end_turn = false;
        has_rolled = false;
+       num_rolls = 0;
      }
       : turn_state)
 
@@ -857,11 +859,23 @@ let draw_player_pos msqlst =
 let process_roll () =
   let roll = State.roll_dice () in
   let d1, d2 = match roll with v1, v2 -> (v1, v2) in
-  turn_state := { !turn_state with has_rolled = true };
   let change_turn_state = d1 <> d2 in
-  turn_state := { !turn_state with dice = Some roll };
-  game_state := State.move !game_state roll;
-  turn_state := { !turn_state with has_moved = change_turn_state };
+  turn_state :=
+    {
+      !turn_state with
+      dice = Some roll;
+      has_moved = change_turn_state;
+      has_rolled = true;
+    };
+  if change_turn_state then ()
+  else
+    turn_state :=
+      { !turn_state with num_rolls = !turn_state.num_rolls + 1 };
+  if !turn_state.num_rolls = 3 then (
+    turn_state := { !turn_state with has_moved = true; num_rolls = 0 };
+    game_state :=
+      State.go_to_jail !game_state (State.current_player !game_state))
+  else game_state := State.move !game_state roll;
   if State.can_pay_rent !game_state (d1 + d2) then
     turn_state := { !turn_state with can_end_turn = false }
   else turn_state := { !turn_state with can_end_turn = true }
@@ -898,7 +912,12 @@ let process_endturn () =
   if !turn_state.can_end_turn && !turn_state.has_moved then (
     game_state := State.end_turn !game_state;
     turn_state :=
-      { !turn_state with has_moved = false; has_rolled = false })
+      {
+        !turn_state with
+        has_moved = false;
+        has_rolled = false;
+        num_rolls = 0;
+      })
   else ()
 
 let process_prop_purchase () =
