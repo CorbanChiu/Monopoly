@@ -1,6 +1,7 @@
 type property = Board.property
 
 type game_state
+
 (* (* = { property_lst : (int * property) list; player_lst : (int *
    Player.player) list; next : int; *) } *)
 
@@ -31,7 +32,11 @@ val get_square_mortgage_state : game_state -> int -> bool option
 
 val init_game_state : game_state
 
+val go_to_jail : game_state -> Player.player -> game_state
+
 val move : game_state -> int * int -> game_state
+
+val current_player : game_state -> Player.player
 
 val roll_dice : unit -> int * int
 
