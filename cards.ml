@@ -70,5 +70,3 @@ let shuffle lst =
 let from_json j =
   j |> Yojson.Basic.from_file |> to_list |> List.map to_card |> shuffle
   |> pile_of_list
-
-let empty = Queue.create ()
