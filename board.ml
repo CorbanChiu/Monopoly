@@ -436,7 +436,7 @@ let get_action prop player_name =
   | Card c -> (
       match c.cname with
       | "Chance" -> Chance_ok
-      | "Community Chance" -> CC_ok
+      | "Community Chest" -> CC_ok
       | _ -> failwith "this isn't the name of a real card")
   | Misc m -> (
       match m with
