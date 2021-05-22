@@ -163,7 +163,8 @@ let move gs dr =
   let player = current_player gs in
   let d1 = fst dr in
   let d2 = snd dr in
-  let new_pos = (d1 + d2 + Player.get_position player) mod 40 in
+  let incr = d1 + d2 + Player.get_position player in
+  let new_pos = incr mod 40 in
   if new_pos = 30 then go_to_jail gs player
   else
     let jail_turns = Player.get_jail_state player in
@@ -178,6 +179,17 @@ let move gs dr =
               (Player.update_jail_state player (jail_turns - 1))
               gs.player_lst;
         }
+    else if incr > 39 then
+      {
+        gs with
+        player_lst =
+          update_player_lst
+            (get_player_index player gs.player_lst)
+            ((Player.update_position player new_pos
+             |> Player.increment_cash)
+               200)
+            gs.player_lst;
+      }
     else
       {
         gs with
