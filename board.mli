@@ -100,7 +100,8 @@ type action =
   | Unmortgage_ok
   | Develop_and_Undevelop_ok
   | Undevelop_ok
-  | Card_ok
+  | Chance_ok
+  | CC_ok
   | Freeparking_ok
   | None_ok
   | Gotojail_ok

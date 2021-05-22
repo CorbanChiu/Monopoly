@@ -35,3 +35,8 @@ zip:
 
 clean:
 	ocamlbuild -clean
+
+docs: build
+	mkdir -p _doc.public
+	ocamlfind ocamldoc -I _build -package yojson,ANSITerminal \
+		-html -stars -d _doc.public $(MLIS)

@@ -480,6 +480,12 @@ let can_undevelop_property gs property_ind =
   then true
   else false
 
+let community_chest gs =
+  let player = current_player gs in
+  let name_opt = Player.get_name player in
+  let prop = current_property gs in
+  gs
+
 (* let demo_game_state = move init_game_state (2, 3) |> buy_property |>
    switch move (5, 6) |> buy_property |> switch move (2, 3) |>
    buy_property |> end_turn |> switch move (1, 2) |> buy_property |>

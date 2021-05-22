@@ -32,3 +32,7 @@ _opam/
 # bisect folder
 _coverage/
 *coverage
+
+# Docs
+_doc.public
+_doc.private
