@@ -122,7 +122,7 @@
     "action type": {
       "type": "money",
       "amount": [
-        -25
+        25
       ],
       "object": true
     }

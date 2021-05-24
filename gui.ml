@@ -999,11 +999,23 @@ let process_undevelop () =
 (**** Code that runs everthing - Add functions above ****)
 (*********************************************************)
 
+let temp_show_cards () =
+  set_color (rgb 0 0 0);
+  moveto 50 50;
+  draw_string (State.get_cc_pile !game_state |> Cards.desc_topcard);
+  moveto 50 100;
+  draw_string (State.get_cc_pile !game_state |> Cards.name_topcard);
+  moveto 200 50;
+  draw_string (State.get_chance_pile !game_state |> Cards.desc_topcard);
+  moveto 200 100;
+  draw_string (State.get_chance_pile !game_state |> Cards.name_topcard)
+
 let update () =
   clear_graph ();
   set_line_width Consts.const_line_width;
   let msquare_lst = construct_msquares () in
   let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
+  temp_show_cards ();
   if st.key = 'q' then game_state := State.demo_game_state;
   if
     st.key = 'n'

@@ -1,5 +1,7 @@
 type property = Board.property
 
+type card
+
 type game_state
 
 (* (* = { property_lst : (int * property) list; player_lst : (int *
@@ -59,6 +61,14 @@ val develop_property : game_state -> int -> game_state
 val undevelop_property : game_state -> int -> game_state
 
 val cards : game_state -> game_state
+
+val on_cc : game_state -> bool
+
+val on_chance : game_state -> bool
+
+val get_cc_pile : game_state -> Cards.cardpile
+
+val get_chance_pile : game_state -> Cards.cardpile
 
 val good_output : game_state -> game_state
 

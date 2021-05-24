@@ -533,36 +533,40 @@ let can_undevelop_property gs property_ind =
   else false
 
 let add_debt_all_players gs plr amt =
-  let aux p1 gamestate p2 =
-    match p2 with
-    | _, p2 ->
-        if p1 <> p2 then
+  let aux p1 gamestate plr_elt =
+    let ind1 = get_player_index p1 gamestate.player_lst in
+    match plr_elt with
+    | ind2, p2 ->
+        if ind1 <> ind2 then
           {
             gamestate with
             player_lst =
-              update_player_lst
-                (get_player_index p1 gamestate.player_lst)
-                (Player.add_debt p1 amt
-                   (get_player_index p2 gamestate.player_lst))
+              update_player_lst ind1
+                (Player.add_debt p1 amt ind2)
                 gamestate.player_lst;
           }
         else gamestate
   in
   List.fold_left (aux plr) gs gs.player_lst
 
+let jail_move_aux truth index = index = 10 || truth
+
 let closest_move gs loc_lst =
-  let curr_loc =
-    Player.get_position (get_player gs.next gs.player_lst)
-  in
-  let distances =
-    List.map (fun x -> (x - curr_loc + 40) mod 40) loc_lst
-    |> List.sort Stdlib.compare
-  in
-  move gs (List.nth distances 0, 0)
+  let curr_loc = Player.get_position (current_player gs) in
+  if List.fold_left jail_move_aux false loc_lst then
+    go_to_jail gs (current_player gs)
+  else
+    let distance =
+      (List.map (fun x -> (40 + x - curr_loc) mod 40) loc_lst
+      |> List.sort Stdlib.compare
+      |> List.nth)
+        0
+    in
+    move gs (distance, 0)
 
 let process_card gs p card =
   let player_ind = get_player_index p gs.player_lst in
-  match card |> Cards.get_action with
+  match Cards.get_action card with
   | Move (lst, b) -> closest_move gs lst
   | Money (lst, b) -> (
       match lst with
@@ -609,6 +613,24 @@ let cards gs =
   else if Board.get_action prop name_opt = Chance_ok then
     process_chance gs player
   else gs
+
+let on_cc gs =
+  let action =
+    Board.get_action (current_property gs)
+      (Player.get_name (current_player gs))
+  in
+  action = CC_ok
+
+let on_chance gs =
+  let action =
+    Board.get_action (current_property gs)
+      (Player.get_name (current_player gs))
+  in
+  action = Chance_ok
+
+let get_cc_pile gs = gs.cards.cc
+
+let get_chance_pile gs = gs.cards.chance
 
 (* let demo_game_state = move init_game_state (2, 3) |> buy_property |>
    switch move (5, 6) |> buy_property |> switch move (2, 3) |>

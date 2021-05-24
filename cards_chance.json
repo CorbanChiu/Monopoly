@@ -1,5 +1,16 @@
 [
   {
+    "name": "You have been elected Chairman of the Board.",
+    "description": "Pay each player $50.",
+    "action type": {
+      "type": "money",
+      "amount": [
+        -50
+      ],
+      "object": false
+    }
+  },
+  {
     "name": "Advance to 'Go'.",
     "description": "Collect $200.",
     "action type": {
@@ -155,17 +166,6 @@
         39
       ],
       "altered": false
-    }
-  },
-  {
-    "name": "You have been elected Chairman of the Board.",
-    "description": "Pay each player $50.",
-    "action type": {
-      "type": "money",
-      "amount": [
-        -50
-      ],
-      "object": false
     }
   },
   {
