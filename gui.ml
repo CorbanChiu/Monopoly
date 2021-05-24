@@ -907,6 +907,10 @@ let process_roll () =
     game_state := State.move !game_state roll;
     if State.can_pay_rent !game_state (d1 + d2) then
       game_state := State.add_rent !game_state (d1 + d2)
+    else if State.can_pay_luxury !game_state then
+      game_state := State.add_luxury_tax !game_state
+    else if State.can_pay_income !game_state then
+      game_state := State.add_income_tax !game_state
     else ())
 
 let draw_roll_and_turn () =
@@ -951,11 +955,8 @@ let process_prop_purchase () =
   if !turn_state.has_moved then
     game_state := State.buy_property !game_state
 
-let process_rent_payment () =
-  if !turn_state.has_rolled then
-    let roll = !turn_state.dice in
-    let rt = match roll with Some (v1, v2) -> v1 + v2 | None -> 0 in
-    game_state := State.pay_rent !game_state rt
+let process_payment () =
+  if !turn_state.has_rolled then game_state := State.pay !game_state
 
 let process_mortgaging_aux s =
   let ind = Board.find_square board s in
@@ -1002,10 +1003,6 @@ let process_undevelop () =
 (*********************************************************)
 
 let update () =
-  print_string
-    ((State.current_player !game_state
-     |> Player.total_debt |> string_of_int)
-    ^ "\n");
   clear_graph ();
   set_line_width Consts.const_line_width;
   let msquare_lst = construct_msquares () in
@@ -1025,13 +1022,7 @@ let update () =
   if st.key = 'b' && State.can_buy_property !game_state then
     process_prop_purchase ();
   (* temporary "pay rent key" *)
-  if
-    st.key = 'v'
-    && State.can_pay_rent !game_state
-         (match !turn_state.dice with
-         | Some (v1, v2) -> v1 + v2
-         | None -> 0)
-  then process_rent_payment ();
+  if st.key = 'v' then process_payment ();
   if st.key = 'c' then process_mortgaging ();
   if st.key = 'x' then process_develop ();
   if st.key = 'z' then process_undevelop ();

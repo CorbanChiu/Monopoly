@@ -72,6 +72,8 @@ let init_player =
     bankrupt_state = false;
     gojf = 0;
     net_worth_diff_cash = 0;
+    (* 0: bank, 1: player 1, 2: player 2, 3: player 3, 4: player 4, 5:
+       free parking *)
     in_debt = [ (0, 0); (1, 0); (2, 0); (3, 0); (4, 0); (5, 0) ];
   }
 

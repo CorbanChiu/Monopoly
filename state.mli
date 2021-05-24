@@ -48,7 +48,11 @@ val buy_property : game_state -> game_state
 
 val add_rent : game_state -> int -> game_state
 
-val pay_rent : game_state -> int -> game_state
+val add_luxury_tax : game_state -> game_state
+
+val add_income_tax : game_state -> game_state
+
+val pay : game_state -> game_state
 
 val mortgage : game_state -> int -> game_state
 
@@ -65,6 +69,10 @@ val assoc_list_length : 'a list -> int
 val end_turn : game_state -> game_state
 
 val can_buy_property : game_state -> bool
+
+val can_pay_luxury : game_state -> bool
+
+val can_pay_income : game_state -> bool
 
 val can_pay_rent : game_state -> int -> bool
 
