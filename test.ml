@@ -132,7 +132,6 @@ let board_tests =
       [ "Boardwalk"; "Park Place" ];
     pricelist_test "this tests the simple board" test_board
       [ Some 400; Some 350 ];
-    (* TODO: make this a real test *)
     colorlist_test "this tests the simple board" test_board
       (colorlist test_board);
     mortgagelist_test "this tests the simple board" test_board
@@ -229,7 +228,6 @@ let board_tests =
         None;
         Some 400;
       ];
-    (* TODO: figure out how to test the color function? *)
     mortgagelist_test "Testing the mortgages of the real monopoly board"
       monopoly_board
       [
