@@ -1,7 +1,7 @@
 open OUnit2
 open Board
 
-(********************* Start of Test Comment *************************)
+(************************** Our Test Process ***************************)
 (* Before diving into the details of this test suite, it should be made
    clear that due to the nature of a monopoly game, much of our program
    correctness and playability can be better demonstrated and analyzed
@@ -10,19 +10,19 @@ open Board
 
    Parts tested by OUnit: In OUnit testing, we focused on altering our
    gamestate (which represents a particular state of the game at a
-   moment in time) using action functions (e.g buying properties,
+   moment in time) using action functions (e.g. buying properties,
    developing properties) and testing if these actions were correctly
    reflected in the outputted gamestate. The first function we tested
    was "Move" which moves a player within the monopoly board based on a
    diceroll. We then tested init_game_state which outputs an initial
    gamestate representing the start of the monopoly game (where no
-   player owns any properties etc.) We then tested our main action
+   player owns any properties, etc.) We then tested our main action
    functions which included buying properties, mortgaging and
    unmortgaging properties, developing and undeveloping properties and
    paying rent. We assessed the correctness of the outputted gamestate
    by manually looking through each attribute of gamestate and checking
    if changes had occured. Thus the main module tested on Ounit was
-   state.ml (which alter a gamestate and move the game forward).
+   state.ml (which alters a gamestate and moves the game forward).
 
    Parts Not tested by Ounit: Many components of our monopoly game were
    not tested by Ounit. In fact, many of these compoenents would be
@@ -55,9 +55,9 @@ open Board
    correctness of our monopoly game. Through our two method approach of
    extensive gameplay and testing specific action function that are
    integral to the game, we were able expose corner cases, guarantee
-   playability and assure our gamestate is correct at all moments in the
-   game itself. Thus our game should be fluid and move forward with any
-   potential action *)
+   playability and ensure that our gamestate is correct at all moments
+   in the game itself. Thus our game is fluid and able to move forward
+   with any potential action. *)
 
 let pp_string s = "\"" ^ s ^ "\""
 
