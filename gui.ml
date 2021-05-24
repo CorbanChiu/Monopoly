@@ -906,8 +906,14 @@ let process_roll () =
   else (
     game_state := State.move !game_state roll;
     game_state := State.cards !game_state;
-    if State.can_pay_rent !game_state (d1 + d2) then
+    if Player.get_jail_state (State.current_player !game_state) > 0 then
+      turn_state := { !turn_state with has_moved = true }
+    else if State.can_pay_rent !game_state (d1 + d2) then
       game_state := State.add_rent !game_state (d1 + d2)
+    else if State.can_pay_luxury !game_state then
+      game_state := State.add_luxury_tax !game_state
+    else if State.can_pay_income !game_state then
+      game_state := State.add_income_tax !game_state
     else ())
 
 let draw_roll_and_turn () =

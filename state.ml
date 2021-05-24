@@ -164,6 +164,18 @@ let get_out_of_jail gs player np =
         gs.player_lst;
   }
 
+let free_parking gs player =
+  let fp = !free_parking_cash in
+  free_parking_cash := 0;
+  {
+    gs with
+    player_lst =
+      update_player_lst
+        (get_player_index player gs.player_lst)
+        ((Player.update_position player 20 |> Player.increment_cash) fp)
+        gs.player_lst;
+  }
+
 (* [move gs dr] returns a new game state gs *)
 let move gs dr =
   let player = current_player gs in
@@ -172,6 +184,7 @@ let move gs dr =
   let incr = d1 + d2 + Player.get_position player in
   let new_pos = incr mod 40 in
   if new_pos = 30 then go_to_jail gs player
+  else if new_pos = 20 then free_parking gs player
   else
     let jail_turns = Player.get_jail_state player in
     if jail_turns > 0 then
@@ -257,11 +270,26 @@ let add_rent gs dr =
         new_player gs.player_lst;
   }
 
+let add_tax gs t =
+  let player = current_player gs in
+  let new_player = Player.add_debt player t 5 in
+  {
+    gs with
+    player_lst =
+      update_player_lst
+        (get_player_index player gs.player_lst)
+        new_player gs.player_lst;
+  }
+
+let add_luxury_tax gs = add_tax gs 75
+
+let add_income_tax gs = add_tax gs 200
+
 let pay_aux gs j =
-  print_string (string_of_int j ^ "\n");
+  (* print_string (string_of_int j ^ "\n"); *)
   let i = gs.next in
   let i_player = get_player i gs.player_lst in
-  print_string (string_of_int (Player.total_debt i_player));
+  (* print_string (string_of_int (Player.total_debt i_player)); *)
   let amt = Player.get_debt i_player j in
   let new_i_player =
     (Player.decrement_cash i_player amt |> Player.remove_debt) amt j
@@ -440,6 +468,15 @@ let can_buy_property gs =
       true
     else false
   else false
+
+let can_pay_tax gs ok =
+  let player = current_player gs in
+  let property = current_property gs in
+  Board.get_action property (Player.get_name player) = ok
+
+let can_pay_luxury gs = can_pay_tax gs Luxurytax_ok
+
+let can_pay_income gs = can_pay_tax gs Incometax_ok
 
 (* TODO: if we fail, we need to call "Mortgage or bankrupt". This will
    be done when we add net worth *)
@@ -641,26 +678,15 @@ let get_chance_pile gs = gs.cards.chance
    switch move (5, 2) |> switch move (6, 6) |> buy_property |> switch
    move (6, 6) |> buy_property |> end_turn *)
 
+(* let demo_game_state = move (init_game_state [ "Sunny"; "Corban";
+   "Connor"; "Jessica" ]) (3, 3) |> buy_property |> flip_arg move (1, 1)
+   |> buy_property |> flip_arg move (1, 0) |> buy_property |> end_turn
+   |> flip_arg move (6, 10) |> buy_property |> flip_arg move (1, 1) |>
+   buy_property |> flip_arg move (1, 0) |> buy_property |> end_turn |>
+   flip_arg move (5, 6) |> buy_property |> flip_arg move (1, 1) |>
+   buy_property |> flip_arg move (0, 1) |> buy_property |> end_turn *)
+
 let demo_game_state =
   move
     (init_game_state [ "Sunny"; "Corban"; "Connor"; "Jessica" ])
-    (3, 3)
-  |> buy_property
-  |> flip_arg move (1, 1)
-  |> buy_property
-  |> flip_arg move (1, 0)
-  |> buy_property |> end_turn
-  |> flip_arg move (6, 10)
-  |> buy_property
-  |> flip_arg move (1, 1)
-  |> buy_property
-  |> flip_arg move (1, 0)
-  |> buy_property |> end_turn
-  |> flip_arg move (5, 6)
-  |> buy_property
-  |> flip_arg move (1, 1)
-  |> buy_property
-  |> flip_arg move (0, 1)
-  |> buy_property |> end_turn
-
-(* let demo_game_state = move init_game_state (15, 15) |> end_turn *)
+    (14, 14)
