@@ -293,15 +293,14 @@ let add_luxury_tax gs = add_tax gs 75
 let add_income_tax gs = add_tax gs 200
 
 let pay_aux gs j =
-  (* print_string (string_of_int j ^ "\n"); *)
   let i = gs.next in
-  let i_player = get_player i gs.player_lst in
-  (* print_string (string_of_int (Player.total_debt i_player)); *)
+  let i_player = current_player gs in
   let amt = Player.get_debt i_player j in
   let new_i_player =
     (Player.decrement_cash i_player amt |> Player.remove_debt) amt j
   in
   let new_player_lst = update_player_lst i new_i_player gs.player_lst in
+  print_int (get_player i gs.player_lst |> Player.get_cash);
   if j > 0 && j < 5 then
     let j_player = get_player j gs.player_lst in
     let new_j_player = Player.increment_cash j_player amt in
@@ -576,22 +575,41 @@ let can_undevelop_property gs property_ind =
   then true
   else false
 
-let tuple_compare a b = Stdlib.compare (fst a) (fst b)
+let other_players_aux plr1 plr_elt2 =
+  match plr_elt2 with i2, plr2 -> plr1 <> plr2
 
-let add_debt_all_players gs player amt =
-  let plst = [ 1; 2; 3; 4 ] in
-  let ind = gs.next in
-  let final_plst = List.filter (( <> ) ind) plst in
-  let aux gamestate indelt =
-    {
-      gamestate with
-      player_lst =
-        update_player_lst ind
-          (Player.add_debt player amt indelt)
-          gamestate.player_lst;
-    }
+let add_debt_aux plr1 amt plrlst plr_elt2 =
+  match plr_elt2 with i2, plr2 -> (i2, Player.add_debt plr1 amt i2)
+
+let add_debt_all_players gs plr amt =
+  let other_players =
+    List.filter (other_players_aux plr) gs.player_lst
   in
-  List.fold_left aux gs final_plst
+
+  let rec aux gmst other_plrs =
+    match other_plrs with
+    | (i2, pl2) :: t ->
+        ({
+           gs with
+           player_lst =
+             update_player_lst gmst.next
+               (Player.add_debt (current_player gmst) amt i2)
+               gmst.player_lst;
+         }
+        |> aux)
+          t
+    | [] -> gmst
+  in
+  aux gs other_players
+
+(* let aux p1 gamestate plr_elt = let ind1 = get_player_index p1
+   gamestate.player_lst in match plr_elt with | ind2, p2 -> print_string
+   (string_of_int ind1 ^ ", "); print_endline (string_of_int ind2); if
+   ind1 <> ind2 then let new_list = update_player_lst ind1
+   (Player.add_debt p1 amt ind2) gamestate.player_lst in { gamestate
+   with player_lst = new_list } else gamestate in List.iter (fun (i, j)
+   -> print_int i; print_endline "") gs.player_lst; print_newline ();
+   List.fold_left (aux plr) gs gs.player_lst *)
 
 let jail_move_aux truth index = index = 10 || truth
 
@@ -658,19 +676,27 @@ let cards gs =
     process_chance gs player
   else gs
 
-let on_cc gs =
-  let action =
-    Board.get_action (current_property gs)
-      (Player.get_name (current_player gs))
-  in
-  action = CC_ok
+let on_cc gs opt =
+  match opt with
+  | Some (d1, d2) ->
+      let gs = move gs (d1, d2) in
+      let action =
+        Board.get_action (current_property gs)
+          (Player.get_name (current_player gs))
+      in
+      action = CC_ok
+  | None -> false
 
-let on_chance gs =
-  let action =
-    Board.get_action (current_property gs)
-      (Player.get_name (current_player gs))
-  in
-  action = Chance_ok
+let on_chance gs opt =
+  match opt with
+  | Some (d1, d2) ->
+      let gs = move gs (d1, d2) in
+      let action =
+        Board.get_action (current_property gs)
+          (Player.get_name (current_player gs))
+      in
+      action = Chance_ok
+  | None -> false
 
 let get_cc_pile gs = gs.cards.cc
 

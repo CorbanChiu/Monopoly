@@ -68,9 +68,9 @@ val undevelop_property : game_state -> int -> game_state
 
 val cards : game_state -> game_state
 
-val on_cc : game_state -> bool
+val on_cc : game_state -> (int * int) option -> bool
 
-val on_chance : game_state -> bool
+val on_chance : game_state -> (int * int) option -> bool
 
 val get_cc_pile : game_state -> Cards.cardpile
 

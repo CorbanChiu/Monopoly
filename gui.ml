@@ -50,6 +50,7 @@ type turn_state = {
   dice : (int * int) option;
   has_rolled : bool;
   num_rolls : int;
+  has_picked_card : bool;
 }
 
 let turn_state =
@@ -59,6 +60,7 @@ let turn_state =
        dice = None;
        has_rolled = false;
        num_rolls = 0;
+       has_picked_card = false;
      }
       : turn_state)
 
@@ -884,6 +886,40 @@ let draw_player_pos msqlst =
     (draw_player_pos_aux msqlst)
     (State.get_players_position !game_state)
 
+let draw_show_cards () =
+  let ll1 =
+    ( calc_sel_l (),
+      calc_sel_b () + calc_sel_h () - (5 * calc_sel_headline_height ())
+    )
+  in
+  let ur1 =
+    ( calc_sel_l () + calc_sel_w (),
+      calc_sel_b () + calc_sel_h () - (4 * calc_sel_headline_height ())
+    )
+  in
+  let ll2 =
+    ( calc_sel_l (),
+      calc_sel_b () + calc_sel_h () - (6 * calc_sel_headline_height ())
+    )
+  in
+  let ur2 =
+    ( calc_sel_l () + calc_sel_w (),
+      calc_sel_b () + calc_sel_h () - (5 * calc_sel_headline_height ())
+    )
+  in
+  if State.on_cc !game_state !turn_state.dice then (
+    set_color (rgb 0 0 0);
+    center_text ll1 ur1
+      (State.get_cc_pile !game_state |> Cards.name_topcard);
+    center_text ll2 ur2
+      (State.get_cc_pile !game_state |> Cards.desc_topcard));
+  if State.on_chance !game_state !turn_state.dice then (
+    set_color (rgb 0 0 0);
+    center_text ll1 ur1
+      (State.get_chance_pile !game_state |> Cards.name_topcard);
+    center_text ll2 ur2
+      (State.get_chance_pile !game_state |> Cards.desc_topcard))
+
 let process_roll () =
   let roll = State.roll_dice () in
   let d1, d2 = match roll with v1, v2 -> (v1, v2) in
@@ -895,6 +931,7 @@ let process_roll () =
       has_moved = change_turn_state;
       has_rolled = true;
     };
+  draw_show_cards ();
   if change_turn_state then ()
   else
     turn_state :=
@@ -905,7 +942,6 @@ let process_roll () =
       State.go_to_jail !game_state (State.current_player !game_state))
   else (
     game_state := State.move !game_state roll;
-    game_state := State.cards !game_state;
     if Player.get_jail_state (State.current_player !game_state) > 0 then
       turn_state := { !turn_state with has_moved = true }
     else if State.can_pay_rent !game_state (d1 + d2) then
@@ -951,6 +987,7 @@ let process_endturn () =
       !turn_state with
       has_moved = false;
       has_rolled = false;
+      has_picked_card = false;
       num_rolls = 0;
     }
 
@@ -1005,34 +1042,23 @@ let process_undevelop () =
 (**** Code that runs everthing - Add functions above ****)
 (*********************************************************)
 
-let temp_show_cards () =
-  set_color (rgb 0 0 0);
-  moveto 50 50;
-  draw_string (State.get_cc_pile !game_state |> Cards.desc_topcard);
-  moveto 50 100;
-  draw_string (State.get_cc_pile !game_state |> Cards.name_topcard);
-  moveto 200 50;
-  draw_string (State.get_chance_pile !game_state |> Cards.desc_topcard);
-  moveto 200 100;
-  draw_string (State.get_chance_pile !game_state |> Cards.name_topcard)
-
 let update () =
   clear_graph ();
   set_line_width Consts.const_line_width;
   let msquare_lst = construct_msquares () in
   let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
-  temp_show_cards ();
   if st.key = 'q' then game_state := State.demo_game_state;
   if
     st.key = 'n'
     && !turn_state.has_moved = false
     && State.current_player !game_state |> Player.no_debt
   then process_roll ();
-  if
-    st.key = 'm'
-    && !turn_state.has_moved = true
-    && State.current_player !game_state |> Player.no_debt
-  then process_endturn ();
+  if st.key = 'm' && !turn_state.has_moved = true then (
+    if not !turn_state.has_picked_card then (
+      game_state := State.cards !game_state;
+      turn_state := { !turn_state with has_picked_card = true });
+    if State.current_player !game_state |> Player.no_debt then
+      process_endturn ());
   (* temporary "buy property key" *)
   if st.key = 'b' && State.can_buy_property !game_state then
     process_prop_purchase ();
