@@ -4,7 +4,7 @@ MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
 TEST=test.byte
 MAIN=main.byte
-OCAMLBUILD=ocamlbuild -use-ocamlfind -plugin-tag 'package(bisect_ppx-ocamlbuild)'
+OCAMLBUILD=ocamlbuild -use-ocamlfind
 DEBUG=$(OCAMLBUILD) -tag debug $(MAIN) && ./$(MAIN)
 
 default: build
@@ -15,8 +15,7 @@ build:
 
 test:
 	BISECT_COVERAGE=YES $(OCAMLBUILD) -tag 'debug' $(TEST) && ./$(TEST) -runner sequential
-	bisect-ppx-report html
-	rm *.coverage
+
 debug:
 	$(DEBUG) $(OBJECTS)
 

@@ -190,6 +190,10 @@ val can_develop_property : game_state -> int -> bool
     undevelop a selected property *)
 val can_undevelop_property : game_state -> int -> bool
 
+(** [test_game_state gs] returns a testing gamestate which represents a
+    scenario in the middle of a game for testing purposes *)
+val test_game_state : game_state
+
 (** [demo_state gs] returns a demo gamestate which represents a scenario
     in the middle of a game for demoing purposes *)
 val demo_game_state : game_state

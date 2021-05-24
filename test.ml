@@ -545,7 +545,7 @@ let gs4 = State.buy_property gs3
 
 let gs10 = State.move (State.end_turn gs4) (3, 3)
 
-let gs11 = State.pay_rent gs10 6
+let gs11 = State.add_rent gs10 6 |> State.pay
 
 let pay_rent_tests =
   [
@@ -556,7 +556,7 @@ let pay_rent_tests =
     test_player_cash "incremented" 1 gs11 1406;
   ]
 
-let gs0 = State.demo_game_state
+let gs0 = State.test_game_state
 
 let gs1 = State.develop_property gs0 6
 

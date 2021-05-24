@@ -289,7 +289,6 @@ let pay_aux gs j =
     (Player.decrement_cash i_player amt |> Player.remove_debt) amt j
   in
   let new_player_lst = update_player_lst i new_i_player gs.player_lst in
-  print_int (get_player i gs.player_lst |> Player.get_cash);
   if j > 0 && j < 5 then
     let j_player = get_player j gs.player_lst in
     let new_j_player = Player.increment_cash j_player amt in
@@ -496,7 +495,6 @@ let can_mortgage gs property_ind =
   let property = get_property property_ind gs.property_lst in
   let owner_name = Board.get_owner property in
   let get_action_variant = Board.get_action property owner_name in
-  (* print_string "before action check"; *)
   if
     get_action_variant = Mortgage_ok
     || get_action_variant = Mortgage_and_Develop_ok
@@ -505,7 +503,6 @@ let can_mortgage gs property_ind =
       Player.get_player_from_name gs.player_lst
         (Board.get_owner property)
     in
-    (* print_string "after action check"; *)
     Board.check_no_development property (get_players_prop gs owner)
   else false
 
@@ -590,15 +587,6 @@ let add_debt_all_players gs plr amt =
     | [] -> gmst
   in
   aux gs other_players
-
-(* let aux p1 gamestate plr_elt = let ind1 = get_player_index p1
-   gamestate.player_lst in match plr_elt with | ind2, p2 -> print_string
-   (string_of_int ind1 ^ ", "); print_endline (string_of_int ind2); if
-   ind1 <> ind2 then let new_list = update_player_lst ind1
-   (Player.add_debt p1 amt ind2) gamestate.player_lst in { gamestate
-   with player_lst = new_list } else gamestate in List.iter (fun (i, j)
-   -> print_int i; print_endline "") gs.player_lst; print_newline ();
-   List.fold_left (aux plr) gs gs.player_lst *)
 
 let jail_move_aux truth index = index = 10 || truth
 
@@ -702,13 +690,27 @@ let free_parking gs = !free_parking_cash
    switch move (5, 2) |> switch move (6, 6) |> buy_property |> switch
    move (6, 6) |> buy_property |> end_turn *)
 
-(* let demo_game_state = move (init_game_state [ "Sunny"; "Corban";
-   "Connor"; "Jessica" ]) (3, 3) |> buy_property |> flip_arg move (1, 1)
-   |> buy_property |> flip_arg move (1, 0) |> buy_property |> end_turn
-   |> flip_arg move (6, 10) |> buy_property |> flip_arg move (1, 1) |>
-   buy_property |> flip_arg move (1, 0) |> buy_property |> end_turn |>
-   flip_arg move (5, 6) |> buy_property |> flip_arg move (1, 1) |>
-   buy_property |> flip_arg move (0, 1) |> buy_property |> end_turn *)
+let test_game_state =
+  move
+    (init_game_state [ "Sunny"; "Corban"; "Connor"; "Jessica" ])
+    (3, 3)
+  |> buy_property
+  |> flip_arg move (1, 1)
+  |> buy_property
+  |> flip_arg move (1, 0)
+  |> buy_property |> end_turn
+  |> flip_arg move (6, 10)
+  |> buy_property
+  |> flip_arg move (1, 1)
+  |> buy_property
+  |> flip_arg move (1, 0)
+  |> buy_property |> end_turn
+  |> flip_arg move (5, 6)
+  |> buy_property
+  |> flip_arg move (1, 1)
+  |> buy_property
+  |> flip_arg move (0, 1)
+  |> buy_property |> end_turn
 
 let demo_game_state =
   move
