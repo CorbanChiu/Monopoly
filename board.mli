@@ -1,32 +1,35 @@
+(** Responsible for reading a monopoly board from JSON, querying values
+    of this board, and changing attributes of the board's properties *)
+
 (** The abstract type of values representing a board*)
 type board
 
 (** The abstract type of value representing any given square*)
 type square
 
-(* TODO: is this necessary? removing this will also necessitate the
-   removal of get_paymentstruct from the mli *)
-
-(** The option paymentstructure *)
+(** The option paymentstructure defined below *)
 type paymentstruct
 
-(** The abstract type of value representing a color (r,g,b) *)
+(** The type of value representing a color (r,g,b) *)
 type propertycolor = int * int * int
 
-(** The abstract type of value representing the various rent prices for
-    a given property at different stages of development *)
+(** The type of value representing the various rent prices for a given
+    property at different stages of development *)
 type paymentstructure = (int * int) list option
 
+(** [UnknownJSON] is raised when a Json file representing the initial
+    board state is improperly formatted *)
 exception UnknownJSON
 
-(** [from_json] initializes the board by unpacking the json into board
-    types*)
+(** [from_json js] initializes the board by unpacking the json js into
+    board types*)
 val from_json : Yojson.Basic.t -> board
 
-(** [get_square b n] returns a square that is in the nth position of b*)
+(** [get_square b n] returns a square that is in the nth position of
+    board b*)
 val get_square : board -> int -> square
 
-(** [find_square b s] returns index of square s in board square list b*)
+(** [find_square b s] returns index of square s in board b *)
 val find_square : board -> square -> int
 
 (** [get_name_from_square s] returns name of square s *)
@@ -36,11 +39,11 @@ val get_name_from_square : square -> string
     replaced with its name *)
 val namelist : board -> string list
 
-(** [get_price s] returns price of square s *)
+(** [get_price s] returns option price of square s *)
 val get_price : square -> int option
 
 (** [pricelist lst] returns board square list lst with each square
-    replaced with its price *)
+    replaced with its option price *)
 val pricelist : board -> int option list
 
 (** [get_payments s] returns paymentstructure of square s *)
@@ -49,20 +52,21 @@ val get_payments : square -> paymentstructure
 (** [get_color s] returns propertycolor of square s *)
 val get_color : square -> propertycolor option
 
-(** [colorlist b] returns propertycolor of square s *)
+(** [colorlist b] returns board square list b with each square replaced
+    with its option propertycolor *)
 val colorlist : board -> propertycolor option list
 
 (** [get_mortgage s] returns mortgage price of square s *)
 val get_mortgage : square -> int option
 
 (** [mortgagelist lst] returns board square list lst with each square
-    replaced with its mortgage attribute *)
+    replaced with option "if square is mortgaged" *)
 val mortgagelist : board -> int option list
 
-(** [get_buildprice s] returns build price of square s *)
+(** [get_buildprice s] returns option build price of square s *)
 val get_buildprice : square -> int option
 
-(** [get_mortgage s] returns "if mortgaged" of square s *)
+(** [get_mortgage s] returns option "if mortgaged" of square s *)
 val get_mortgage : square -> int option
 
 (** [propertygroup b sq] returns the square list of squares part of the
@@ -81,32 +85,32 @@ val utilitygroup : board -> square list
 (** [get_name_from_board b s] returns the name of square s in board b *)
 val get_name_from_board : board -> square -> string
 
-(** The abstract type of value that represents a property (which can be
-    bought, developed etc)*)
+(** The type of value that represents a property (which can be bought,
+    developed etc)*)
 type property
 
-(** [get_name_from_board p] returns the square of property p *)
+(** [get_sqr p] returns the square of property p *)
 val get_sqr : property -> square
 
 (** [update_sqr p s] returns property p with its square attribute set to
     square s*)
 val update_sqr : property -> square -> property
 
-(** [get_owner p] returns the owner of property p *)
+(** [get_owner p] returns the option owner of property p *)
 val get_owner : property -> string option
 
 (** [update_owner p n] returns property p with its owner attribute set
     to name option n*)
 val update_owner : property -> string option -> property
 
-(** [get_dev_lvl p] returns the development level of property p *)
+(** [get_dev_lvl p] returns the option development level of property p *)
 val get_dev_lvl : property -> int option
 
 (** [update_dev_lvl p i] returns property p with its development level
-    attribute set to level option i*)
+    attribute set to option development level i*)
 val update_dev_lvl : property -> int option -> property
 
-(** [get_mortgage_state p] returns "if property p is mortgaged" *)
+(** [get_mortgage_state p] returns option "if property p is mortgaged" *)
 val get_mortgage_state : property -> bool option
 
 (** [update_mortgage_state p b] returns property p with its mortgage
@@ -121,10 +125,8 @@ val remove_option : 'a option -> 'a
     the board*)
 val init_prop_lst : board -> int -> (int * property) list
 
-(* val num_color_group : propertycolor option -> board -> int *)
-
-(** [complete_propertygroup p sqlist b] returns true if a player
-    posseses owns the whole color group that property p is a part of*)
+(** [complete_propertygroup p sqlist b] returns true if a player owns
+    the whole color group that property p is a part of*)
 val complete_propertygroup : property -> square list -> board -> bool
 
 (** [get_rent p sqlist b i] returns the rent price a player must pay
@@ -133,12 +135,13 @@ val complete_propertygroup : property -> square list -> board -> bool
 val get_rent : property -> square list -> board -> int -> int
 
 (** [check_no_development p plst] returns true if all properties of the
-    same color group as property p is 0 (this included property p)*)
+    same color group as property p is 0 (property p must also have a
+    zero development level)*)
 val check_no_development : property -> property list -> bool
 
 (** [check_equal_development p plst] returns true if all properties of
     the same color group as property p are at most 1 development level
-    greater than property p development level *)
+    greater than the development level of property p *)
 val check_equal_development : property -> property list -> bool
 
 (** [check_equal_undevelopment p plst] returns true if all properties of
@@ -151,8 +154,8 @@ val check_equal_undevelopment : property -> property list -> bool
     property p) *)
 val check_no_mortgages : property -> property list -> bool
 
-(** The abstract type of value representing the different possible
-    actions a given player can make during the game*)
+(** The type of value representing the different possible actions a
+    given player can make during a particular moment in the game*)
 type action =
   | Buy_ok
   | Payrent_ok

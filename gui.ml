@@ -23,6 +23,8 @@ type turn_state = {
   has_picked_card : bool;
 }
 
+let game_over = ref false
+
 let turn_state =
   ref
     ({
@@ -177,6 +179,9 @@ let current_res () =
     landscape = fst (calc_window_size ()) > snd (calc_window_size ());
   }
 
+(* This function cannot realistically be much shorter -- we need a
+   pattern match for 8 conditions (4 corners and 4 sides), as well as
+   the corresponding coordinate information/calculations *)
 let construct_rect res (n : int) =
   match n with
   | bottomright when n = 0 ->
@@ -355,6 +360,10 @@ let draw_all_msquares msquarelst =
 let construct_msquares () =
   List.init 40 (construct_rect (current_res ()))
 
+(* This function cannot easily be much shorter either, we need to match
+   against the 4 sides and provide the color and coordinates of the
+   little square rectangle. We have already used a helper function to
+   abstract code here. *)
 let color_area rect res =
   match rect with
   | bot when rect.orient = "bot" ->
@@ -487,6 +496,9 @@ let draw_selection_name () =
         (Board.get_name_from_board board msq)
   | None -> ()
 
+(* This function can't really be much shorter - we've factored out a lot
+   of the calculated locations, but it requires the drawing and pattern
+   matching of lots of lines of writing. *)
 let draw_selection_desc () =
   let text_left = calc_sel_l () + calc_sel_buffer () in
   let text_right = calc_sel_l () + calc_sel_w () - calc_sel_buffer () in
@@ -513,8 +525,6 @@ let draw_selection_desc () =
   let line_9_b = line_9_t - calc_sel_line_height () in
   let line_10_t = line_9_b in
   let line_10_b = line_10_t - calc_sel_line_height () in
-  (* let line_11_t = line_10_b in let line_11_b = line_11_t -
-     calc_sel_line_height () in *)
   match !sel_state with
   | Some sq -> (
       set_color (rgb 0 0 0);
@@ -1019,6 +1029,9 @@ let process_undevelop () =
   let sq = !sel_state in
   match sq with Some s -> process_undevelop_aux s | None -> ()
 
+let process_game_over () =
+  if State.game_over !game_state then game_over := true
+
 (* game_state := State.move !game_state roll *)
 (* TODO: the move function needs to be fixed so that it actually works *)
 
@@ -1026,11 +1039,7 @@ let process_undevelop () =
 (**** Code that runs everthing - Add functions above ****)
 (*********************************************************)
 
-let update () =
-  clear_graph ();
-  set_line_width Consts.const_line_width;
-  let msquare_lst = construct_msquares () in
-  let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
+let update1 st msquare_lst =
   if st.key = Consts.demo_key then game_state := State.demo_game_state;
   if
     st.key = Consts.move_key
@@ -1050,7 +1059,9 @@ let update () =
   if st.key = Consts.pay_key then process_payment ();
   if st.key = Consts.mortgage_key then process_mortgaging ();
   if st.key = Consts.develop_key then process_develop ();
-  if st.key = Consts.undevelop_key then process_undevelop ();
+  if st.key = Consts.undevelop_key then process_undevelop ()
+
+let update2 st msquare_lst =
   button_handler st;
   update_sel_state st msquare_lst;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;
@@ -1061,13 +1072,22 @@ let update () =
   draw_all_msquares msquare_lst;
   draw_player_pos msquare_lst
 
+let update () =
+  clear_graph ();
+  process_game_over ();
+  set_line_width Consts.const_line_width;
+  let msquare_lst = construct_msquares () in
+  let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
+  update1 st msquare_lst;
+  update2 st msquare_lst
+
 let driver () =
-  try
-    while true do
-      update ();
-      synchronize ()
-    done
-  with Exit -> ()
+  while not !game_over do
+    update ();
+    synchronize ()
+  done;
+  close_graph ();
+  State.winner !game_state
 
 let play_game nms =
   game_state := State.init_game_state nms;

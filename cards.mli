@@ -1,3 +1,6 @@
+(** Responsible for reading both community chest and chance cards from a
+    json, and for manipulating these decks *)
+
 (** The abstract type of value that represents a card deck/pile *)
 type cardpile
 
@@ -5,8 +8,8 @@ type cardpile
     the backbone for community chest and chance cards) *)
 type card
 
-(** The abstract type of value that represents the different categories
-    of cards (Move, Money, and Get out of jail free card) *)
+(** The type of value that represents the different categories of cards
+    (Move, Money, and Get out of jail free card) *)
 type cardaction =
   | Move of int list * bool
   | Money of int list * bool
@@ -31,5 +34,6 @@ val act_topcard : cardpile -> cardaction
 (** [from_json js] returns a cardpile based on the json input js *)
 val from_json : string -> cardpile
 
-(** [get_action c] returns the cardaction (type of card) card c is *)
+(** [get_action c] returns the type of cardaction (type of card) of card
+    c *)
 val get_action : card -> cardaction

@@ -33,4 +33,6 @@
    - none
 
  ************************************************************)
+
+(** The total amount of "man-hours" worked between the three of us *)
 val hours_worked : int

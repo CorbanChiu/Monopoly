@@ -1,12 +1,15 @@
+(** State keeps track of the game state of monopoly and provides
+    functions to update the attributes of this game state *)
+
 (** [property] is a board type *)
 type property = Board.property
 
-(* The type of value that represents a card (either community chest or
-   chance) *)
+(** The type of value that represents a card (either community chest or
+    chance) *)
 type card
 
-(* The type of value that represents the state of the game at a specific
-   moment in time *)
+(* [game_state] represents the state of the game at a specific moment in
+   time *)
 type game_state = {
   property_lst : (int * property) list;
   player_lst : (int * Player.player) list;
@@ -14,23 +17,20 @@ type game_state = {
   cards : card;
 }
 
-(* (* = { property_lst : (int * property) list; player_lst : (int *
-   Player.player) list; next : int; *) } *)
-
 (** [get_property ind lst] returns the property associated with the
-    index ind*)
+    index ind in property list lst*)
 val get_property : int -> (int * property) list -> property
 
-(** [updated_propertylst ind np lst] returns a property list lst where
+(** [update_propertylst ind np lst] returns a property list lst where
     the index ind contains the updated property np. *)
 val update_property_lst :
   int -> property -> (int * property) list -> (int * property) list
 
 (** [get_player index player_list] returns the player type associated
-    with the given index. *)
+    with the given index in player list player_list *)
 val get_player : int -> (int * Player.player) list -> Player.player
 
-(** [updated_playerlst ind np lst] returns a player list lst where the
+(** [update_player_lst ind np lst] returns player list lst where the
     index ind contains the updated player np. *)
 val update_player_lst :
   int ->
@@ -50,33 +50,37 @@ val get_players_position : game_state -> (int * int) list
     replaced with the player cash value. *)
 val get_players_cash : game_state -> (int * int) list
 
-(*( [get_player_jail_state gs i] returns true iff player i is in jail
-  during gamestate gs) *)
+(** [get_player_jail_state gs i] returns true iff player i is in jail
+    during gamestate gs) *)
 val get_player_jail_state : game_state -> int -> bool
 
-(** [get_square_owner gs ind] returns a property list with the property
-    type replaced with the property square owner. *)
+(** [get_square_owner gs ind] returns the option owner of the square
+    associated with index ind in game_state association property list. *)
 val get_square_owner : game_state -> int -> string option
 
-(** [get_square_owner gs ind] returns a property list with the property
-    type replaced with the property development level. *)
+(** [get_square_dev_lvl gs ind] returns the option development level of
+    the square associated with index ind in game_state association
+    property list. *)
 val get_square_dev_lvl : game_state -> int -> int option
 
-(** [get_square_owner gs ind] returns a property list with the property
-    type replaced with the property mortgage state. *)
+(** [get_square_mortgage_state gs ind] returns the option bool "if
+    mortgaged" of the square associated with index ind in game_state
+    association property list. *)
 val get_square_mortgage_state : game_state -> int -> bool option
 
 (** [init_game_state names] returns the initial game state which
     represents the start of the game with players initialized to the
-    values in the names list*)
+    values in the names namelist*)
 val init_game_state : string list -> game_state
 
+(** [go_to_jail gs plr] returns the game state with player plr in jail *)
 val go_to_jail : game_state -> Player.player -> game_state
 
-(** [move gs dr] returns a new game state gs after changing the position
-    of the player whose turn it is, based on the diceroll dr *)
+(** [move gs dr] returns a new game state after changing the position of
+    the player whose turn it is, based on the diceroll dr *)
 val move : game_state -> int * int -> game_state
 
+(** [current_player gs] returns the player whose turn it currently is *)
 val current_player : game_state -> Player.player
 
 (** [roll_dice] returns a random integer between 2 and 12 (inclusive). *)
@@ -85,8 +89,6 @@ val roll_dice : unit -> int * int
 (** [current_turn_name gs] returns the name of the player whose turn it
     is *)
 val current_turn_name : game_state -> string option
-
-(* val move : game_state -> int -> game_state *)
 
 (** [buy_property gs] executes the buying of the property a player has
     landed on and returns a new gamestate *)
@@ -152,7 +154,7 @@ val free_parking : game_state -> int
     player list sorted based on key integer values *)
 val good_output : game_state -> game_state
 
-(** [assoc_list_length gs] returns the length of the list lst *)
+(** [assoc_list_length lst] returns the length of the list lst *)
 val assoc_list_length : 'a list -> int
 
 (** [end_turn gs] ends current players turn and returns a new gamestate *)
@@ -197,3 +199,10 @@ val test_game_state : game_state
 (** [demo_state gs] returns a demo gamestate which represents a scenario
     in the middle of a game for demoing purposes *)
 val demo_game_state : game_state
+
+(** [game_over gs] returns true iff one of the players in gs are
+    bankrupt (ie liabilities > assets) *)
+val game_over : game_state -> bool
+
+(** [winner gs] returns the player's name who has won *)
+val winner : game_state -> string

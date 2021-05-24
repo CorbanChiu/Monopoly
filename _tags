@@ -1,5 +1,2 @@
-# for bisect coverage checking, OUnit
-<sorts.ml>: coverage
-<test.{byte,native}>: coverage
-true: package(ounit2), package(bisect_ppx)
+true: package(ounit2)
 true: package(oUnit), package(graphics), package(yojson), package(ANSITerminal)
