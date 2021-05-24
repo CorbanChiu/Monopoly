@@ -1,8 +1,12 @@
 (** [property] is a board type *)
 type property = Board.property
 
+(* The absract type of value that represents a card (either community
+   chest or chance) *)
 type card
 
+(* The absract type of value that represents the state of the game at a
+   specific moment in time *)
 type game_state = {
   property_lst : (int * property) list;
   player_lst : (int * Player.player) list;
