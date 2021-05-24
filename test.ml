@@ -26,7 +26,7 @@ open Board
 
    Parts Not tested by Ounit: Many components of our monopoly game were
    not tested by Ounit. In fact, many of these compoenents would be
-   almost impossible to test for example, button presses on a keyboard
+   almost impossible to test. For example, button presses on a keyboard
    correlating to a certain action in the game, can only be tested by
    playing the game itself. Thus, many of the graphical features were
    tested by playing the game within our team and attempting to find
@@ -56,9 +56,8 @@ open Board
    extensive gameplay and testing specific action function that are
    integral to the game, we were able expose corner cases, guarantee
    playability and assure our gamestate is correct at all moments in the
-   game itself. *)
-
-(********************* Start of Test Code ***************************)
+   game itself. Thus our game should be fluid and move forward with any
+   potential action *)
 
 let pp_string s = "\"" ^ s ^ "\""
 
