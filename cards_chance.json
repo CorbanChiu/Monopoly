@@ -96,7 +96,7 @@
   },
   {
     "name": "Get out of Jail Free.",
-    "description": "This card may be kept until needed, or traded/sold.",
+    "description": "This card may be kept until needed.",
     "action type": {
       "type": "gojf"
     }
