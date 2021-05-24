@@ -1,3 +1,1 @@
-val init : unit
-
-val names : string list ref
+val play_game : string list -> unit
