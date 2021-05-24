@@ -64,6 +64,9 @@ let get_players_position gs = get_players_from gs Player.get_position
 
 let get_players_cash gs = get_players_from gs Player.get_cash
 
+let get_player_jail_state gs player_ind =
+  Player.get_jail_state (List.assoc player_ind gs.player_lst) > 0
+
 let flip_arg f a b = f b a
 
 let get_players_prop gs p =

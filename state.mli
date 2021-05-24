@@ -26,6 +26,8 @@ val get_players_position : game_state -> (int * int) list
 
 val get_players_cash : game_state -> (int * int) list
 
+val get_player_jail_state : game_state -> int -> bool
+
 val get_square_owner : game_state -> int -> string option
 
 val get_square_dev_lvl : game_state -> int -> int option
