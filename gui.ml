@@ -1061,26 +1061,26 @@ let update () =
   set_line_width Consts.const_line_width;
   let msquare_lst = construct_msquares () in
   let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
-  if st.key = 'q' then game_state := State.demo_game_state;
+  if st.key = Consts.demo_key then game_state := State.demo_game_state;
   if
-    st.key = 'n'
+    st.key = Consts.move_key
     && !turn_state.has_moved = false
     && State.current_player !game_state |> Player.no_debt
   then process_roll ();
-  if st.key = 'm' && !turn_state.has_moved = true then (
+  if st.key = Consts.end_turn_key && !turn_state.has_moved = true then (
     if not !turn_state.has_picked_card then (
       game_state := State.cards !game_state;
       turn_state := { !turn_state with has_picked_card = true });
     if State.current_player !game_state |> Player.no_debt then
       process_endturn ());
   (* temporary "buy property key" *)
-  if st.key = 'b' && State.can_buy_property !game_state then
+  if st.key = Consts.buy_key && State.can_buy_property !game_state then
     process_prop_purchase ();
   (* temporary "pay rent key" *)
-  if st.key = 'v' then process_payment ();
-  if st.key = 'c' then process_mortgaging ();
-  if st.key = 'x' then process_develop ();
-  if st.key = 'z' then process_undevelop ();
+  if st.key = Consts.pay_key then process_payment ();
+  if st.key = Consts.mortgage_key then process_mortgaging ();
+  if st.key = Consts.develop_key then process_develop ();
+  if st.key = Consts.undevelop_key then process_undevelop ();
   button_handler st;
   update_sel_state st msquare_lst;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;

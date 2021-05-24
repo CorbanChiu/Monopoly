@@ -128,18 +128,6 @@
     }
   },
   {
-    "name": "You are assessed for street repairs:",
-    "description": "Pay $40 per house and $115 per hotel you own.",
-    "action type": {
-      "type": "money",
-      "amount": [
-        -40,
-        -115
-      ],
-      "object": true
-    }
-  },
-  {
     "name": "You have won second prize in a beauty contest.",
     "description": "Collect $10.",
     "action type": {
