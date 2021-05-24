@@ -330,17 +330,13 @@ let mortgage gs property_ind =
         gs.player_lst;
   }
 
-let unmortgage gs property_ind =
-  let property = get_property property_ind gs.property_lst in
-  let owner =
-    Player.get_player_from_name gs.player_lst (Board.get_owner property)
-  in
-  let mortgage_value =
-    Board.get_sqr property |> Board.get_mortgage |> remove_option
-  in
-  let mortgage_payment =
-    mortgage_value |> Float.of_int |> ( *. ) 1.1 |> Float.to_int
-  in
+let unmortgage_output
+    property
+    owner
+    mortgage_value
+    mortgage_payment
+    gs
+    property_ind =
   {
     gs with
     property_lst =
@@ -353,6 +349,40 @@ let unmortgage gs property_ind =
         (Player.decrement_cash owner mortgage_payment
         |> Player.incr_net_worth mortgage_value)
         gs.player_lst;
+  }
+
+let unmortgage gs property_ind =
+  let property = get_property property_ind gs.property_lst in
+  let owner =
+    Player.get_player_from_name gs.player_lst (Board.get_owner property)
+  in
+  let mortgage_value =
+    Board.get_sqr property |> Board.get_mortgage |> remove_option
+  in
+  let mortgage_payment =
+    mortgage_value |> Float.of_int |> ( *. ) 1.1 |> Float.to_int
+  in
+  unmortgage_output property owner mortgage_value mortgage_payment gs
+    property_ind
+
+let develop_helper_output
+    owner
+    new_property
+    new_property_list
+    house_price
+    new_owner
+    change
+    gs =
+  let new_player_list =
+    update_player_lst
+      (get_player_index owner gs.player_lst)
+      new_owner gs.player_lst
+  in
+  change;
+  {
+    gs with
+    property_lst = new_property_list;
+    player_lst = new_player_list;
   }
 
 let develop_helper gs property prop_index change =
@@ -373,6 +403,27 @@ let develop_helper gs property prop_index change =
     Player.decrement_cash owner house_price
     |> Player.incr_net_worth (house_price / 2)
   in
+  develop_helper_output owner new_property new_property_list house_price
+    new_owner change gs
+
+let develop_property gs property_ind =
+  let property = get_property property_ind gs.property_lst in
+  if remove_option (Board.get_dev_lvl property) = 4 then
+    develop_helper gs property property_ind
+      (num_houses := !num_houses + 4;
+       num_hotels := !num_hotels - 1)
+  else
+    develop_helper gs property property_ind
+      (num_houses := !num_houses - 1)
+
+let undevelop_helper_output
+    owner
+    new_property
+    new_property_list
+    house_price
+    new_owner
+    change
+    gs =
   let new_player_list =
     update_player_lst
       (get_player_index owner gs.player_lst)
@@ -384,16 +435,6 @@ let develop_helper gs property prop_index change =
     property_lst = new_property_list;
     player_lst = new_player_list;
   }
-
-let develop_property gs property_ind =
-  let property = get_property property_ind gs.property_lst in
-  if remove_option (Board.get_dev_lvl property) = 4 then
-    develop_helper gs property property_ind
-      (num_houses := !num_houses + 4;
-       num_hotels := !num_hotels - 1)
-  else
-    develop_helper gs property property_ind
-      (num_houses := !num_houses - 1)
 
 let undevelop_helper gs property prop_index change =
   let owner =
@@ -413,17 +454,8 @@ let undevelop_helper gs property prop_index change =
     Player.increment_cash owner (house_price / 2)
     |> Player.decr_net_worth (house_price / 2)
   in
-  let new_player_list =
-    update_player_lst
-      (get_player_index owner gs.player_lst)
-      new_owner gs.player_lst
-  in
-  change;
-  {
-    gs with
-    property_lst = new_property_list;
-    player_lst = new_player_list;
-  }
+  undevelop_helper_output owner new_property new_property_list
+    house_price new_owner change gs
 
 let undevelop_property gs property_ind =
   let property = get_property property_ind gs.property_lst in
@@ -520,28 +552,30 @@ let can_unmortgage gs property_ind =
 let get_property_buildprice property =
   Board.get_sqr property |> Board.get_buildprice |> remove_option
 
+let can_develop_property_output property owner_name gs property_ind =
+  let owner = Player.get_player_from_name gs.player_lst owner_name in
+  if
+    Player.get_cash owner - get_property_buildprice property >= 0
+    && Board.complete_propertygroup property
+         (propertylst_to_sqrlst (get_players_prop gs owner))
+         init_board
+    && Board.check_equal_development property
+         (get_players_prop gs owner)
+    && Board.check_no_mortgages property (get_players_prop gs owner)
+    && (remove_option (Board.get_dev_lvl property) < 4
+        && !num_houses > 0
+       || remove_option (Board.get_dev_lvl property) = 4
+          && !num_hotels > 0)
+  then true
+  else false
+
 let can_develop_property gs property_ind =
   let property = get_property property_ind gs.property_lst in
   let owner_name = Board.get_owner property in
   if
     Board.get_action property owner_name = Develop_and_Undevelop_ok
     || Board.get_action property owner_name = Mortgage_and_Develop_ok
-  then
-    let owner = Player.get_player_from_name gs.player_lst owner_name in
-    if
-      Player.get_cash owner - get_property_buildprice property >= 0
-      && Board.complete_propertygroup property
-           (propertylst_to_sqrlst (get_players_prop gs owner))
-           init_board
-      && Board.check_equal_development property
-           (get_players_prop gs owner)
-      && Board.check_no_mortgages property (get_players_prop gs owner)
-      && (remove_option (Board.get_dev_lvl property) < 4
-          && !num_houses > 0
-         || remove_option (Board.get_dev_lvl property) = 4
-            && !num_hotels > 0)
-    then true
-    else false
+  then can_develop_property_output property owner_name gs property_ind
   else false
 
 let can_undevelop_property gs property_ind =
@@ -600,34 +634,39 @@ let closest_move gs loc_lst =
     in
     move gs (distance, 0)
 
+let process_card_output_helper lst b gs p card player_ind h =
+  {
+    gs with
+    player_lst =
+      update_player_lst player_ind
+        (Player.add_debt p (-h) 5)
+        gs.player_lst;
+  }
+
+let process_card_output lst b gs p card player_ind =
+  match lst with
+  | [ h; t ] -> gs
+  | [ h ] ->
+      if h < 0 then
+        if b then
+          process_card_output_helper lst b gs p card player_ind h
+        else add_debt_all_players gs p (-h)
+      else if b then
+        {
+          gs with
+          player_lst =
+            update_player_lst player_ind
+              (Player.increment_cash p h)
+              gs.player_lst;
+        } (* increase money p by h *)
+      else failwith "This isn't an allowable card anymore"
+  | _ -> failwith "improperly formatted card money list"
+
 let process_card gs p card =
   let player_ind = get_player_index p gs.player_lst in
   match Cards.get_action card with
   | Move (lst, b) -> closest_move gs lst
-  | Money (lst, b) -> (
-      match lst with
-      | [ h; t ] -> gs
-      | [ h ] ->
-          if h < 0 then
-            if b then
-              {
-                gs with
-                player_lst =
-                  update_player_lst player_ind
-                    (Player.add_debt p (-h) 5)
-                    gs.player_lst;
-              }
-            else add_debt_all_players gs p (-h)
-          else if b then
-            {
-              gs with
-              player_lst =
-                update_player_lst player_ind
-                  (Player.increment_cash p h)
-                  gs.player_lst;
-            } (* increase money p by h *)
-          else failwith "This isn't an allowable card anymore"
-      | _ -> failwith "improperly formatted card money list")
+  | Money (lst, b) -> process_card_output lst b gs p card player_ind
   | GOJF ->
       let new_player = Player.add_gojf p in
       {
@@ -677,15 +716,6 @@ let get_cc_pile gs = gs.cards.cc
 let get_chance_pile gs = gs.cards.chance
 
 let free_parking gs = !free_parking_cash
-
-(* let demo_game_state = move init_game_state (2, 3) |> buy_property |>
-   switch move (5, 6) |> buy_property |> switch move (2, 3) |>
-   buy_property |> end_turn |> switch move (1, 2) |> buy_property |>
-   switch move (4, 3) |> switch move (2, 1) |> buy_property |> end_turn
-   |> switch move (5, 1) |> buy_property |> switch move (4, 4) |>
-   buy_property |> switch move (6, 4) |> buy_property |> end_turn |>
-   switch move (5, 2) |> switch move (6, 6) |> buy_property |> switch
-   move (6, 6) |> buy_property |> end_turn *)
 
 let test_game_state =
   move
