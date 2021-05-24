@@ -1,3 +1,6 @@
+(** Responsible for reading a monopoly board from JSON, querying values
+    of this board, and changing attributes of the board's properties *)
+
 (** The abstract type of values representing a board*)
 type board
 

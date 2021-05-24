@@ -1,3 +1,6 @@
+(** Responsible for reading both community chest and chance cards from a
+    json, and for manipulating these decks *)
+
 (** The abstract type of value that represents a card deck/pile *)
 type cardpile
 

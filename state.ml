@@ -285,21 +285,25 @@ let pay_aux gs j =
   let i = gs.next in
   let i_player = current_player gs in
   let amt = Player.get_debt i_player j in
-  let new_i_player =
-    (Player.decrement_cash i_player amt |> Player.remove_debt) amt j
-  in
-  let new_player_lst = update_player_lst i new_i_player gs.player_lst in
-  if j > 0 && j < 5 then
-    let j_player = get_player j gs.player_lst in
-    let new_j_player = Player.increment_cash j_player amt in
-    {
-      gs with
-      player_lst = update_player_lst j new_j_player new_player_lst;
-    }
-  else if j = 5 then (
-    free_parking_cash := !free_parking_cash + amt;
-    { gs with player_lst = new_player_lst })
-  else { gs with player_lst = new_player_lst }
+  if Player.get_cash i_player >= amt then
+    let new_i_player =
+      (Player.decrement_cash i_player amt |> Player.remove_debt) amt j
+    in
+    let new_player_lst =
+      update_player_lst i new_i_player gs.player_lst
+    in
+    if j > 0 && j < 5 then
+      let j_player = get_player j gs.player_lst in
+      let new_j_player = Player.increment_cash j_player amt in
+      {
+        gs with
+        player_lst = update_player_lst j new_j_player new_player_lst;
+      }
+    else if j = 5 then (
+      free_parking_cash := !free_parking_cash + amt;
+      { gs with player_lst = new_player_lst })
+    else { gs with player_lst = new_player_lst }
+  else gs
 
 let pay gs = List.fold_left pay_aux gs [ 0; 1; 2; 3; 4; 5 ]
 
