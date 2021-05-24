@@ -737,6 +737,6 @@ let cash_compare (i1, plr1) (i2, plr2) =
   Stdlib.compare cash1 cash2
 
 let winner gs =
-  match List.sort cash_compare gs.player_lst with
+  match List.sort cash_compare gs.player_lst |> List.rev with
   | (i, plr) :: _ -> Player.get_name plr |> remove_option
   | _ -> ""
