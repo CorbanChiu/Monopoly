@@ -59,12 +59,9 @@ val get_jail_state : player -> int
     to i *)
 val update_jail_state : player -> int -> player
 
-(** [get_bankrupt_state pl] returns bankrupt state of player pl *)
-val get_bankrupt_state : player -> bool
-
-(** [update_bankrupt_state pl b] returns player pl with bankrupt state
-    updated to bool b *)
-val update_bankrupt_state : player -> bool -> player
+(** [get_bankrupt_state pl] true iff the players cash plus non-cash
+    assets minus his debts is less than 0 *)
+val bankrupt : player -> bool
 
 (** [get_in_debt plr] returns the debt association list of plr, with
     first values corresponding to the following schema: 0: bank, 1:

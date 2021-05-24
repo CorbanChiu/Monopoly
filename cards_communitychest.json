@@ -1,7 +1,7 @@
 [
   {
     "name": "Advance to 'Go'.",
-    "description": "(Collect $200).",
+    "description": "Collect $200.",
     "action type": {
       "type": "move",
       "destination": [
@@ -45,7 +45,7 @@
   },
   {
     "name": "Get Out of Jail Free.",
-    "description": "This card may be kept until needed or sold/traded.",
+    "description": "This card may be kept until needed.",
     "action type": {
       "type": "gojf"
     }

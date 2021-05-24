@@ -21,7 +21,6 @@ debug:
 
 play:
 	$(OCAMLBUILD) $(MAIN) && ./$(MAIN)
-	rm *.coverage
 
 check:
 	@bash check.sh
