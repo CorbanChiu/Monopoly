@@ -139,19 +139,9 @@ let current_turn_name gs = current_player gs |> Player.get_name
 (* [roll_dice] returns a random integer between 2 and 12 (inclusive). *)
 let roll_dice () =
   self_init ();
-  ( nativeint (of_int 6) |> to_int |> ( + ) 1,
-    nativeint (of_int 6) |> to_int |> ( + ) 1 )
-
-let go_to_jail gs player =
-  {
-    gs with
-    player_lst =
-      update_player_lst
-        (get_player_index player gs.player_lst)
-        ((Player.update_position player 10 |> Player.update_jail_state)
-           3)
-        gs.player_lst;
-  }
+  (* ( nativeint (of_int 6) |> to_int |> ( + ) 1, nativeint (of_int 6)
+     |> to_int |> ( + ) 1 ) *)
+  (3, 4)
 
 let get_out_of_jail gs player np =
   {
@@ -163,6 +153,20 @@ let get_out_of_jail gs player np =
            0)
         gs.player_lst;
   }
+
+let go_to_jail gs player =
+  if List.length (Player.get_card_lst player) > 0 then
+    get_out_of_jail gs player 10
+  else
+    {
+      gs with
+      player_lst =
+        update_player_lst
+          (get_player_index player gs.player_lst)
+          ((Player.update_position player 10 |> Player.update_jail_state)
+             3)
+          gs.player_lst;
+    }
 
 let free_parking gs player =
   let fp = !free_parking_cash in
@@ -569,22 +573,22 @@ let can_undevelop_property gs property_ind =
   then true
   else false
 
-let add_debt_all_players gs plr amt =
-  let aux p1 gamestate plr_elt =
-    let ind1 = get_player_index p1 gamestate.player_lst in
-    match plr_elt with
-    | ind2, p2 ->
-        if ind1 <> ind2 then
-          {
-            gamestate with
-            player_lst =
-              update_player_lst ind1
-                (Player.add_debt p1 amt ind2)
-                gamestate.player_lst;
-          }
-        else gamestate
+let tuple_compare a b = Stdlib.compare (fst a) (fst b)
+
+let add_debt_all_players gs player amt =
+  let plst = [ 1; 2; 3; 4 ] in
+  let ind = gs.next in
+  let final_plst = List.filter (( <> ) ind) plst in
+  let aux gamestate indelt =
+    {
+      gamestate with
+      player_lst =
+        update_player_lst ind
+          (Player.add_debt player amt indelt)
+          gamestate.player_lst;
+    }
   in
-  List.fold_left (aux plr) gs gs.player_lst
+  List.fold_left aux gs final_plst
 
 let jail_move_aux truth index = index = 10 || truth
 
@@ -689,4 +693,4 @@ let get_chance_pile gs = gs.cards.chance
 let demo_game_state =
   move
     (init_game_state [ "Sunny"; "Corban"; "Connor"; "Jessica" ])
-    (14, 14)
+    (0, 7)
