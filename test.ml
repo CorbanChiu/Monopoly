@@ -1,6 +1,61 @@
 open OUnit2
 open Board
 
+(* Test Comment: *)
+(* Before diving into the details of this test suite, it should be made
+   clear that since our project is a monopoly game, a good amount of
+   program correctness and playability can be demonstrated and analyzed
+   through playing the game itself. Much of our Testing and debugging
+   was done this way
+
+   Parts tested by OUnit: In Ounit testing, we focused on altering our
+   gamestate (which represents a particular state of the game at a
+   moment in time) using action functions (e.g buying properties,
+   developing properties) and testing if these actions were correctly
+   reflected in the outputted gamestate. The first function we tested
+   was "Move" which moves a player within the monopoly board based on a
+   diceroll. We then tested init_game_state which outputs an initial
+   gamestate representing the start of the monopoly game (where no
+   player owns any properties etc.) We then tested our main action
+   functions which included buying properties, mortgaging and
+   unmortgaging properties, developing and undeveloping properties and
+   paying rent. We assessed the correctness of the outputted gamestate
+   by manually looking through each attribute of gamestate and checking
+   if changes had occured. Thus the main module tested on Ounit was
+   state.ml (which alter a gamestate and move the game forward)
+
+   Parts Not tested by Ounit: Many components of our monopoly game were
+   not tested by Ounit. In fact, many of these compoenents would be
+   almost impossible to test for example, button presses on a keyboard
+   correlating to a certain action in the game, can only be tested by
+   playing the game itself. This many of the graphical features were
+   testing by playing the game within our team and attempting to find
+   corner cases. In addition, not all possible actions with all possible
+   circumstantial combinations were tested either. For example,
+   developing a property is a simple test (which we did test). However,
+   developing a property with each different combination of property
+   development levels was not all tested. In addition, community chest,
+   chance, "go to jail", and miscellaneous actions (like income tax and
+   luxury tax) were not tested directly by Ounit. Instead they were
+   tested thoroughly through gameplay. We also had some friends play our
+   monopoly game to gain an unbiased perspective on the detail,
+   playability and correctness.
+
+   Testing Strategy: The method used for testing was mainly glass box
+   testing. Much of the testing was implemented after the action
+   functions themselves seemed correct and playable. Thus glass box
+   testing was used mainly to make sure all data structures within
+   gamestate were updated properly and that there was no information
+   loss
+
+   Correctness Guarantee: Our testing apporach demonstrates the
+   correctness of our monopoly game. Through our two method approach of
+   playing the game and testing specific action function that are
+   integral to the game, we were able expose corner cases, guarantee
+   playability and assure our gamestate is correct at all moments in the
+   game itself *)
+
+(********************* Start of Test Code *************************)
 let pp_string s = "\"" ^ s ^ "\""
 
 let pp_int_option = function
