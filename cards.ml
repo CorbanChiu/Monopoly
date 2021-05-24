@@ -28,6 +28,8 @@ let name_topcard cardpile = (Queue.peek cardpile).name
 
 let desc_topcard cardpile = (Queue.peek cardpile).desc
 
+let act_topcard cardpile = (Queue.peek cardpile).action
+
 let handle_list lst = List.map (fun x -> to_int x) lst
 
 let to_action j =

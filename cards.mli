@@ -27,6 +27,10 @@ val name_topcard : cardpile -> string
     deck cp, without changing the deck *)
 val desc_topcard : cardpile -> string
 
+(** [act_topcard cp] returns the action of the top card of the deck cp,
+    without changing the deck *)
+val act_topcard : cardpile -> cardaction
+
 (** [from_json js] returns a cardpile based on the json input js *)
 val from_json : string -> cardpile
 
