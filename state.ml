@@ -723,4 +723,10 @@ let free_parking gs = !free_parking_cash
 let demo_game_state =
   move
     (init_game_state [ "Sunny"; "Corban"; "Connor"; "Jessica" ])
-    (0, 7)
+    (15, 15)
+  |> end_turn
+  |> flip_arg move (15, 15)
+  |> end_turn
+  |> flip_arg move (15, 15)
+  |> end_turn
+  |> flip_arg move (15, 15)

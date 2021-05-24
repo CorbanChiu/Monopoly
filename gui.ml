@@ -845,10 +845,10 @@ let draw_player_circle_aux (x1, y1) (x2, y2) i =
   if State.get_player_jail_state !game_state i then (
     set_color (rgb 0 0 0);
     match i with
-    | 1 -> center_text (x1, y_mid) (x_mid, y2) "||||"
-    | 2 -> center_text (x_mid, y_mid) (x2, y2) "||||"
-    | 3 -> center_text (x1, y1) (x_mid, y_mid) "||||"
-    | 4 -> center_text (x_mid, y1) (x2, y_mid) "||||"
+    | 1 -> center_text (x1, y_mid) (x_mid, y2) "J"
+    | 2 -> center_text (x_mid, y_mid) (x2, y2) "J"
+    | 3 -> center_text (x1, y1) (x_mid, y_mid) "J"
+    | 4 -> center_text (x_mid, y1) (x2, y_mid) "J"
     | _ -> failwith "improper player to draw the circle")
 
 let draw_player_circle r i =
