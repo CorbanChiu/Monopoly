@@ -6,7 +6,7 @@ open Board
    clear that since our project is a monopoly game, a good amount of
    program correctness and playability can be demonstrated and analyzed
    through playing the game itself. Much of our Testing and debugging
-   was done this way
+   was done this way.
 
    Parts tested by OUnit: In Ounit testing, we focused on altering our
    gamestate (which represents a particular state of the game at a
@@ -26,9 +26,9 @@ open Board
 
    Parts Not tested by Ounit: Many components of our monopoly game were
    not tested by Ounit. In fact, many of these compoenents would be
-   almost impossible to test for example, button presses on a keyboard
+   almost impossible to test. For example, button presses on a keyboard
    correlating to a certain action in the game, can only be tested by
-   playing the game itself. This many of the graphical features were
+   playing the game itself. Thus, many of the graphical features were
    testing by playing the game within our team and attempting to find
    corner cases. In addition, not all possible actions with all possible
    circumstantial combinations were tested either. For example,
@@ -46,14 +46,15 @@ open Board
    functions themselves seemed correct and playable. Thus glass box
    testing was used mainly to make sure all data structures within
    gamestate were updated properly and that there was no information
-   loss
+   loss.
 
    Correctness Guarantee: Our testing apporach demonstrates the
    correctness of our monopoly game. Through our two method approach of
    playing the game and testing specific action function that are
    integral to the game, we were able expose corner cases, guarantee
    playability and assure our gamestate is correct at all moments in the
-   game itself *)
+   game itself. Thus our game should be fluid and move forward with any
+   potential action *)
 
 (********************* Start of Test Code *************************)
 let pp_string s = "\"" ^ s ^ "\""
