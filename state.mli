@@ -199,3 +199,10 @@ val test_game_state : game_state
 (** [demo_state gs] returns a demo gamestate which represents a scenario
     in the middle of a game for demoing purposes *)
 val demo_game_state : game_state
+
+(** [game_over gs] returns true iff one of the players in gs are
+    bankrupt (ie liabilities > assets) *)
+val game_over : game_state -> bool
+
+(** [winner gs] returns the player's name who has won *)
+val winner : game_state -> string

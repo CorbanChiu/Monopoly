@@ -5,7 +5,6 @@ type player = {
   property_lst : int list;
   card_lst : Cards.card list;
   jail_state : int;
-  bankrupt_state : bool;
   gojf : int;
   net_worth_diff_cash : int;
   in_debt : (int * int) list;
@@ -49,10 +48,6 @@ let get_jail_state player = player.jail_state
 
 let update_jail_state player b = { player with jail_state = b }
 
-let get_bankrupt_state player = player.bankrupt_state
-
-let update_bankrupt_state player b = { player with bankrupt_state = b }
-
 let get_in_debt player = player.in_debt
 
 let update_in_debt player lst = { player with in_debt = lst }
@@ -65,7 +60,6 @@ let init_player =
     property_lst = [];
     card_lst = [];
     jail_state = 0;
-    bankrupt_state = false;
     gojf = 0;
     net_worth_diff_cash = 0;
     (* 0: bank, 1: player 1, 2: player 2, 3: player 3, 4: player 4, 5:
@@ -76,6 +70,9 @@ let init_player =
 let total_debt_aux acc elt = match elt with x, y -> y + acc
 
 let total_debt player = List.fold_left total_debt_aux 0 player.in_debt
+
+let bankrupt plr =
+  plr.cash + plr.net_worth_diff_cash - total_debt plr < 0
 
 let no_debt player = total_debt player = 0
 
@@ -103,21 +100,6 @@ let get_debt player recipient =
       player.in_debt
   with
   | k, v -> v
-
-(* let sum_mortgage_value property_lst = List.fold_left ( + ) 0
-   property_lst *)
-
-(* let int_of_square sq = match Board.mortgage sq with None -> 0 | Some
-   x -> x *)
-
-(* let intlist_of_squarelist lst = List.map int_of_square lst *)
-
-(* TODO: need to include houses / hotels *)
-
-(* let net_worth player = player.cash + sum_mortgage_value
-   (intlist_of_squarelist player.property_lst) *)
-
-(* let bankrupt player = net_worth player >= 0 *)
 
 let rec get_player_from_name player_lst owner_option =
   match player_lst with

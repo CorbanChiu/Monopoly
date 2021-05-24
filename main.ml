@@ -30,4 +30,10 @@ let ask_names () =
   ANSITerminal.print_string [ ANSITerminal.blue ] "Have fun! \n";
   !names
 
-let () = Gui.play_game (ask_names ())
+let () =
+  let winner = Gui.play_game (ask_names ()) in
+  for i = 1 to 50 do
+    print_endline ""
+  done;
+  ANSITerminal.print_string [ ANSITerminal.blue ]
+    ("Congratulations to " ^ winner ^ "! You won!")

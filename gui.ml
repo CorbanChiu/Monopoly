@@ -23,6 +23,8 @@ type turn_state = {
   has_picked_card : bool;
 }
 
+let game_over = ref false
+
 let turn_state =
   ref
     ({
@@ -1019,6 +1021,9 @@ let process_undevelop () =
   let sq = !sel_state in
   match sq with Some s -> process_undevelop_aux s | None -> ()
 
+let process_game_over () =
+  if State.game_over !game_state then game_over := true
+
 (* game_state := State.move !game_state roll *)
 (* TODO: the move function needs to be fixed so that it actually works *)
 
@@ -1028,6 +1033,7 @@ let process_undevelop () =
 
 let update () =
   clear_graph ();
+  process_game_over ();
   set_line_width Consts.const_line_width;
   let msquare_lst = construct_msquares () in
   let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
@@ -1062,12 +1068,12 @@ let update () =
   draw_player_pos msquare_lst
 
 let driver () =
-  try
-    while true do
-      update ();
-      synchronize ()
-    done
-  with Exit -> ()
+  while not !game_over do
+    update ();
+    synchronize ()
+  done;
+  close_graph ();
+  State.winner !game_state
 
 let play_game nms =
   game_state := State.init_game_state nms;
