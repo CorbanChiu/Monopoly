@@ -58,6 +58,8 @@ val develop_property : game_state -> int -> game_state
 
 val undevelop_property : game_state -> int -> game_state
 
+val cards : game_state -> game_state
+
 val good_output : game_state -> game_state
 
 val assoc_list_length : 'a list -> int

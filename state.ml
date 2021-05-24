@@ -532,26 +532,61 @@ let can_undevelop_property gs property_ind =
   then true
   else false
 
-let process_cc gs p =
+let add_debt_all_players gs plr amt =
+  let aux p1 gamestate p2 =
+    match p2 with
+    | _, p2 ->
+        if p1 <> p2 then
+          {
+            gamestate with
+            player_lst =
+              update_player_lst
+                (get_player_index p1 gamestate.player_lst)
+                (Player.add_debt p1 amt
+                   (get_player_index p2 gamestate.player_lst))
+                gamestate.player_lst;
+          }
+        else gamestate
+  in
+  List.fold_left (aux plr) gs gs.player_lst
+
+let closest_move gs loc_lst =
+  let curr_loc =
+    Player.get_position (get_player gs.next gs.player_lst)
+  in
+  let distances =
+    List.map (fun x -> (x - curr_loc + 40) mod 40) loc_lst
+    |> List.sort Stdlib.compare
+  in
+  move gs (List.nth distances 0, 0)
+
+let process_card gs p card =
   let player_ind = get_player_index p gs.player_lst in
-  match Cards.take_topcard gs.cards.cc |> Cards.get_action with
-  | Move (lst, b) -> gs
+  match card |> Cards.get_action with
+  | Move (lst, b) -> closest_move gs lst
   | Money (lst, b) -> (
       match lst with
       | [ h; t ] -> gs
       | [ h ] ->
           if h < 0 then
-            if b then (
-              free_parking_cash := !free_parking_cash + -h;
-              gs (* reduce_money p by h*))
-            else gs
-              (* reduce money p by h * num player *)
-              (* increase money player_list / p by h *)
-          else if b then gs (* increase money p by h *)
-          else
-            (* increase money p by h * num player *)
-            (* reduce money player_list / p by h *)
-            gs
+            if b then
+              {
+                gs with
+                player_lst =
+                  update_player_lst player_ind
+                    (Player.add_debt p (-h) 5)
+                    gs.player_lst;
+              }
+            else add_debt_all_players gs p (-h)
+          else if b then
+            {
+              gs with
+              player_lst =
+                update_player_lst player_ind
+                  (Player.increment_cash p h)
+                  gs.player_lst;
+            } (* increase money p by h *)
+          else failwith "This isn't an allowable card anymore"
       | _ -> failwith "improperly formatted card money list")
   | GOJF ->
       let new_player = Player.add_gojf p in
@@ -561,11 +596,18 @@ let process_cc gs p =
           update_player_lst player_ind new_player gs.player_lst;
       }
 
-let community_chest gs =
+let process_cc gs p = process_card gs p (Cards.take_topcard gs.cards.cc)
+
+let process_chance gs p =
+  process_card gs p (Cards.take_topcard gs.cards.chance)
+
+let cards gs =
   let player = current_player gs in
   let name_opt = Player.get_name player in
   let prop = current_property gs in
   if Board.get_action prop name_opt = CC_ok then process_cc gs player
+  else if Board.get_action prop name_opt = Chance_ok then
+    process_chance gs player
   else gs
 
 (* let demo_game_state = move init_game_state (2, 3) |> buy_property |>
