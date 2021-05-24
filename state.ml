@@ -15,6 +15,12 @@ type game_state = {
   cards : card;
 }
 
+let num_houses = ref 32
+
+let num_hotels = ref 12
+
+let free_parking_cash = ref 0
+
 (* [get_property ind lst] returns the property at index ind in the
    property list lst *)
 let get_property property_ind property_lst =
@@ -251,6 +257,22 @@ let add_rent gs dr =
         new_player gs.player_lst;
   }
 
+let add_tax gs t =
+  let player = current_player gs in
+  let new_player = Player.add_debt player t 5 in
+  free_parking_cash := !free_parking_cash + t;
+  {
+    gs with
+    player_lst =
+      update_player_lst
+        (get_player_index player gs.player_lst)
+        new_player gs.player_lst;
+  }
+
+let add_luxury_tax gs = add_tax gs 75
+
+let add_income_tax gs = add_tax gs 200
+
 let pay_rent gs dr =
   let player = current_player gs in
   let property = current_property gs in
@@ -322,12 +344,6 @@ let unmortgage gs property_ind =
         |> Player.incr_net_worth mortgage_value)
         gs.player_lst;
   }
-
-let num_houses = ref 32
-
-let num_hotels = ref 12
-
-let free_parking_cash = ref 0
 
 let develop_helper gs property prop_index change =
   let owner =

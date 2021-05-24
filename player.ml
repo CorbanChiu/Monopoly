@@ -72,7 +72,7 @@ let init_player =
     bankrupt_state = false;
     gojf = 0;
     net_worth_diff_cash = 0;
-    in_debt = [ (0, 0); (1, 0); (2, 0); (3, 0); (4, 0) ];
+    in_debt = [ (0, 0); (1, 0); (2, 0); (3, 0); (4, 0); (5, 0) ];
   }
 
 let total_debt_aux acc elt = match elt with x, y -> y + acc
