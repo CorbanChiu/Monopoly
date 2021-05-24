@@ -79,12 +79,22 @@ val get_player_from_name :
     attributes*)
 val init_player : player
 
+(** [get_gojf pl] returns the number of "get out of jail free cards"
+    player pl posseses*)
 val get_gojf : player -> int
 
+(** [add_gojf pl] returns player pl with the number of "get out of jail
+    free cards" incremented by 1*)
 val add_gojf : player -> player
 
+(** [remove_gojf pl] returns player pl with the number of "get out of
+    jail free cards" decremented by 1*)
 val remove_gojf : player -> player
 
+(** [incr_net_worth a pl] returns player pl with pl's networth
+    incremented by amount a*)
 val incr_net_worth : int -> player -> player
 
+(** [decr_net_worth a pl] returns player pl with pl's networth
+    decremented by amount a*)
 val decr_net_worth : int -> player -> player
