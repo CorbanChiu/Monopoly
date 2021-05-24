@@ -142,9 +142,8 @@ let current_turn_name gs = current_player gs |> Player.get_name
 (* [roll_dice] returns a random integer between 2 and 12 (inclusive). *)
 let roll_dice () =
   self_init ();
-  (* ( nativeint (of_int 6) |> to_int |> ( + ) 1, nativeint (of_int 6)
-     |> to_int |> ( + ) 1 ) *)
-  (3, 4)
+  ( nativeint (of_int 6) |> to_int |> ( + ) 1,
+    nativeint (of_int 6) |> to_int |> ( + ) 1 )
 
 let get_out_of_jail gs player np =
   {
@@ -701,6 +700,8 @@ let on_chance gs opt =
 let get_cc_pile gs = gs.cards.cc
 
 let get_chance_pile gs = gs.cards.chance
+
+let free_parking gs = !free_parking_cash
 
 (* let demo_game_state = move init_game_state (2, 3) |> buy_property |>
    switch move (5, 6) |> buy_property |> switch move (2, 3) |>

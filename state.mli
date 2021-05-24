@@ -76,6 +76,8 @@ val get_cc_pile : game_state -> Cards.cardpile
 
 val get_chance_pile : game_state -> Cards.cardpile
 
+val free_parking : game_state -> int
+
 val good_output : game_state -> game_state
 
 val assoc_list_length : 'a list -> int

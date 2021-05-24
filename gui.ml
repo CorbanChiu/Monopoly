@@ -374,7 +374,13 @@ let draw_one_msquare rect =
   draw_rect (get_rect_x rect) (get_rect_y rect) (get_rect_w rect)
     (get_rect_h rect)
 
-let draw_all_msquares msquarelst = List.iter draw_one_msquare msquarelst
+let draw_all_msquares msquarelst =
+  List.iter draw_one_msquare msquarelst;
+  moveto
+    (calc_board_l () + 5)
+    (calc_board_b () + calc_board_height () + -5);
+  draw_string
+    ("Free Parking: $" ^ string_of_int (State.free_parking !game_state))
 
 let construct_msquares () =
   List.init 40 (construct_rect (current_res ()))
@@ -830,12 +836,20 @@ let center_circle (x1, y1) (x2, y2) r =
 let draw_player_circle_aux (x1, y1) (x2, y2) i =
   let x_mid = ((x2 - x1) / 2) + x1 in
   let y_mid = ((y2 - y1) / 2) + y1 in
-  match i with
+  (match i with
   | 1 -> center_circle (x1, y_mid) (x_mid, y2) Consts.p_token_radius
   | 2 -> center_circle (x_mid, y_mid) (x2, y2) Consts.p_token_radius
   | 3 -> center_circle (x1, y1) (x_mid, y_mid) Consts.p_token_radius
   | 4 -> center_circle (x_mid, y1) (x2, y_mid) Consts.p_token_radius
-  | _ -> failwith "improper player to draw the circle"
+  | _ -> failwith "improper player to draw the circle");
+  if State.get_player_jail_state !game_state i then (
+    set_color (rgb 0 0 0);
+    match i with
+    | 1 -> center_text (x1, y_mid) (x_mid, y2) "||||"
+    | 2 -> center_text (x_mid, y_mid) (x2, y2) "||||"
+    | 3 -> center_text (x1, y1) (x_mid, y_mid) "||||"
+    | 4 -> center_text (x_mid, y1) (x2, y_mid) "||||"
+    | _ -> failwith "improper player to draw the circle")
 
 let draw_player_circle r i =
   match r.orient with
