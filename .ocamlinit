@@ -1,6 +1,5 @@
 (* ~/.ocamlinit *)
 #require "oUnit";;
-#require "bisect_ppx";;
 #require "graphics";;
 #require "ANSITerminal";;
 

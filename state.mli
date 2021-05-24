@@ -1,8 +1,11 @@
+(** State keeps track of the game state of monopoly and provides
+    functions to update the attributes of this game state *)
+
 (** [property] is a board type *)
 type property = Board.property
 
-(* The type of value that represents a card (either community chest or
-   chance) *)
+(** The type of value that represents a card (either community chest or
+    chance) *)
 type card
 
 (* [game_state] represents the state of the game at a specific moment in
@@ -47,8 +50,8 @@ val get_players_position : game_state -> (int * int) list
     replaced with the player cash value. *)
 val get_players_cash : game_state -> (int * int) list
 
-(*( [get_player_jail_state gs i] returns true iff player i is in jail
-  during gamestate gs) *)
+(** [get_player_jail_state gs i] returns true iff player i is in jail
+    during gamestate gs) *)
 val get_player_jail_state : game_state -> int -> bool
 
 (** [get_square_owner gs ind] returns the option owner of the square
@@ -70,7 +73,7 @@ val get_square_mortgage_state : game_state -> int -> bool option
     values in the names namelist*)
 val init_game_state : string list -> game_state
 
-(** [go_to_jail gs pl] returns a new gamestate with player pl in jail *)
+(** [go_to_jail gs plr] returns the game state with player plr in jail *)
 val go_to_jail : game_state -> Player.player -> game_state
 
 (** [move gs dr] returns a new game state after changing the position of

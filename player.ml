@@ -1,6 +1,5 @@
 type player = {
   name : string option;
-  token : Token.token option;
   pos : int;
   cash : int;
   property_lst : int list;
@@ -15,10 +14,6 @@ type player = {
 let get_name player = player.name
 
 let update_name player n = { player with name = n }
-
-let get_token player = player.token
-
-let update_token player t = { player with token = t }
 
 let get_position player = player.pos
 
@@ -65,7 +60,6 @@ let update_in_debt player lst = { player with in_debt = lst }
 let init_player =
   {
     name = None;
-    token = None;
     pos = 0;
     cash = 1500;
     property_lst = [];

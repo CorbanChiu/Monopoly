@@ -1,4 +1,7 @@
-(** the type of value that represents players of the game *)
+(** Responsible for all player attributes and functions relating those
+    attributes *)
+
+(** [player] represents players of the game *)
 type player
 
 (** [get_name pl] returns the option name of the player pl*)
@@ -6,12 +9,6 @@ val get_name : player -> string option
 
 (** [update_name pl s] returns player pl with an updated option name s *)
 val update_name : player -> string option -> player
-
-(** [get_token pl] returns token of player pl *)
-val get_token : player -> Token.token option
-
-(** [update_token pl t] returns player pl with token updated to token t*)
-val update_token : player -> Token.token option -> player
 
 (** [get_position pl] returns position of player pl *)
 val get_position : player -> int
