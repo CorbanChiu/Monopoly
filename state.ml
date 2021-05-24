@@ -15,27 +15,15 @@ type game_state = {
   cards : card;
 }
 
-(* [get_property ind lst] returns the property at index ind in the
-   property list lst *)
 let get_property property_ind property_lst =
   List.assoc property_ind property_lst
 
-(* [updated_propertylst ind np lst] returns a property list lst where
-   the index ind contains the updated property np. *)
 let update_property_lst property_ind new_property property_lst =
   List.remove_assoc property_ind property_lst
   |> List.cons (property_ind, new_property)
 
-(* let rec update_property_lst_given property_list old_property
-   new_property = match property_list with | (a, prop) :: t -> if prop =
-   old_property then (a, new_property) :: List.remove_assoc a
-   property_list else update_property_lst_given t old_property
-   new_property | [] -> failwith "cannot update property list" *)
-
 let get_player player_ind player_lst = List.assoc player_ind player_lst
 
-(* [updated_playerlst ind np lst] returns a player list lst where the
-   index ind contains the updated player np. *)
 let update_player_lst player_ind new_player player_lst =
   List.remove_assoc player_ind player_lst
   |> List.cons (player_ind, new_player)
@@ -543,15 +531,6 @@ let community_chest gs =
   let prop = current_property gs in
   if Board.get_action prop name_opt = CC_ok then process_cc gs player
   else gs
-
-(* let demo_game_state = move init_game_state (2, 3) |> buy_property |>
-   switch move (5, 6) |> buy_property |> switch move (2, 3) |>
-   buy_property |> end_turn |> switch move (1, 2) |> buy_property |>
-   switch move (4, 3) |> switch move (2, 1) |> buy_property |> end_turn
-   |> switch move (5, 1) |> buy_property |> switch move (4, 4) |>
-   buy_property |> switch move (6, 4) |> buy_property |> end_turn |>
-   switch move (5, 2) |> switch move (6, 6) |> buy_property |> switch
-   move (6, 6) |> buy_property |> end_turn *)
 
 let demo_game_state =
   move

@@ -31,6 +31,8 @@ let decrement_cash player c = { player with cash = player.cash - c }
 
 let get_property_lst player = player.property_lst
 
+let get_networth player = player.net_worth_diff_cash
+
 let add_property p player =
   { player with property_lst = p :: player.property_lst }
 

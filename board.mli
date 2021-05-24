@@ -15,34 +15,50 @@ type paymentstructure = (int * int) list option
 
 exception UnknownJSON
 
+(** [from_json] initializes the board by unpacking the json into board
+    types*)
 val from_json : Yojson.Basic.t -> board
 
-(** [get_square b n] is a square that is in the nth position of b*)
+(** [get_square b n] returns a square that is in the nth position of b*)
 val get_square : board -> int -> square
 
+(** [find_square b s] returns index of square s in board square list b*)
 val find_square : board -> square -> int
 
+(** [get_name_from_square s] returns name of square s *)
 val get_name_from_square : square -> string
 
+(** [namelist lst] returns board square list lst with each square
+    replaced with its name *)
 val namelist : board -> string list
 
+(** [get_price s] returns price of square s *)
 val get_price : square -> int option
 
+(** [pricelist lst] returns board square list lst with each square
+    replaced with its price *)
 val pricelist : board -> int option list
 
+(** [get_payments s] returns paymentstructure of square s *)
 val get_payments : square -> paymentstructure
 
+(** [get_color s] returns propertycolor of square s *)
 val get_color : square -> propertycolor option
 
+(** [colorlist b] returns propertycolor of square s *)
 val colorlist : board -> propertycolor option list
 
+(** [get_mortgage s] returns mortgage price of square s *)
 val get_mortgage : square -> int option
 
-(* TODO: is this really necessary to have here? *)
+(** [mortgagelist lst] returns board square list lst with each square
+    replaced with its mortgage attribute *)
 val mortgagelist : board -> int option list
 
+(** [get_buildprice s] returns build price of square s *)
 val get_buildprice : square -> int option
 
+(** [get_mortgage s] returns "if mortgaged" of square s *)
 val get_mortgage : square -> int option
 
 (** [propertygroup b sq] is the square list of squares part of the same
