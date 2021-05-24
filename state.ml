@@ -15,6 +15,12 @@ type game_state = {
   cards : card;
 }
 
+let num_houses = ref 32
+
+let num_hotels = ref 12
+
+let free_parking_cash = ref 0
+
 (* [get_property ind lst] returns the property at index ind in the
    property list lst *)
 let get_property property_ind property_lst =
@@ -251,28 +257,29 @@ let add_rent gs dr =
         new_player gs.player_lst;
   }
 
-let pay_rent gs dr =
-  let player = current_player gs in
-  let property = current_property gs in
-  let owner =
-    Player.get_player_from_name gs.player_lst (Board.get_owner property)
+let pay_aux gs j =
+  print_string (string_of_int j ^ "\n");
+  let i = gs.next in
+  let i_player = get_player i gs.player_lst in
+  print_string (string_of_int (Player.total_debt i_player));
+  let amt = Player.get_debt i_player j in
+  let new_i_player =
+    (Player.decrement_cash i_player amt |> Player.remove_debt) amt j
   in
-  let rent =
-    Player.get_debt player (get_player_index owner gs.player_lst)
-  in
-  let new_player = Player.decrement_cash player rent in
-  let newer_player =
-    Player.remove_debt new_player rent
-      (get_player_index owner gs.player_lst)
-  in
-  {
-    gs with
-    player_lst =
-      update_player_lst gs.next newer_player gs.player_lst
-      |> update_player_lst
-           (get_player_index owner gs.player_lst)
-           (Player.increment_cash owner rent);
-  }
+  let new_player_lst = update_player_lst i new_i_player gs.player_lst in
+  if j > 0 && j < 5 then
+    let j_player = get_player j gs.player_lst in
+    let new_j_player = Player.increment_cash j_player amt in
+    {
+      gs with
+      player_lst = update_player_lst j new_j_player new_player_lst;
+    }
+  else if j = 5 then (
+    free_parking_cash := !free_parking_cash + amt;
+    { gs with player_lst = new_player_lst })
+  else { gs with player_lst = new_player_lst }
+
+let pay gs = List.fold_left pay_aux gs [ 0; 1; 2; 3; 4; 5 ]
 
 (* TODO: for a traditional property, check that any other properties in
    the color group are not developed *)
@@ -322,12 +329,6 @@ let unmortgage gs property_ind =
         |> Player.incr_net_worth mortgage_value)
         gs.player_lst;
   }
-
-let num_houses = ref 32
-
-let num_hotels = ref 12
-
-let free_parking_cash = ref 0
 
 let develop_helper gs property prop_index change =
   let owner =

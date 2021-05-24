@@ -48,7 +48,7 @@ val buy_property : game_state -> game_state
 
 val add_rent : game_state -> int -> game_state
 
-val pay_rent : game_state -> int -> game_state
+val pay : game_state -> game_state
 
 val mortgage : game_state -> int -> game_state
 
