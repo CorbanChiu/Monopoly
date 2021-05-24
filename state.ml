@@ -172,7 +172,7 @@ let free_parking gs player =
     player_lst =
       update_player_lst
         (get_player_index player gs.player_lst)
-        (Player.increment_cash player fp)
+        ((Player.update_position player 20 |> Player.increment_cash) fp)
         gs.player_lst;
   }
 
@@ -273,7 +273,6 @@ let add_rent gs dr =
 let add_tax gs t =
   let player = current_player gs in
   let new_player = Player.add_debt player t 5 in
-  free_parking_cash := !free_parking_cash + t;
   {
     gs with
     player_lst =
@@ -287,10 +286,10 @@ let add_luxury_tax gs = add_tax gs 75
 let add_income_tax gs = add_tax gs 200
 
 let pay_aux gs j =
-  print_string (string_of_int j ^ "\n");
+  (* print_string (string_of_int j ^ "\n"); *)
   let i = gs.next in
   let i_player = get_player i gs.player_lst in
-  print_string (string_of_int (Player.total_debt i_player));
+  (* print_string (string_of_int (Player.total_debt i_player)); *)
   let amt = Player.get_debt i_player j in
   let new_i_player =
     (Player.decrement_cash i_player amt |> Player.remove_debt) amt j
