@@ -18,9 +18,9 @@ let game_state = ref (State.init_game_state [])
 type turn_state = {
   has_moved : bool;
   dice : (int * int) option;
-  can_end_turn : bool;
   has_rolled : bool;
   num_rolls : int;
+  has_picked_card : bool;
 }
 
 let turn_state =
@@ -28,9 +28,9 @@ let turn_state =
     ({
        has_moved = false;
        dice = None;
-       can_end_turn = false;
        has_rolled = false;
        num_rolls = 0;
+       has_picked_card = false;
      }
       : turn_state)
 
@@ -344,7 +344,13 @@ let draw_one_msquare rect =
   draw_rect (get_rect_x rect) (get_rect_y rect) (get_rect_w rect)
     (get_rect_h rect)
 
-let draw_all_msquares msquarelst = List.iter draw_one_msquare msquarelst
+let draw_all_msquares msquarelst =
+  List.iter draw_one_msquare msquarelst;
+  moveto
+    (calc_board_l () + 5)
+    (calc_board_b () + calc_board_height () + -5);
+  draw_string
+    ("Free Parking: $" ^ string_of_int (State.free_parking !game_state))
 
 let construct_msquares () =
   List.init 40 (construct_rect (current_res ()))
@@ -800,12 +806,20 @@ let center_circle (x1, y1) (x2, y2) r =
 let draw_player_circle_aux (x1, y1) (x2, y2) i =
   let x_mid = ((x2 - x1) / 2) + x1 in
   let y_mid = ((y2 - y1) / 2) + y1 in
-  match i with
+  (match i with
   | 1 -> center_circle (x1, y_mid) (x_mid, y2) Consts.p_token_radius
   | 2 -> center_circle (x_mid, y_mid) (x2, y2) Consts.p_token_radius
   | 3 -> center_circle (x1, y1) (x_mid, y_mid) Consts.p_token_radius
   | 4 -> center_circle (x_mid, y1) (x2, y_mid) Consts.p_token_radius
-  | _ -> failwith "improper player to draw the circle"
+  | _ -> failwith "improper player to draw the circle");
+  if State.get_player_jail_state !game_state i then (
+    set_color (rgb 0 0 0);
+    match i with
+    | 1 -> center_text (x1, y_mid) (x_mid, y2) "J"
+    | 2 -> center_text (x_mid, y_mid) (x2, y2) "J"
+    | 3 -> center_text (x1, y1) (x_mid, y_mid) "J"
+    | 4 -> center_text (x_mid, y1) (x2, y_mid) "J"
+    | _ -> failwith "improper player to draw the circle")
 
 let draw_player_circle r i =
   match r.orient with
@@ -856,6 +870,40 @@ let draw_player_pos msqlst =
     (draw_player_pos_aux msqlst)
     (State.get_players_position !game_state)
 
+let draw_show_cards () =
+  let ll1 =
+    ( calc_sel_l (),
+      calc_sel_b () + calc_sel_h () - (5 * calc_sel_headline_height ())
+    )
+  in
+  let ur1 =
+    ( calc_sel_l () + calc_sel_w (),
+      calc_sel_b () + calc_sel_h () - (4 * calc_sel_headline_height ())
+    )
+  in
+  let ll2 =
+    ( calc_sel_l (),
+      calc_sel_b () + calc_sel_h () - (6 * calc_sel_headline_height ())
+    )
+  in
+  let ur2 =
+    ( calc_sel_l () + calc_sel_w (),
+      calc_sel_b () + calc_sel_h () - (5 * calc_sel_headline_height ())
+    )
+  in
+  if State.on_cc !game_state !turn_state.dice then (
+    set_color (rgb 0 0 0);
+    center_text ll1 ur1
+      (State.get_cc_pile !game_state |> Cards.name_topcard);
+    center_text ll2 ur2
+      (State.get_cc_pile !game_state |> Cards.desc_topcard));
+  if State.on_chance !game_state !turn_state.dice then (
+    set_color (rgb 0 0 0);
+    center_text ll1 ur1
+      (State.get_chance_pile !game_state |> Cards.name_topcard);
+    center_text ll2 ur2
+      (State.get_chance_pile !game_state |> Cards.desc_topcard))
+
 let process_roll () =
   let roll = State.roll_dice () in
   let d1, d2 = match roll with v1, v2 -> (v1, v2) in
@@ -867,6 +915,7 @@ let process_roll () =
       has_moved = change_turn_state;
       has_rolled = true;
     };
+  draw_show_cards ();
   if change_turn_state then ()
   else
     turn_state :=
@@ -875,10 +924,17 @@ let process_roll () =
     turn_state := { !turn_state with has_moved = true; num_rolls = 0 };
     game_state :=
       State.go_to_jail !game_state (State.current_player !game_state))
-  else game_state := State.move !game_state roll;
-  if State.can_pay_rent !game_state (d1 + d2) then
-    turn_state := { !turn_state with can_end_turn = false }
-  else turn_state := { !turn_state with can_end_turn = true }
+  else (
+    game_state := State.move !game_state roll;
+    if Player.get_jail_state (State.current_player !game_state) > 0 then
+      turn_state := { !turn_state with has_moved = true }
+    else if State.can_pay_rent !game_state (d1 + d2) then
+      game_state := State.add_rent !game_state (d1 + d2)
+    else if State.can_pay_luxury !game_state then
+      game_state := State.add_luxury_tax !game_state
+    else if State.can_pay_income !game_state then
+      game_state := State.add_income_tax !game_state
+    else ())
 
 let draw_roll_and_turn () =
   set_color (rgb 0 0 0);
@@ -909,27 +965,22 @@ let draw_roll_and_turn () =
     | None -> ()
 
 let process_endturn () =
-  if !turn_state.can_end_turn && !turn_state.has_moved then (
-    game_state := State.end_turn !game_state;
-    turn_state :=
-      {
-        !turn_state with
-        has_moved = false;
-        has_rolled = false;
-        num_rolls = 0;
-      })
-  else ()
+  game_state := State.end_turn !game_state;
+  turn_state :=
+    {
+      !turn_state with
+      has_moved = false;
+      has_rolled = false;
+      has_picked_card = false;
+      num_rolls = 0;
+    }
 
 let process_prop_purchase () =
   if !turn_state.has_moved then
     game_state := State.buy_property !game_state
 
-let process_rent_payment () =
-  if !turn_state.has_moved && not !turn_state.can_end_turn then (
-    let roll = !turn_state.dice in
-    let rt = match roll with Some (v1, v2) -> v1 + v2 | None -> 0 in
-    game_state := State.pay_rent !game_state rt;
-    turn_state := { !turn_state with can_end_turn = true })
+let process_payment () =
+  if !turn_state.has_rolled then game_state := State.pay !game_state
 
 let process_mortgaging_aux s =
   let ind = Board.find_square board s in
@@ -980,24 +1031,26 @@ let update () =
   set_line_width Consts.const_line_width;
   let msquare_lst = construct_msquares () in
   let st = wait_next_event [ Mouse_motion; Button_down; Key_pressed ] in
-  if st.key = 'q' then game_state := State.demo_game_state;
-  if st.key = 'n' && !turn_state.has_moved = false then process_roll ();
-  if st.key = 'm' && !turn_state.has_moved = true then
-    process_endturn ();
+  if st.key = Consts.demo_key then game_state := State.demo_game_state;
+  if
+    st.key = Consts.move_key
+    && !turn_state.has_moved = false
+    && State.current_player !game_state |> Player.no_debt
+  then process_roll ();
+  if st.key = Consts.end_turn_key && !turn_state.has_moved = true then (
+    if not !turn_state.has_picked_card then (
+      game_state := State.cards !game_state;
+      turn_state := { !turn_state with has_picked_card = true });
+    if State.current_player !game_state |> Player.no_debt then
+      process_endturn ());
   (* temporary "buy property key" *)
-  if st.key = 'b' && State.can_buy_property !game_state then
+  if st.key = Consts.buy_key && State.can_buy_property !game_state then
     process_prop_purchase ();
   (* temporary "pay rent key" *)
-  if
-    st.key = 'v'
-    && State.can_pay_rent !game_state
-         (match !turn_state.dice with
-         | Some (v1, v2) -> v1 + v2
-         | None -> 0)
-  then process_rent_payment ();
-  if st.key = 'c' then process_mortgaging ();
-  if st.key = 'x' then process_develop ();
-  if st.key = 'z' then process_undevelop ();
+  if st.key = Consts.pay_key then process_payment ();
+  if st.key = Consts.mortgage_key then process_mortgaging ();
+  if st.key = Consts.develop_key then process_develop ();
+  if st.key = Consts.undevelop_key then process_undevelop ();
   button_handler st;
   update_sel_state st msquare_lst;
   mouseloc_handler (st.mouse_x, st.mouse_y) msquare_lst;

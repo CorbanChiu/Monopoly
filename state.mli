@@ -1,12 +1,12 @@
 (** [property] is a board type *)
 type property = Board.property
 
-(* The absract type of value that represents a card (either community
-   chest or chance) *)
+(* The type of value that represents a card (either community chest or
+   chance) *)
 type card
 
-(* The absract type of value that represents the state of the game at a
-   specific moment in time *)
+(* The type of value that represents the state of the game at a specific
+   moment in time *)
 type game_state = {
   property_lst : (int * property) list;
   player_lst : (int * Player.player) list;
@@ -50,6 +50,10 @@ val get_players_position : game_state -> (int * int) list
     replaced with the player cash value. *)
 val get_players_cash : game_state -> (int * int) list
 
+(*( [get_player_jail_state gs i] returns true iff player i is in jail
+  during gamestate gs) *)
+val get_player_jail_state : game_state -> int -> bool
+
 (** [get_square_owner gs ind] returns a property list with the property
     type replaced with the property square owner. *)
 val get_square_owner : game_state -> int -> string option
@@ -88,9 +92,21 @@ val current_turn_name : game_state -> string option
     landed on and returns a new gamestate *)
 val buy_property : game_state -> game_state
 
-(** [pay_rent gs] executes paying rent for the property a player has
-    landed on and returns a new gamestate *)
-val pay_rent : game_state -> int -> game_state
+(** [add_rent gs dr] adds rent (as debt) corresponding to gs and the
+    diceroll, dr, and returns a new gamestate *)
+val add_rent : game_state -> int -> game_state
+
+(** [add_luxury gs] adds debt corresponding to the payment of luxury tax
+    in gs, and returns a new gamestate *)
+val add_luxury_tax : game_state -> game_state
+
+(** [add_income_tax gs] adds debt corresponding to the payment of income
+    tax in gs, and returns a new gamestate *)
+val add_income_tax : game_state -> game_state
+
+(** [pay gs] attempts to pay off all of the current player's debt, and
+    returns the corresponding new gamestate *)
+val pay : game_state -> game_state
 
 (** [mortgage gs] executes mortgaging of a property a player owns and
     returns a new gamestate *)
@@ -108,6 +124,30 @@ val develop_property : game_state -> int -> game_state
     player owns and returns a new gamestate *)
 val undevelop_property : game_state -> int -> game_state
 
+(** [cards gs] processes the action of the card landed on by the current
+    player and returns the corresponding new gamestate *)
+val cards : game_state -> game_state
+
+(** [on_cc gs dr] is true iff the current player would be on a community
+    chest square following the diceroll dr *)
+val on_cc : game_state -> (int * int) option -> bool
+
+(** [on_chance gs dr] is true iff the current player would be on a
+    chance square following the diceroll dr *)
+val on_chance : game_state -> (int * int) option -> bool
+
+(** [get_cc_pile gs] returns the community chest cardpile,
+    stacked/sorted as it is during the gamestate gs *)
+val get_cc_pile : game_state -> Cards.cardpile
+
+(** [get_cc_pile gs] returns the chance cardpile, stacked/sorted as it
+    is during the gamestate gs *)
+val get_chance_pile : game_state -> Cards.cardpile
+
+(** [free_parking gs] returns the amount of money in free parking during
+    the gamestate gs *)
+val free_parking : game_state -> int
+
 (** [good_output gs] returns a new gamestate with the property list and
     player list sorted based on key integer values *)
 val good_output : game_state -> game_state
@@ -122,8 +162,16 @@ val end_turn : game_state -> game_state
     buy the property they have landed on *)
 val can_buy_property : game_state -> bool
 
-(** [can_pay_rent gs] returns true if the current player is able to buy
-    the property they have landed on *)
+(** [can_pay_luxury gs] returns true iff the current player is able to
+    pay luxury tax (and is on the luxury tax square) *)
+val can_pay_luxury : game_state -> bool
+
+(** [can_pay_income gs] returns true iff the current player is able to
+    pay income tax (and is on the income tax square) *)
+val can_pay_income : game_state -> bool
+
+(** [can_pay_rent gs] returns true if the current player is able to pay
+    the rent for the property they have landed on *)
 val can_pay_rent : game_state -> int -> bool
 
 (** [can_mortgage gs] returns true if the current player can mortgage a

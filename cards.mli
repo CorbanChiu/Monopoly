@@ -12,8 +12,17 @@ type cardaction =
   | Money of int list * bool
   | GOJF
 
-(** [take_topcard cp] returns the top card of deck/pile cp *)
+(** [take_topcard cp] returns the top card of deck/pile cp, while
+    removing it from the top and adding it to the bottom *)
 val take_topcard : cardpile -> card
+
+(** [name_topcard cp] returns the name of the top card of the deck cp,
+    without changing the deck *)
+val name_topcard : cardpile -> string
+
+(** [desc_topcard cp] returns the description of the top card of the
+    deck cp, without changing the deck *)
+val desc_topcard : cardpile -> string
 
 (** [from_json js] returns a cardpile based on the json input js *)
 val from_json : string -> cardpile

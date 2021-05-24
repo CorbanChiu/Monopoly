@@ -39,3 +39,19 @@ let p_colors =
   ]
 
 let p_token_radius = 10
+
+let end_turn_key = 'm'
+
+let move_key = 'n'
+
+let demo_key = 'q'
+
+let buy_key = 'b'
+
+let pay_key = 'v'
+
+let mortgage_key = 'c'
+
+let develop_key = 'x'
+
+let undevelop_key = 'z'

@@ -62,17 +62,6 @@
     }
   },
   {
-    "name": "Grand Opera Night.",
-    "description": "Collect $50 from every player for opening night seats.",
-    "action type": {
-      "type": "money",
-      "amount": [
-        50
-      ],
-      "object": false
-    }
-  },
-  {
     "name": "Holiday Fund Matures.",
     "description": "Receive $100.",
     "action type": {
@@ -92,17 +81,6 @@
         20
       ],
       "object": true
-    }
-  },
-  {
-    "name": "It is your birthday.",
-    "description": "Collect $10 from every player.",
-    "action type": {
-      "type": "money",
-      "amount": [
-        10
-      ],
-      "object": false
     }
   },
   {
@@ -144,19 +122,7 @@
     "action type": {
       "type": "money",
       "amount": [
-        -25
-      ],
-      "object": true
-    }
-  },
-  {
-    "name": "You are assessed for street repairs:",
-    "description": "Pay $40 per house and $115 per hotel you own.",
-    "action type": {
-      "type": "money",
-      "amount": [
-        -40,
-        -115
+        25
       ],
       "object": true
     }

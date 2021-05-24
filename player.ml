@@ -9,6 +9,7 @@ type player = {
   bankrupt_state : bool;
   gojf : int;
   net_worth_diff_cash : int;
+  in_debt : (int * int) list;
 }
 
 let get_name player = player.name
@@ -57,6 +58,10 @@ let get_bankrupt_state player = player.bankrupt_state
 
 let update_bankrupt_state player b = { player with bankrupt_state = b }
 
+let get_in_debt player = player.in_debt
+
+let update_in_debt player lst = { player with in_debt = lst }
+
 let init_player =
   {
     name = None;
@@ -69,7 +74,41 @@ let init_player =
     bankrupt_state = false;
     gojf = 0;
     net_worth_diff_cash = 0;
+    (* 0: bank, 1: player 1, 2: player 2, 3: player 3, 4: player 4, 5:
+       free parking *)
+    in_debt = [ (0, 0); (1, 0); (2, 0); (3, 0); (4, 0); (5, 0) ];
   }
+
+let total_debt_aux acc elt = match elt with x, y -> y + acc
+
+let total_debt player = List.fold_left total_debt_aux 0 player.in_debt
+
+let no_debt player = total_debt player = 0
+
+let add_debt_aux amt recipient elt =
+  match elt with
+  | k, v when k = recipient -> (k, v + amt)
+  | k, v -> (k, v)
+
+let add_debt player amt recipient =
+  {
+    player with
+    in_debt = List.map (add_debt_aux amt recipient) player.in_debt;
+  }
+
+let remove_debt player amt recipient =
+  {
+    player with
+    in_debt = List.map (add_debt_aux (-amt) recipient) player.in_debt;
+  }
+
+let get_debt player recipient =
+  match
+    List.find
+      (fun x -> match x with k, v -> k = recipient)
+      player.in_debt
+  with
+  | k, v -> v
 
 (* let sum_mortgage_value property_lst = List.fold_left ( + ) 0
    property_lst *)

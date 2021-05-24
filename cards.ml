@@ -24,6 +24,10 @@ let take_topcard cardpile =
   Queue.push top cardpile;
   top
 
+let name_topcard cardpile = (Queue.peek cardpile).name
+
+let desc_topcard cardpile = (Queue.peek cardpile).desc
+
 let handle_list lst = List.map (fun x -> to_int x) lst
 
 let to_action j =

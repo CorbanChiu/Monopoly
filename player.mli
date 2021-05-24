@@ -67,6 +67,36 @@ val get_bankrupt_state : player -> bool
     updated to b *)
 val update_bankrupt_state : player -> bool -> player
 
+(** [get_in_debt plr] returns the debt association list of plr, with
+    first values corresponding to the following schema: 0: bank, 1:
+    player 1, 2: player 2, 3: player 3, 4: player 4, 5: free parking,
+    and second values corresponding to the amount of debt *)
+val get_in_debt : player -> (int * int) list
+
+(** [update_in_debt plr debt_lst] returns a player who has debt
+    accounding to debt_lst *)
+val update_in_debt : player -> (int * int) list -> player
+
+(** [add_debt plr (target, amt)] returns a player who has owes amt more
+    money to player target *)
+val add_debt : player -> int -> int -> player
+
+(** [remove_debt plr (target, amt)] returns a player who has owes amt
+    less money to player target *)
+val remove_debt : player -> int -> int -> player
+
+(** [total_debt plr] returns an int representing the total amount of
+    debt that plr owes *)
+val total_debt : player -> int
+
+(** [no_debt plr] returns true iff plr has no debt *)
+val no_debt : player -> bool
+
+(** [get_in_debt plr target ] returns the debt of plr to target, with
+    target corresponding to the following schema: 0: bank, 1: player 1,
+    2: player 2, 3: player 3, 4: player 4, 5: free parking *)
+val get_debt : player -> int -> int
+
 (** [get_player_from_name lst n] returns player in list with name n *)
 val get_player_from_name :
   (int * player) list -> string option -> player

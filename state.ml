@@ -15,6 +15,14 @@ type game_state = {
   cards : card;
 }
 
+let num_houses = ref 32
+
+let num_hotels = ref 12
+
+let free_parking_cash = ref 0
+
+(* [get_property ind lst] returns the property at index ind in the
+   property list lst *)
 let get_property property_ind property_lst =
   List.assoc property_ind property_lst
 
@@ -45,6 +53,9 @@ let get_players_name gs = get_players_from gs Player.get_name
 let get_players_position gs = get_players_from gs Player.get_position
 
 let get_players_cash gs = get_players_from gs Player.get_cash
+
+let get_player_jail_state gs player_ind =
+  Player.get_jail_state (List.assoc player_ind gs.player_lst) > 0
 
 let flip_arg f a b = f b a
 
@@ -124,17 +135,6 @@ let roll_dice () =
   ( nativeint (of_int 6) |> to_int |> ( + ) 1,
     nativeint (of_int 6) |> to_int |> ( + ) 1 )
 
-let go_to_jail gs player =
-  {
-    gs with
-    player_lst =
-      update_player_lst
-        (get_player_index player gs.player_lst)
-        ((Player.update_position player 10 |> Player.update_jail_state)
-           3)
-        gs.player_lst;
-  }
-
 let get_out_of_jail gs player np =
   {
     gs with
@@ -146,6 +146,32 @@ let get_out_of_jail gs player np =
         gs.player_lst;
   }
 
+let go_to_jail gs player =
+  if List.length (Player.get_card_lst player) > 0 then
+    get_out_of_jail gs player 10
+  else
+    {
+      gs with
+      player_lst =
+        update_player_lst
+          (get_player_index player gs.player_lst)
+          ((Player.update_position player 10 |> Player.update_jail_state)
+             3)
+          gs.player_lst;
+    }
+
+let free_parking gs player =
+  let fp = !free_parking_cash in
+  free_parking_cash := 0;
+  {
+    gs with
+    player_lst =
+      update_player_lst
+        (get_player_index player gs.player_lst)
+        ((Player.update_position player 20 |> Player.increment_cash) fp)
+        gs.player_lst;
+  }
+
 (* [move gs dr] returns a new game state gs *)
 let move gs dr =
   let player = current_player gs in
@@ -154,6 +180,7 @@ let move gs dr =
   let incr = d1 + d2 + Player.get_position player in
   let new_pos = incr mod 40 in
   if new_pos = 30 then go_to_jail gs player
+  else if new_pos = 20 then free_parking gs player
   else
     let jail_turns = Player.get_jail_state player in
     if jail_turns > 0 then
@@ -217,7 +244,7 @@ let buy_property gs =
 let propertylst_to_sqrlst property_lst =
   List.map Board.get_sqr property_lst
 
-let pay_rent gs dr =
+let add_rent gs dr =
   let player = current_player gs in
   let property = current_property gs in
   let owner =
@@ -228,16 +255,54 @@ let pay_rent gs dr =
       (propertylst_to_sqrlst (get_players_prop gs owner))
       init_board dr
   in
+  let new_player =
+    Player.add_debt player rent (get_player_index owner gs.player_lst)
+  in
   {
     gs with
     player_lst =
-      update_player_lst gs.next
-        (Player.decrement_cash player rent)
-        gs.player_lst
-      |> update_player_lst
-           (get_player_index owner gs.player_lst)
-           (Player.increment_cash owner rent);
+      update_player_lst
+        (get_player_index player gs.player_lst)
+        new_player gs.player_lst;
   }
+
+let add_tax gs t =
+  let player = current_player gs in
+  let new_player = Player.add_debt player t 5 in
+  {
+    gs with
+    player_lst =
+      update_player_lst
+        (get_player_index player gs.player_lst)
+        new_player gs.player_lst;
+  }
+
+let add_luxury_tax gs = add_tax gs 75
+
+let add_income_tax gs = add_tax gs 200
+
+let pay_aux gs j =
+  let i = gs.next in
+  let i_player = current_player gs in
+  let amt = Player.get_debt i_player j in
+  let new_i_player =
+    (Player.decrement_cash i_player amt |> Player.remove_debt) amt j
+  in
+  let new_player_lst = update_player_lst i new_i_player gs.player_lst in
+  print_int (get_player i gs.player_lst |> Player.get_cash);
+  if j > 0 && j < 5 then
+    let j_player = get_player j gs.player_lst in
+    let new_j_player = Player.increment_cash j_player amt in
+    {
+      gs with
+      player_lst = update_player_lst j new_j_player new_player_lst;
+    }
+  else if j = 5 then (
+    free_parking_cash := !free_parking_cash + amt;
+    { gs with player_lst = new_player_lst })
+  else { gs with player_lst = new_player_lst }
+
+let pay gs = List.fold_left pay_aux gs [ 0; 1; 2; 3; 4; 5 ]
 
 (* TODO: for a traditional property, check that any other properties in
    the color group are not developed *)
@@ -287,12 +352,6 @@ let unmortgage gs property_ind =
         |> Player.incr_net_worth mortgage_value)
         gs.player_lst;
   }
-
-let num_houses = ref 32
-
-let num_hotels = ref 12
-
-let free_parking_cash = ref 0
 
 let develop_helper gs property prop_index change =
   let owner =
@@ -405,6 +464,15 @@ let can_buy_property gs =
     else false
   else false
 
+let can_pay_tax gs ok =
+  let player = current_player gs in
+  let property = current_property gs in
+  Board.get_action property (Player.get_name player) = ok
+
+let can_pay_luxury gs = can_pay_tax gs Luxurytax_ok
+
+let can_pay_income gs = can_pay_tax gs Incometax_ok
+
 (* TODO: if we fail, we need to call "Mortgage or bankrupt". This will
    be done when we add net worth *)
 let can_pay_rent gs dr =
@@ -496,26 +564,84 @@ let can_undevelop_property gs property_ind =
   then true
   else false
 
-let process_cc gs p =
+let other_players_aux plr1 plr_elt2 =
+  match plr_elt2 with i2, plr2 -> plr1 <> plr2
+
+let add_debt_aux plr1 amt plrlst plr_elt2 =
+  match plr_elt2 with i2, plr2 -> (i2, Player.add_debt plr1 amt i2)
+
+let add_debt_all_players gs plr amt =
+  let other_players =
+    List.filter (other_players_aux plr) gs.player_lst
+  in
+
+  let rec aux gmst other_plrs =
+    match other_plrs with
+    | (i2, pl2) :: t ->
+        ({
+           gs with
+           player_lst =
+             update_player_lst gmst.next
+               (Player.add_debt (current_player gmst) amt i2)
+               gmst.player_lst;
+         }
+        |> aux)
+          t
+    | [] -> gmst
+  in
+  aux gs other_players
+
+(* let aux p1 gamestate plr_elt = let ind1 = get_player_index p1
+   gamestate.player_lst in match plr_elt with | ind2, p2 -> print_string
+   (string_of_int ind1 ^ ", "); print_endline (string_of_int ind2); if
+   ind1 <> ind2 then let new_list = update_player_lst ind1
+   (Player.add_debt p1 amt ind2) gamestate.player_lst in { gamestate
+   with player_lst = new_list } else gamestate in List.iter (fun (i, j)
+   -> print_int i; print_endline "") gs.player_lst; print_newline ();
+   List.fold_left (aux plr) gs gs.player_lst *)
+
+let jail_move_aux truth index = index = 10 || truth
+
+let closest_move gs loc_lst =
+  let curr_loc = Player.get_position (current_player gs) in
+  if List.fold_left jail_move_aux false loc_lst then
+    go_to_jail gs (current_player gs)
+  else
+    let distance =
+      (List.map (fun x -> (40 + x - curr_loc) mod 40) loc_lst
+      |> List.sort Stdlib.compare
+      |> List.nth)
+        0
+    in
+    move gs (distance, 0)
+
+let process_card gs p card =
   let player_ind = get_player_index p gs.player_lst in
-  match Cards.take_topcard gs.cards.cc |> Cards.get_action with
-  | Move (lst, b) -> gs
+  match Cards.get_action card with
+  | Move (lst, b) -> closest_move gs lst
   | Money (lst, b) -> (
       match lst with
       | [ h; t ] -> gs
       | [ h ] ->
           if h < 0 then
-            if b then (
-              free_parking_cash := !free_parking_cash + -h;
-              gs (* reduce_money p by h*))
-            else gs
-              (* reduce money p by h * num player *)
-              (* increase money player_list / p by h *)
-          else if b then gs (* increase money p by h *)
-          else
-            (* increase money p by h * num player *)
-            (* reduce money player_list / p by h *)
-            gs
+            if b then
+              {
+                gs with
+                player_lst =
+                  update_player_lst player_ind
+                    (Player.add_debt p (-h) 5)
+                    gs.player_lst;
+              }
+            else add_debt_all_players gs p (-h)
+          else if b then
+            {
+              gs with
+              player_lst =
+                update_player_lst player_ind
+                  (Player.increment_cash p h)
+                  gs.player_lst;
+            } (* increase money p by h *)
+          else failwith "This isn't an allowable card anymore"
       | _ -> failwith "improperly formatted card money list")
   | GOJF ->
       let new_player = Player.add_gojf p in
@@ -525,33 +651,72 @@ let process_cc gs p =
           update_player_lst player_ind new_player gs.player_lst;
       }
 
-let community_chest gs =
+let process_cc gs p = process_card gs p (Cards.take_topcard gs.cards.cc)
+
+let process_chance gs p =
+  process_card gs p (Cards.take_topcard gs.cards.chance)
+
+let cards gs =
   let player = current_player gs in
   let name_opt = Player.get_name player in
   let prop = current_property gs in
   if Board.get_action prop name_opt = CC_ok then process_cc gs player
+  else if Board.get_action prop name_opt = Chance_ok then
+    process_chance gs player
   else gs
+
+let on_cc gs opt =
+  match opt with
+  | Some (d1, d2) ->
+      let gs = move gs (d1, d2) in
+      let action =
+        Board.get_action (current_property gs)
+          (Player.get_name (current_player gs))
+      in
+      action = CC_ok
+  | None -> false
+
+let on_chance gs opt =
+  match opt with
+  | Some (d1, d2) ->
+      let gs = move gs (d1, d2) in
+      let action =
+        Board.get_action (current_property gs)
+          (Player.get_name (current_player gs))
+      in
+      action = Chance_ok
+  | None -> false
+
+let get_cc_pile gs = gs.cards.cc
+
+let get_chance_pile gs = gs.cards.chance
+
+let free_parking gs = !free_parking_cash
+
+(* let demo_game_state = move init_game_state (2, 3) |> buy_property |>
+   switch move (5, 6) |> buy_property |> switch move (2, 3) |>
+   buy_property |> end_turn |> switch move (1, 2) |> buy_property |>
+   switch move (4, 3) |> switch move (2, 1) |> buy_property |> end_turn
+   |> switch move (5, 1) |> buy_property |> switch move (4, 4) |>
+   buy_property |> switch move (6, 4) |> buy_property |> end_turn |>
+   switch move (5, 2) |> switch move (6, 6) |> buy_property |> switch
+   move (6, 6) |> buy_property |> end_turn *)
+
+(* let demo_game_state = move (init_game_state [ "Sunny"; "Corban";
+   "Connor"; "Jessica" ]) (3, 3) |> buy_property |> flip_arg move (1, 1)
+   |> buy_property |> flip_arg move (1, 0) |> buy_property |> end_turn
+   |> flip_arg move (6, 10) |> buy_property |> flip_arg move (1, 1) |>
+   buy_property |> flip_arg move (1, 0) |> buy_property |> end_turn |>
+   flip_arg move (5, 6) |> buy_property |> flip_arg move (1, 1) |>
+   buy_property |> flip_arg move (0, 1) |> buy_property |> end_turn *)
 
 let demo_game_state =
   move
     (init_game_state [ "Sunny"; "Corban"; "Connor"; "Jessica" ])
-    (3, 3)
-  |> buy_property
-  |> flip_arg move (1, 1)
-  |> buy_property
-  |> flip_arg move (1, 0)
-  |> buy_property |> end_turn
-  |> flip_arg move (6, 10)
-  |> buy_property
-  |> flip_arg move (1, 1)
-  |> buy_property
-  |> flip_arg move (1, 0)
-  |> buy_property |> end_turn
-  |> flip_arg move (5, 6)
-  |> buy_property
-  |> flip_arg move (1, 1)
-  |> buy_property
-  |> flip_arg move (0, 1)
-  |> buy_property |> end_turn
-
-(* let demo_game_state = move init_game_state (15, 15) |> end_turn *)
+    (15, 15)
+  |> end_turn
+  |> flip_arg move (15, 15)
+  |> end_turn
+  |> flip_arg move (15, 15)
+  |> end_turn
+  |> flip_arg move (15, 15)
