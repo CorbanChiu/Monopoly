@@ -160,6 +160,29 @@ let go_to_jail gs player =
           gs.player_lst;
     }
 
+let doubles_check gs player d1 d2 new_pos jail_turns =
+  if d1 = d2 then get_out_of_jail gs player new_pos
+  else
+    {
+      gs with
+      player_lst =
+        update_player_lst
+          (get_player_index player gs.player_lst)
+          (Player.update_jail_state player (jail_turns - 1))
+          gs.player_lst;
+    }
+
+let pass_go gs player new_pos =
+  {
+    gs with
+    player_lst =
+      update_player_lst
+        (get_player_index player gs.player_lst)
+        ((Player.update_position player new_pos |> Player.increment_cash)
+           200)
+        gs.player_lst;
+  }
+
 let free_parking gs player =
   let fp = !free_parking_cash in
   free_parking_cash := 0;
@@ -172,11 +195,9 @@ let free_parking gs player =
         gs.player_lst;
   }
 
-(* [move gs dr] returns a new game state gs *)
 let move gs dr =
   let player = current_player gs in
-  let d1 = fst dr in
-  let d2 = snd dr in
+  let d1, d2 = (fst dr, snd dr) in
   let incr = d1 + d2 + Player.get_position player in
   let new_pos = incr mod 40 in
   if new_pos = 30 then go_to_jail gs player
@@ -184,27 +205,8 @@ let move gs dr =
   else
     let jail_turns = Player.get_jail_state player in
     if jail_turns > 0 then
-      if d1 = d2 then get_out_of_jail gs player new_pos
-      else
-        {
-          gs with
-          player_lst =
-            update_player_lst
-              (get_player_index player gs.player_lst)
-              (Player.update_jail_state player (jail_turns - 1))
-              gs.player_lst;
-        }
-    else if incr > 39 then
-      {
-        gs with
-        player_lst =
-          update_player_lst
-            (get_player_index player gs.player_lst)
-            ((Player.update_position player new_pos
-             |> Player.increment_cash)
-               200)
-            gs.player_lst;
-      }
+      doubles_check gs player d1 d2 new_pos jail_turns
+    else if incr > 39 then pass_go gs player new_pos
     else
       {
         gs with
@@ -218,7 +220,6 @@ let move gs dr =
 let get_property_price property =
   Board.get_sqr property |> Board.get_price |> remove_option
 
-(** [buy_property gs] returns ... *)
 let buy_property gs =
   let player = current_player gs in
   let property = current_property gs in
@@ -307,8 +308,6 @@ let pay_aux gs j =
 
 let pay gs = List.fold_left pay_aux gs [ 0; 1; 2; 3; 4; 5 ]
 
-(* TODO: for a traditional property, check that any other properties in
-   the color group are not developed *)
 let mortgage gs property_ind =
   let property = get_property property_ind gs.property_lst in
   let owner =
@@ -366,7 +365,6 @@ let develop_helper gs property prop_index change =
   in
   let new_property_list =
     update_property_lst prop_index new_property gs.property_lst
-    (*gs.property_lst property new_property*)
   in
   let house_price =
     remove_option (Board.get_buildprice (Board.get_sqr property))
@@ -407,7 +405,6 @@ let undevelop_helper gs property prop_index change =
   in
   let new_property_list =
     update_property_lst prop_index new_property gs.property_lst
-    (*gs.property_lst property new_property*)
   in
   let house_price =
     remove_option (Board.get_buildprice (Board.get_sqr property))
@@ -456,8 +453,6 @@ let assoc_list_length lst =
   in
   helper lst 0
 
-(* returns whether a player can afford to buy a property. TODO: change
-   to net worth instead of get_cash *)
 let can_buy_property gs =
   let player = current_player gs in
   let property = current_property gs in
@@ -476,8 +471,6 @@ let can_pay_luxury gs = can_pay_tax gs Luxurytax_ok
 
 let can_pay_income gs = can_pay_tax gs Incometax_ok
 
-(* TODO: if we fail, we need to call "Mortgage or bankrupt". This will
-   be done when we add net worth *)
 let can_pay_rent gs dr =
   let player = current_player gs in
   let property = current_property gs in
