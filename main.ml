@@ -36,4 +36,5 @@ let () =
     print_endline ""
   done;
   ANSITerminal.print_string [ ANSITerminal.blue ]
-    ("Congratulations to " ^ winner ^ "! You won!")
+    ("Congratulations to " ^ winner ^ "! You won!");
+  print_endline ""
