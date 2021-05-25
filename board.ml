@@ -65,7 +65,6 @@ type misc =
   | IncomeTax of incometax
   | LuxuryTax of luxurytax
 
-(**TODO: add documentation*)
 type square =
   | Traditional of traditional
   | Utility of utility
@@ -73,10 +72,8 @@ type square =
   | Card of card
   | Misc of misc
 
-(* TODO: add documentation*)
 type board = square list
 
-(* TODO: bad *)
 let rec to_paymentstruct = function
   | (a, b) :: t ->
       (a |> int_of_string, b |> to_int) :: to_paymentstruct t
@@ -377,9 +374,6 @@ let rec check_no_mortgages property property_lst =
 (****************************************************)
 (* End of property definition and related functions *)
 (****************************************************)
-
-(* TODO: add action for buying house or should actions only be dependent
-   on square? *)
 type action =
   | Buy_ok
   | Payrent_ok
@@ -400,7 +394,6 @@ type action =
 
 let get_action prop player_name =
   match prop.sqr with
-  (* TODO: factor out copied code? *)
   | Traditional _ ->
       if prop.owner = Some "Bank" then Buy_ok
       else if

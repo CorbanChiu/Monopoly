@@ -37,7 +37,6 @@ let update_player_lst player_ind new_player player_lst =
   |> List.cons (player_ind, new_player)
 
 let rec get_player_index player player_lst =
-  (* TODO: why couldn't this be a find/filter/map *)
   match player_lst with
   | (ind, pl) :: t ->
       if pl = player then ind else get_player_index player t

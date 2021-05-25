@@ -1033,7 +1033,6 @@ let process_game_over () =
   if State.game_over !game_state then game_over := true
 
 (* game_state := State.move !game_state roll *)
-(* TODO: the move function needs to be fixed so that it actually works *)
 
 (*********************************************************)
 (**** Code that runs everthing - Add functions above ****)
