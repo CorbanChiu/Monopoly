@@ -131,7 +131,7 @@ let current_turn_name gs = current_player gs |> Player.get_name
 
 (* [roll_dice] returns a random integer between 2 and 12 (inclusive). *)
 let roll_dice () =
-  self_init ();
+  if Consts.demo then () else self_init ();
   ( nativeint (of_int 6) |> to_int |> ( + ) 1,
     nativeint (of_int 6) |> to_int |> ( + ) 1 )
 
@@ -147,8 +147,17 @@ let get_out_of_jail gs player np =
   }
 
 let go_to_jail gs player =
-  if List.length (Player.get_card_lst player) > 0 then
-    get_out_of_jail gs player 10
+  if Player.get_gojf player > 0 then
+    let new_player = Player.remove_gojf player in
+    ({
+       gs with
+       player_lst =
+         update_player_lst
+           (get_player_index player gs.player_lst)
+           new_player gs.player_lst;
+     }
+    |> get_out_of_jail)
+      new_player 10
   else
     {
       gs with
@@ -742,13 +751,44 @@ let test_game_state =
 let demo_game_state =
   move
     (init_game_state [ "Sunny"; "Corban"; "Connor"; "Jessica" ])
-    (15, 15)
+    (4, 2)
+  |> buy_property
+  |> flip_arg move (3, 2)
+  |> buy_property
+  |> flip_arg move (1, 1)
+  |> buy_property
+  |> flip_arg move (0, 1)
+  |> buy_property |> end_turn
+  |> flip_arg move (1, 2)
+  |> buy_property
+  |> flip_arg move (15, 5)
+  |> buy_property
+  |> flip_arg move (1, 0)
+  |> buy_property
+  |> flip_arg move (5, 8)
+  |> buy_property
+  |> flip_arg move (3, 2)
   |> end_turn
-  |> flip_arg move (15, 15)
+  |> flip_arg move (3, 2)
+  |> buy_property
+  |> flip_arg move (16, 16)
   |> end_turn
-  |> flip_arg move (15, 15)
-  |> end_turn
-  |> flip_arg move (15, 15)
+  |> flip_arg move (8, 0)
+  |> buy_property
+  |> flip_arg move (8, 0)
+  |> buy_property
+  |> flip_arg move (1, 1)
+  |> buy_property
+  |> flip_arg move (1, 0)
+  |> buy_property
+  |> flip_arg move (3, 4)
+  |> buy_property
+  |> flip_arg move (1, 0)
+  |> buy_property
+  |> flip_arg move (1, 1)
+  |> buy_property
+  |> flip_arg move (18, 18)
+  |> buy_property |> end_turn
 
 let game_over_aux truthy (i, plr) = truthy || Player.bankrupt plr
 

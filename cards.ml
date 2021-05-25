@@ -68,7 +68,7 @@ let compare_aux elt1 elt2 =
   match (elt1, elt2) with (k1, v1), (k2, v2) -> compare k1 k2
 
 let shuffle lst =
-  Random.self_init ();
+  if Consts.demo then () else Random.self_init ();
   let assoc_list = List.map (fun elt -> (Random.bits (), elt)) lst in
   let shuffled = List.sort compare_aux assoc_list in
   List.map snd shuffled

@@ -55,3 +55,5 @@ let mortgage_key = 'c'
 let develop_key = 'x'
 
 let undevelop_key = 'z'
+
+let demo = true
